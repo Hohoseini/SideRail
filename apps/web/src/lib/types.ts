@@ -105,4 +105,5 @@ export interface SubData {
     comment: string;
   };
   links: SubLink[];
+  history: { ts: number; total: number }[];
 }

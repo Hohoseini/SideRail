@@ -6,6 +6,7 @@ import SetupPage from "./pages/setup";
 import LoginPage from "./pages/login";
 import DashboardPage from "./pages/dashboard";
 import UsersPage from "./pages/users";
+import InboundsPage from "./pages/inbounds";
 import ActivityPage from "./pages/activity";
 import SettingsPage from "./pages/settings";
 import SubscriptionPage from "./pages/subscription";
@@ -69,6 +70,7 @@ export default function App() {
       >
         <Route path="/" element={<DashboardPage />} />
         <Route path="/users" element={<UsersPage />} />
+        <Route path="/inbounds" element={<InboundsPage />} />
         <Route path="/activity" element={<ActivityPage />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>

@@ -10,7 +10,6 @@ import {
   YAxis,
 } from "recharts";
 import {
-  Zap,
   Download,
   Upload,
   CalendarClock,
@@ -23,8 +22,10 @@ import {
   CircleAlert,
   Wifi,
   WifiOff,
+  Github,
 } from "lucide-react";
 import { QrCode } from "@/components/qr-code";
+import { RailLogo } from "@/components/rail-logo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -37,6 +38,8 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { formatBytes, formatDate, relativeTime, cn } from "@/lib/utils";
 import type { SubData, SubLink } from "@/lib/types";
+
+const GITHUB_URL = "https://github.com/icubaby/SideRail";
 
 const protocolColor: Record<string, string> = {
   vless: "#a3e635",
@@ -54,7 +57,7 @@ function useSubData(token: string | undefined) {
       return (await res.json()) as SubData;
     },
     enabled: !!token,
-    refetchInterval: 15000,
+    refetchInterval: 20000,
   });
 }
 
@@ -73,18 +76,12 @@ function CopyButton({ value, label }: { value: string; label?: string }) {
   );
 }
 
-function usageSeries(up: number, down: number) {
-  const total = up + down;
-  const points = 12;
-  const data: { name: string; used: number }[] = [];
-  for (let i = 0; i < points; i++) {
-    const factor = Math.pow((i + 1) / points, 1.4);
-    data.push({
-      name: `${i}`,
-      used: Math.round(total * factor),
-    });
-  }
-  return data;
+function buildChart(history: { ts: number; total: number }[]) {
+  if (!history || history.length < 2) return [];
+  return history.map((h) => ({
+    ts: h.ts,
+    used: h.total,
+  }));
 }
 
 export default function SubscriptionPage() {
@@ -99,7 +96,7 @@ export default function SubscriptionPage() {
     return (
       <div className="grid min-h-screen place-items-center bg-bg">
         <div className="flex flex-col items-center gap-3">
-          <Zap className="h-10 w-10 animate-pulse text-main" />
+          <RailLogo className="h-10 w-10 animate-pulse text-main" />
           <p className="font-heading text-text/60">Loading subscription…</p>
         </div>
       </div>
@@ -107,7 +104,9 @@ export default function SubscriptionPage() {
   }
 
   if (isError || !data) {
-    return <ErrorState title="Subscription not found" desc="This link is invalid or has been removed." />;
+    return (
+      <ErrorState title="Subscription not found" desc="This link is invalid or has been removed." />
+    );
   }
 
   if ("expired" in data && data.expired) {
@@ -123,7 +122,7 @@ export default function SubscriptionPage() {
   const { user, links } = sub;
   const usagePct = user.dataLimit > 0 ? Math.min(100, (user.total / user.dataLimit) * 100) : 0;
   const remaining = user.dataLimit > 0 ? Math.max(0, user.dataLimit - user.total) : 0;
-  const chart = usageSeries(user.up, user.down);
+  const chart = buildChart(sub.history || []);
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-bg pb-16">
@@ -131,18 +130,18 @@ export default function SubscriptionPage() {
       <div className="pointer-events-none absolute -left-24 top-0 h-72 w-72 rounded-full bg-main/20 blur-3xl" />
       <div className="pointer-events-none absolute -right-24 top-40 h-72 w-72 rounded-full bg-sky-400/20 blur-3xl" />
 
-      <div className="relative mx-auto w-full max-w-3xl px-4 pt-8 sm:pt-12">
-        <header className="flex flex-wrap items-center justify-between gap-4">
+      <div className="relative mx-auto w-full max-w-3xl px-4 pt-6 sm:pt-10">
+        <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <div className="grid h-12 w-12 place-items-center rounded-base border-2 border-border bg-main text-mtext neo-shadow">
-              <Zap className="h-6 w-6" fill="currentColor" />
+            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-base border-2 border-border bg-main text-mtext neo-shadow">
+              <RailLogo className="h-6 w-6" />
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="font-heading text-2xl leading-tight">SideRail</div>
-              <div className="text-sm font-base text-text/60">{user.email}</div>
+              <div className="truncate text-sm font-base text-text/60">{user.email}</div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {user.online ? (
               <Badge variant="success" className="gap-1">
                 <Wifi className="h-3.5 w-3.5" /> Online
@@ -160,77 +159,90 @@ export default function SubscriptionPage() {
               )}
               {user.active ? "Active" : "Inactive"}
             </Badge>
+            <Button variant="neutral" size="icon" asChild title="GitHub">
+              <a href={GITHUB_URL} target="_blank" rel="noreferrer">
+                <Github className="h-5 w-5" />
+              </a>
+            </Button>
           </div>
         </header>
 
-        <Card className="mt-6 animate-pop-in overflow-hidden">
-          <CardContent className="p-6">
-            <div className="grid gap-6 md:grid-cols-2">
-              <div className="space-y-4">
-                <div>
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-xs font-heading uppercase tracking-widest text-text/60">
-                      Data used
-                    </span>
-                    <span className="font-heading text-sm">
-                      {user.dataLimit > 0
-                        ? `${formatBytes(user.total)} / ${formatBytes(user.dataLimit)}`
-                        : formatBytes(user.total)}
-                    </span>
-                  </div>
-                  <Progress value={user.dataLimit > 0 ? usagePct : 100} className="mt-2 h-4" />
-                  <div className="mt-1 text-xs font-base text-text/50">
-                    {user.dataLimit > 0
-                      ? `${formatBytes(remaining)} remaining`
-                      : "Unlimited plan"}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <MiniStat
-                    icon={Download}
-                    label="Download"
-                    value={formatBytes(user.down)}
-                    accent="#a3e635"
-                  />
-                  <MiniStat
-                    icon={Upload}
-                    label="Upload"
-                    value={formatBytes(user.up)}
-                    accent="#7dd3fc"
-                  />
-                  <MiniStat
-                    icon={CalendarClock}
-                    label="Expires"
-                    value={user.expireAt ? relativeTime(user.expireAt) : "Never"}
-                    accent="#fda4af"
-                  />
-                  <MiniStat
-                    icon={Gauge}
-                    label="Configs"
-                    value={String(links.length)}
-                    accent="#f0abfc"
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-col">
-                <span className="mb-2 text-xs font-heading uppercase tracking-widest text-text/60">
-                  Usage trend
+        <Card className="mt-6 animate-pop-in">
+          <CardContent className="space-y-5 p-5 sm:p-6">
+            <div>
+              <div className="flex items-baseline justify-between gap-2">
+                <span className="text-xs font-heading uppercase tracking-widest text-text/60">
+                  Data used
                 </span>
-                <div className="h-[150px] w-full rounded-base border-2 border-border bg-bg/40 p-2">
+                <span className="font-heading text-sm">
+                  {user.dataLimit > 0
+                    ? `${formatBytes(user.total)} / ${formatBytes(user.dataLimit)}`
+                    : formatBytes(user.total)}
+                </span>
+              </div>
+              <Progress
+                value={user.dataLimit > 0 ? usagePct : 100}
+                className="mt-2 h-4"
+                indicatorClassName={
+                  usagePct > 90 ? "bg-red-400" : usagePct > 70 ? "bg-yellow-400" : "bg-main"
+                }
+              />
+              <div className="mt-1 text-xs font-base text-text/50">
+                {user.dataLimit > 0 ? `${formatBytes(remaining)} remaining` : "Unlimited plan"}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <MiniStat
+                icon={Download}
+                label="Download"
+                value={formatBytes(user.down)}
+                accent="#a3e635"
+              />
+              <MiniStat
+                icon={Upload}
+                label="Upload"
+                value={formatBytes(user.up)}
+                accent="#7dd3fc"
+              />
+              <MiniStat
+                icon={CalendarClock}
+                label="Expires"
+                value={user.expireAt ? relativeTime(user.expireAt) : "Never"}
+                accent="#fda4af"
+              />
+              <MiniStat
+                icon={Gauge}
+                label="Configs"
+                value={String(links.length)}
+                accent="#f0abfc"
+              />
+            </div>
+
+            <div>
+              <span className="mb-2 block text-xs font-heading uppercase tracking-widest text-text/60">
+                Usage trend
+              </span>
+              <div className="h-[160px] w-full rounded-base border-2 border-border bg-bg/40 p-2">
+                {chart.length >= 2 ? (
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={chart} margin={{ top: 6, right: 6, left: -20, bottom: 0 }}>
+                    <AreaChart data={chart} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
                       <defs>
                         <linearGradient id="usageFill" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="0%" stopColor="#a3e635" stopOpacity={0.8} />
                           <stop offset="100%" stopColor="#a3e635" stopOpacity={0.05} />
                         </linearGradient>
                       </defs>
-                      <XAxis dataKey="name" hide />
+                      <XAxis dataKey="ts" hide />
                       <YAxis hide />
                       <RTooltip
-                        formatter={(v: number) => [formatBytes(v), "Used"]}
+                        formatter={(v: number) => [formatBytes(v), "Total"]}
+                        labelFormatter={(l: number) =>
+                          new Date(l).toLocaleTimeString(undefined, {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        }
                         contentStyle={{
                           border: "2px solid #000",
                           borderRadius: 8,
@@ -238,7 +250,6 @@ export default function SubscriptionPage() {
                           color: "#000",
                           fontWeight: 600,
                         }}
-                        labelFormatter={() => ""}
                       />
                       <Area
                         type="monotone"
@@ -249,19 +260,23 @@ export default function SubscriptionPage() {
                       />
                     </AreaChart>
                   </ResponsiveContainer>
-                </div>
-                {user.expireAt && (
-                  <div className="mt-2 text-center text-xs font-base text-text/50">
-                    Valid until {formatDate(user.expireAt)}
+                ) : (
+                  <div className="flex h-full items-center justify-center text-center text-xs font-base text-text/40">
+                    Not enough data yet. Usage appears here as you consume traffic.
                   </div>
                 )}
               </div>
+              {user.expireAt && (
+                <div className="mt-2 text-center text-xs font-base text-text/50">
+                  Valid until {formatDate(user.expireAt)}
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
 
         <div className="mt-4 flex flex-wrap items-center gap-2">
-          <div className="flex min-w-0 flex-1 items-center gap-2 rounded-base border-2 border-border bg-bw px-3 py-2 neo-shadow">
+          <div className="flex min-w-0 flex-1 basis-full items-center gap-2 rounded-base border-2 border-border bg-bw px-3 py-2 neo-shadow sm:basis-0">
             <Link2 className="h-4 w-4 shrink-0 text-text/50" />
             <span className="truncate font-mono text-xs text-text/80">{subUrl}</span>
           </div>
@@ -321,8 +336,19 @@ export default function SubscriptionPage() {
           </div>
         </div>
 
-        <footer className="mt-10 text-center text-xs font-base text-text/40">
-          Powered by SideRail · Xray-core
+        <footer className="mt-10 flex flex-col items-center gap-2 text-center">
+          <a
+            href={GITHUB_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 rounded-base border-2 border-border bg-bw px-3 py-1.5 text-sm font-heading transition-all hover:bg-main hover:text-mtext hover:neo-shadow"
+          >
+            <Github className="h-4 w-4" />
+            icubaby/SideRail
+          </a>
+          <span className="text-xs font-base text-text/40" dir="rtl">
+            ساخته شده توسط icubaby
+          </span>
         </footer>
       </div>
 
@@ -374,7 +400,7 @@ function MiniStat({
     <div className="rounded-base border-2 border-border bg-bg/40 p-3">
       <div className="flex items-center gap-2">
         <div
-          className="grid h-7 w-7 place-items-center rounded-[5px] border-2 border-border"
+          className="grid h-7 w-7 shrink-0 place-items-center rounded-[5px] border-2 border-border"
           style={{ background: accent }}
         >
           <Icon className="h-3.5 w-3.5 text-black" />

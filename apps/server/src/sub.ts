@@ -20,6 +20,13 @@ export function setSubStaticRoot(root: string): void {
   staticRoot = root;
 }
 
+function usageHistory(userId: number) {
+  const rows = db
+    .prepare("SELECT ts, total FROM usage_history WHERE user_id = ? ORDER BY ts ASC")
+    .all(userId) as { ts: number; total: number }[];
+  return rows.map((r) => ({ ts: r.ts, total: r.total }));
+}
+
 function usagePayload(token: string, host: string) {
   const user = getUserByToken(token);
   if (!user) return null;
@@ -45,6 +52,7 @@ function usagePayload(token: string, host: string) {
       comment: user.comment,
     },
     links,
+    history: usageHistory(user.id),
   };
 }
 

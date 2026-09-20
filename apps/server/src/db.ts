@@ -69,8 +69,15 @@ export function migrate(): void {
       detail TEXT NOT NULL DEFAULT ''
     );
 
+    CREATE TABLE IF NOT EXISTS usage_history (
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      ts INTEGER NOT NULL,
+      total INTEGER NOT NULL
+    );
+
     CREATE INDEX IF NOT EXISTS idx_activity_ts ON activity(ts DESC);
     CREATE INDEX IF NOT EXISTS idx_users_token ON users(sub_token);
+    CREATE INDEX IF NOT EXISTS idx_usage_user_ts ON usage_history(user_id, ts);
   `);
 }
 

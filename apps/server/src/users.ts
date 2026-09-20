@@ -3,7 +3,7 @@ import { nanoid } from "nanoid";
 import { db } from "./db.js";
 import type { TrafficReset, UserRecord, UserWithInbounds } from "./types.js";
 
-const ONLINE_WINDOW_MS = 60_000;
+const ONLINE_WINDOW_MS = 120_000;
 
 export interface CreateUserInput {
   email: string;
@@ -38,6 +38,22 @@ function attachInbounds(userId: number, inboundIds: number[]): void {
     "INSERT OR IGNORE INTO user_inbounds (user_id, inbound_id) VALUES (?, ?)",
   );
   for (const id of inboundIds) insert.run(userId, id);
+}
+
+export function seedDefaultClient(): void {
+  const count = (db.prepare("SELECT COUNT(*) AS c FROM users").get() as { c: number }).c;
+  if (count > 0) return;
+  const enabledInbounds = (
+    db.prepare("SELECT id FROM inbounds WHERE enabled = 1").all() as { id: number }[]
+  ).map((r) => r.id);
+  createUser({
+    email: "client",
+    dataLimit: 0,
+    ipLimit: 0,
+    expireDays: 0,
+    comment: "Default unlimited client",
+    inboundIds: enabledInbounds,
+  });
 }
 
 export function createUser(input: CreateUserInput): UserWithInbounds {

@@ -54,16 +54,16 @@ function SummaryCard({
 }) {
   return (
     <Card>
-      <CardContent className="flex items-center gap-4 p-5">
+      <CardContent className="flex items-center gap-3 p-4 sm:gap-4 sm:p-5">
         <div
-          className="grid h-12 w-12 place-items-center rounded-base border-2 border-border"
+          className="grid h-11 w-11 shrink-0 place-items-center rounded-base border-2 border-border sm:h-12 sm:w-12"
           style={{ background: accent }}
         >
-          <Icon className="h-6 w-6 text-black" />
+          <Icon className="h-5 w-5 text-black sm:h-6 sm:w-6" />
         </div>
         <div>
-          <div className="font-heading text-3xl leading-none">{value}</div>
-          <div className="mt-1 text-xs font-heading uppercase tracking-widest text-text/60">
+          <div className="font-heading text-2xl leading-none sm:text-3xl">{value}</div>
+          <div className="mt-1 text-[10px] font-heading uppercase tracking-widest text-text/60 sm:text-xs">
             {label}
           </div>
         </div>
@@ -72,10 +72,41 @@ function SummaryCard({
   );
 }
 
-function trafficRemaining(u: User): string {
-  if (u.data_limit <= 0) return "Unlimited";
-  const remaining = Math.max(0, u.data_limit - u.total);
-  return formatBytes(remaining);
+function TrafficBar({ user }: { user: User }) {
+  const usagePct = user.data_limit > 0 ? Math.min(100, (user.total / user.data_limit) * 100) : 0;
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between gap-2 text-xs font-base text-text/70">
+        <span className="font-heading text-text/90">{formatBytes(user.total)}</span>
+        {user.data_limit > 0 && <span>{formatBytes(user.data_limit)}</span>}
+      </div>
+      <Progress
+        value={user.data_limit > 0 ? usagePct : 100}
+        className="h-2"
+        indicatorClassName={
+          usagePct > 90 ? "bg-red-400" : usagePct > 70 ? "bg-yellow-400" : "bg-main"
+        }
+      />
+      <div className="flex items-center gap-3 text-[11px] font-base">
+        <span className="text-lime-500">↓ {formatBytes(user.down)}</span>
+        <span className="text-sky-400">↑ {formatBytes(user.up)}</span>
+      </div>
+    </div>
+  );
+}
+
+function OnlineDot({ online }: { online: boolean }) {
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <span
+        className={cn(
+          "inline-block h-2.5 w-2.5 rounded-full border-2 border-border",
+          online ? "animate-pulse bg-lime-400" : "bg-zinc-500",
+        )}
+      />
+      <span className="text-xs font-base text-text/60">{online ? "Online" : "Offline"}</span>
+    </span>
+  );
 }
 
 export default function UsersPage() {
@@ -85,6 +116,7 @@ export default function UsersPage() {
   const [editing, setEditing] = React.useState<User | null>(null);
   const [deleteTarget, setDeleteTarget] = React.useState<User | null>(null);
   const [menuFor, setMenuFor] = React.useState<number | null>(null);
+  const menuRef = React.useRef<HTMLDivElement>(null);
 
   const { data } = useQuery<{ users: User[]; summary: UserSummary }>({
     queryKey: ["users"],
@@ -95,6 +127,14 @@ export default function UsersPage() {
     queryKey: ["inbounds"],
     queryFn: api.inbounds,
   });
+
+  React.useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuFor(null);
+    };
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, []);
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["users"] });
 
@@ -120,8 +160,7 @@ export default function UsersPage() {
   });
 
   const toggleMut = useMutation({
-    mutationFn: ({ id, enabled }: { id: number; enabled: boolean }) =>
-      api.toggleUser(id, enabled),
+    mutationFn: ({ id, enabled }: { id: number; enabled: boolean }) => api.toggleUser(id, enabled),
     onSuccess: invalidate,
     onError: (e: Error) => toast.push("error", e.message),
   });
@@ -175,6 +214,92 @@ export default function UsersPage() {
 
   const inboundName = (id: number) => inbounds.find((i) => i.id === id)?.tag || `#${id}`;
 
+  const rowActions = (u: User) => (
+    <div className="relative flex items-center gap-1" ref={menuFor === u.id ? menuRef : undefined}>
+      <Button
+        variant="neutral"
+        size="icon"
+        className="h-8 w-8"
+        onClick={() => openEdit(u)}
+        title="Edit"
+      >
+        <Pencil className="h-3.5 w-3.5" />
+      </Button>
+      <Button
+        variant="neutral"
+        size="icon"
+        className="h-8 w-8"
+        onClick={() => copySubLink(u)}
+        title="Copy sub link"
+      >
+        <Link2 className="h-3.5 w-3.5" />
+      </Button>
+      <Button
+        variant="neutral"
+        size="icon"
+        className="h-8 w-8"
+        onClick={() => setMenuFor(menuFor === u.id ? null : u.id)}
+        title="More"
+      >
+        <MoreVertical className="h-3.5 w-3.5" />
+      </Button>
+      {menuFor === u.id && (
+        <div className="absolute left-0 top-9 z-20 w-48 rounded-base border-2 border-border bg-bw p-1 neo-shadow animate-pop-in">
+          <MenuButton icon={Copy} label="Copy sub link" onClick={() => copySubLink(u)} />
+          <MenuButton
+            icon={Server}
+            label="Open sub page"
+            onClick={() => {
+              window.open(`/sub/${u.sub_token}`, "_blank");
+              setMenuFor(null);
+            }}
+          />
+          <MenuButton
+            icon={RotateCcw}
+            label="Reset traffic"
+            onClick={() => {
+              resetMut.mutate(u.id);
+              setMenuFor(null);
+            }}
+          />
+          <MenuButton
+            icon={RefreshCw}
+            label="Rotate sub token"
+            onClick={() => {
+              rotateMut.mutate(u.id);
+              setMenuFor(null);
+            }}
+          />
+          <MenuButton
+            icon={Trash2}
+            label="Delete"
+            danger
+            onClick={() => {
+              setDeleteTarget(u);
+              setMenuFor(null);
+            }}
+          />
+        </div>
+      )}
+    </div>
+  );
+
+  const inboundBadges = (u: User) => (
+    <div className="flex flex-wrap gap-1">
+      {u.inbound_ids.length === 0 && <span className="text-xs text-text/40">none</span>}
+      {u.inbound_ids.slice(0, 3).map((id) => (
+        <Badge key={id} variant="neutral" className="text-[10px]">
+          {inboundName(id)}
+        </Badge>
+      ))}
+      {u.inbound_ids.length > 3 && (
+        <Badge variant="info" className="text-[10px]">
+          +{u.inbound_ids.length - 3}
+        </Badge>
+      )}
+    </div>
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -188,7 +313,7 @@ export default function UsersPage() {
         </Button>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <SummaryCard icon={Users2} label="Clients" value={summary.clients} accent="#a3e635" />
         <SummaryCard icon={Wifi} label="Online" value={summary.online} accent="#7dd3fc" />
         <SummaryCard icon={ShieldCheck} label="Active" value={summary.active} accent="#86efac" />
@@ -200,179 +325,109 @@ export default function UsersPage() {
         />
       </div>
 
-      <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Actions</TableHead>
-                <TableHead>Enabled</TableHead>
-                <TableHead>Online</TableHead>
-                <TableHead>Client</TableHead>
-                <TableHead>Attached inbounds</TableHead>
-                <TableHead>Traffic</TableHead>
-                <TableHead>Speed</TableHead>
-                <TableHead>Remaining</TableHead>
-                <TableHead>Duration</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {users.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={9} className="py-12 text-center text-text/50">
-                    No users yet. Click “New User” to create one.
-                  </TableCell>
-                </TableRow>
-              )}
-              {users.map((u) => {
-                const usagePct =
-                  u.data_limit > 0 ? Math.min(100, (u.total / u.data_limit) * 100) : 0;
-                return (
-                  <TableRow key={u.id}>
-                    <TableCell>
-                      <div className="relative flex items-center gap-1">
-                        <Button
-                          variant="neutral"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => openEdit(u)}
-                          title="Edit"
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button
-                          variant="neutral"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => copySubLink(u)}
-                          title="Copy sub link"
-                        >
-                          <Link2 className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button
-                          variant="neutral"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => setMenuFor(menuFor === u.id ? null : u.id)}
-                          title="More"
-                        >
-                          <MoreVertical className="h-3.5 w-3.5" />
-                        </Button>
-                        {menuFor === u.id && (
-                          <div className="absolute left-0 top-9 z-20 w-48 rounded-base border-2 border-border bg-bw p-1 neo-shadow animate-pop-in">
-                            <MenuButton
-                              icon={Copy}
-                              label="Copy sub link"
-                              onClick={() => copySubLink(u)}
-                            />
-                            <MenuButton
-                              icon={Server}
-                              label="Open sub page"
-                              onClick={() => {
-                                window.open(`/sub/${u.sub_token}/view`, "_blank");
-                                setMenuFor(null);
-                              }}
-                            />
-                            <MenuButton
-                              icon={RotateCcw}
-                              label="Reset traffic"
-                              onClick={() => {
-                                resetMut.mutate(u.id);
-                                setMenuFor(null);
-                              }}
-                            />
-                            <MenuButton
-                              icon={RefreshCw}
-                              label="Rotate sub token"
-                              onClick={() => {
-                                rotateMut.mutate(u.id);
-                                setMenuFor(null);
-                              }}
-                            />
-                            <MenuButton
-                              icon={Trash2}
-                              label="Delete"
-                              danger
-                              onClick={() => {
-                                setDeleteTarget(u);
-                                setMenuFor(null);
-                              }}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Switch
-                        checked={!!u.enabled}
-                        onCheckedChange={(v) => toggleMut.mutate({ id: u.id, enabled: v })}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <span
-                        className={cn(
-                          "inline-block h-3 w-3 rounded-full border-2 border-border",
-                          u.online ? "bg-lime-400" : "bg-zinc-500",
-                        )}
-                        title={u.online ? "online" : "offline"}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <div className="font-heading">{u.email}</div>
-                      {u.comment && (
-                        <div className="text-xs text-text/50">{u.comment}</div>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex max-w-[200px] flex-wrap gap-1">
-                        {u.inbound_ids.length === 0 && (
-                          <span className="text-xs text-text/40">none</span>
-                        )}
-                        {u.inbound_ids.slice(0, 3).map((id) => (
-                          <Badge key={id} variant="neutral" className="text-[10px]">
-                            {inboundName(id)}
-                          </Badge>
-                        ))}
-                        {u.inbound_ids.length > 3 && (
-                          <Badge variant="info" className="text-[10px]">
-                            +{u.inbound_ids.length - 3}
-                          </Badge>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="min-w-[130px] space-y-1">
-                        <div className="text-xs font-base text-text/70">
-                          {formatBytes(u.total)}
-                          {u.data_limit > 0 && ` / ${formatBytes(u.data_limit)}`}
-                        </div>
-                        {u.data_limit > 0 && (
-                          <Progress value={usagePct} className="h-2" />
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col text-xs font-base">
-                        <span className="text-lime-500">↓ {formatBytes(u.down)}</span>
-                        <span className="text-sky-400">↑ {formatBytes(u.up)}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-sm font-base">
-                      {trafficRemaining(u)}
-                      {u.expire_at && (
-                        <div className="text-xs text-text/50">{relativeTime(u.expire_at)}</div>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-sm font-base">
-                      {durationSince(u.created_at)}
-                    </TableCell>
+      {users.length === 0 && (
+        <Card>
+          <CardContent className="py-16 text-center text-text/50">
+            No users yet. Click “New User” to create one.
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="hidden lg:block">
+        {users.length > 0 && (
+          <Card>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Actions</TableHead>
+                    <TableHead>Enabled</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Client</TableHead>
+                    <TableHead>Inbounds</TableHead>
+                    <TableHead className="min-w-[180px]">Traffic</TableHead>
+                    <TableHead>Remaining</TableHead>
+                    <TableHead>Duration</TableHead>
                   </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+                </TableHeader>
+                <TableBody>
+                  {users.map((u) => (
+                    <TableRow key={u.id}>
+                      <TableCell>{rowActions(u)}</TableCell>
+                      <TableCell>
+                        <Switch
+                          checked={!!u.enabled}
+                          onCheckedChange={(v) => toggleMut.mutate({ id: u.id, enabled: v })}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <OnlineDot online={u.online} />
+                      </TableCell>
+                      <TableCell>
+                        <div className="font-heading">{u.email}</div>
+                        {u.comment && <div className="text-xs text-text/50">{u.comment}</div>}
+                      </TableCell>
+                      <TableCell>{inboundBadges(u)}</TableCell>
+                      <TableCell>
+                        <TrafficBar user={u} />
+                      </TableCell>
+                      <TableCell className="text-sm font-base">
+                        {u.data_limit <= 0
+                          ? "Unlimited"
+                          : formatBytes(Math.max(0, u.data_limit - u.total))}
+                        {u.expire_at && (
+                          <div className="text-xs text-text/50">{relativeTime(u.expire_at)}</div>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-sm font-base">
+                        {durationSince(u.created_at)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+
+      <div className="grid gap-3 lg:hidden">
+        {users.map((u) => (
+          <Card key={u.id}>
+            <CardContent className="space-y-3 p-4">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="truncate font-heading text-lg">{u.email}</div>
+                  {u.comment && <div className="truncate text-xs text-text/50">{u.comment}</div>}
+                  <div className="mt-1">
+                    <OnlineDot online={u.online} />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={!!u.enabled}
+                    onCheckedChange={(v) => toggleMut.mutate({ id: u.id, enabled: v })}
+                  />
+                  {rowActions(u)}
+                </div>
+              </div>
+
+              {inboundBadges(u)}
+              <TrafficBar user={u} />
+
+              <div className="flex items-center justify-between border-t-2 border-border/30 pt-2 text-xs font-base text-text/60">
+                <span>
+                  {u.data_limit <= 0
+                    ? "Unlimited"
+                    : `${formatBytes(Math.max(0, u.data_limit - u.total))} left`}
+                </span>
+                <span>{u.expire_at ? relativeTime(u.expire_at) : "No expiry"}</span>
+                <span>{durationSince(u.created_at)}</span>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
       <UserFormDialog
         open={formOpen}

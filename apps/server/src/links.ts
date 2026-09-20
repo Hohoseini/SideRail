@@ -6,8 +6,8 @@ interface LinkContext {
   inbound: Inbound;
 }
 
-function label(host: string, inbound: Inbound): string {
-  return `${inbound.tag}@${host}`;
+function label(inbound: Inbound, user: UserWithInbounds): string {
+  return `SideRail - ${user.email} - ${inbound.tag}`;
 }
 
 function commonQuery(ctx: LinkContext): Record<string, string> {
@@ -37,14 +37,14 @@ function qs(params: Record<string, string>): string {
 function vlessLink(ctx: LinkContext): string {
   const { user, host } = ctx;
   const query = qs({ ...commonQuery(ctx), encryption: "none" });
-  return `vless://${user.uuid}@${host}:443?${query}#${encodeURIComponent(label(host, ctx.inbound))}`;
+  return `vless://${user.uuid}@${host}:443?${query}#${encodeURIComponent(label(ctx.inbound, user))}`;
 }
 
 function trojanLink(ctx: LinkContext): string {
   const { user, host } = ctx;
   const query = qs(commonQuery(ctx));
   return `trojan://${encodeURIComponent(user.password)}@${host}:443?${query}#${encodeURIComponent(
-    label(host, ctx.inbound),
+    label(ctx.inbound, user),
   )}`;
 }
 
@@ -52,7 +52,7 @@ function vmessLink(ctx: LinkContext): string {
   const { user, inbound, host } = ctx;
   const obj = {
     v: "2",
-    ps: label(host, inbound),
+    ps: label(inbound, user),
     add: host,
     port: "443",
     id: user.uuid,

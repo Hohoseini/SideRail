@@ -96,13 +96,17 @@ export async function startXray(): Promise<void> {
   }
   const cfgFile = writeConfig();
   stopXray();
-  proc = spawn(binPath(), ["run", "-config", cfgFile], {
+  const child = spawn(binPath(), ["run", "-config", cfgFile], {
     cwd: config.xrayDir,
     stdio: "ignore",
   });
+  proc = child;
   running = true;
-  proc.on("exit", () => {
-    running = false;
+  child.on("exit", () => {
+    if (proc === child) {
+      proc = null;
+      running = false;
+    }
   });
 }
 
@@ -123,7 +127,7 @@ export async function restartXray(): Promise<void> {
 }
 
 export function isRunning(): boolean {
-  return running;
+  return running && proc != null && proc.exitCode == null && !proc.killed;
 }
 
 export function xrayVersion(): string {
@@ -136,10 +140,10 @@ interface StatStub {
 }
 
 function queryStats(): StatStub[] {
-  if (!fs.existsSync(binPath())) return [];
+  if (!fs.existsSync(binPath()) || !running) return [];
   const res = spawnSync(
     binPath(),
-    ["api", "statsquery", `--server=127.0.0.1:${config.xrayApiPort}`],
+    ["api", "statsquery", `--server=127.0.0.1:${config.xrayApiPort}`, "-reset"],
     { encoding: "utf8", timeout: 5000 },
   );
   if (res.status !== 0 || !res.stdout) return [];
@@ -153,15 +157,28 @@ function queryStats(): StatStub[] {
 
 export function collectTraffic(): void {
   const stats = queryStats();
-  if (stats.length === 0) return;
   const now = Date.now();
-  const updateUp = db.prepare("UPDATE users SET up = up + ?, online_at = ? WHERE email = ?");
-  const updateDown = db.prepare("UPDATE users SET down = down + ?, online_at = ? WHERE email = ?");
-  for (const s of stats) {
-    const m = s.name.match(/^user>>>(.+)>>>traffic>>>(uplink|downlink)$/);
-    if (!m || s.value <= 0) continue;
-    const email = m[1];
-    if (m[2] === "uplink") updateUp.run(s.value, now, email);
-    else updateDown.run(s.value, now, email);
+  if (stats.length > 0) {
+    const updateUp = db.prepare("UPDATE users SET up = up + ?, online_at = ? WHERE email = ?");
+    const updateDown = db.prepare("UPDATE users SET down = down + ?, online_at = ? WHERE email = ?");
+    for (const s of stats) {
+      const m = s.name.match(/^user>>>(.+)>>>traffic>>>(uplink|downlink)$/);
+      if (!m || s.value <= 0) continue;
+      const email = m[1];
+      if (m[2] === "uplink") updateUp.run(s.value, now, email);
+      else updateDown.run(s.value, now, email);
+    }
   }
+  recordUsageHistory(now);
+}
+
+function recordUsageHistory(now: number): void {
+  const users = db.prepare("SELECT id, up, down FROM users").all() as {
+    id: number;
+    up: number;
+    down: number;
+  }[];
+  const insert = db.prepare("INSERT INTO usage_history (user_id, ts, total) VALUES (?, ?, ?)");
+  for (const u of users) insert.run(u.id, now, u.up + u.down);
+  db.prepare("DELETE FROM usage_history WHERE ts < ?").run(now - 24 * 3_600_000);
 }

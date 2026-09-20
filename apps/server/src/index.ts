@@ -7,6 +7,7 @@ import cookieParser from "cookie-parser";
 import { config } from "./config.js";
 import { migrate } from "./db.js";
 import { seedInbounds } from "./inbounds.js";
+import { seedDefaultClient } from "./users.js";
 import { api } from "./routes.js";
 import { sub, setSubStaticRoot } from "./sub.js";
 import { attachTunnel, tryTunnelHttp } from "./tunnel.js";
@@ -15,6 +16,7 @@ import { applyTrafficReset } from "./users.js";
 
 migrate();
 seedInbounds();
+seedDefaultClient();
 
 const app = express();
 app.disable("x-powered-by");
@@ -63,7 +65,7 @@ setInterval(() => {
   } catch {
     /* noop */
   }
-}, 15_000);
+}, 30_000);
 
 setInterval(() => {
   try {

@@ -3,21 +3,25 @@ import { NavLink, Outlet, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
+  Router,
   ScrollText,
   Settings,
   LogOut,
   Menu,
   X,
-  TrainFront,
-  Zap,
+  Github,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { RailLogo } from "@/components/rail-logo";
+
+const GITHUB_URL = "https://github.com/icubaby/SideRail";
 
 const nav = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
   { to: "/users", label: "Users", icon: Users, end: false },
+  { to: "/inbounds", label: "Inbounds", icon: Router, end: false },
   { to: "/activity", label: "Activity Log", icon: ScrollText, end: false },
   { to: "/settings", label: "Settings", icon: Settings, end: false },
 ];
@@ -26,7 +30,7 @@ function Brand() {
   return (
     <div className="flex items-center gap-2">
       <div className="grid h-9 w-9 place-items-center rounded-base border-2 border-border bg-main text-mtext neo-shadow">
-        <Zap className="h-5 w-5" fill="currentColor" />
+        <RailLogo className="h-5 w-5" />
       </div>
       <div className="leading-tight">
         <div className="font-heading text-lg tracking-tight">SideRail</div>
@@ -65,11 +69,22 @@ function NavItems({ onNavigate }: { onNavigate?: () => void }) {
 export function AppLayout() {
   const { username, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [menuOpen, setMenuOpen] = React.useState(false);
   const location = useLocation();
+  const menuRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     setMobileOpen(false);
+    setMenuOpen(false);
   }, [location.pathname]);
+
+  React.useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, []);
 
   return (
     <div className="relative min-h-screen">
@@ -82,6 +97,15 @@ export function AppLayout() {
           <div className="mt-6 flex-1">
             <NavItems />
           </div>
+          <a
+            href={GITHUB_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="mb-3 flex items-center gap-2 rounded-base border-2 border-border bg-bg/50 px-3 py-2.5 font-heading text-sm text-text/80 transition-all hover:bg-main hover:text-mtext hover:neo-shadow"
+          >
+            <Github className="h-5 w-5" />
+            GitHub
+          </a>
           <SidebarFooter username={username} onLogout={logout} />
         </aside>
 
@@ -99,15 +123,53 @@ export function AppLayout() {
               <Brand />
             </div>
             <div className="hidden items-center gap-2 lg:flex">
-              <TrainFront className="h-4 w-4 text-text/60" />
-              <span className="text-sm font-base text-text/60">
-                Deployed on Railway · Xray-core
+              <RailLogo className="h-4 w-4 text-text/60" />
+              <span className="text-sm font-base text-text/60" dir="rtl">
+                ساخته شده توسط icubaby
               </span>
             </div>
-            <div className="flex items-center gap-3">
-              <span className="hidden text-sm font-heading sm:block">{username}</span>
-              <div className="grid h-9 w-9 place-items-center rounded-base border-2 border-border bg-main text-mtext font-heading uppercase">
-                {(username || "A").slice(0, 1)}
+            <div className="flex items-center gap-2">
+              <Button variant="neutral" size="icon" asChild title="GitHub">
+                <a href={GITHUB_URL} target="_blank" rel="noreferrer">
+                  <Github className="h-5 w-5" />
+                </a>
+              </Button>
+              <div className="relative" ref={menuRef}>
+                <button
+                  onClick={() => setMenuOpen((v) => !v)}
+                  className="flex items-center gap-2 rounded-base border-2 border-transparent px-1 py-1 transition-all hover:border-border"
+                >
+                  <span className="hidden text-sm font-heading sm:block">{username}</span>
+                  <div className="grid h-9 w-9 place-items-center rounded-base border-2 border-border bg-main text-mtext font-heading uppercase">
+                    {(username || "A").slice(0, 1)}
+                  </div>
+                </button>
+                {menuOpen && (
+                  <div className="absolute right-0 top-12 z-40 w-52 rounded-base border-2 border-border bg-bw p-2 neo-shadow animate-pop-in">
+                    <div className="border-b-2 border-border/30 px-2 pb-2">
+                      <div className="truncate text-sm font-heading">{username || "admin"}</div>
+                      <div className="text-[10px] uppercase tracking-widest text-text/50">
+                        Administrator
+                      </div>
+                    </div>
+                    <a
+                      href={GITHUB_URL}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-1 flex items-center gap-2 rounded-[4px] px-2 py-2 text-sm font-base transition-colors hover:bg-main/15"
+                    >
+                      <Github className="h-4 w-4" />
+                      GitHub
+                    </a>
+                    <button
+                      onClick={() => void logout()}
+                      className="flex w-full items-center gap-2 rounded-[4px] px-2 py-2 text-left text-sm font-base text-red-400 transition-colors hover:bg-red-400/10"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Sign out
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </header>
@@ -122,10 +184,7 @@ export function AppLayout() {
 
       {mobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
-          <div
-            className="absolute inset-0 bg-overlay"
-            onClick={() => setMobileOpen(false)}
-          />
+          <div className="absolute inset-0 bg-overlay" onClick={() => setMobileOpen(false)} />
           <div className="absolute left-0 top-0 h-full w-72 border-r-2 border-border bg-bg p-4 animate-fade-in">
             <div className="flex items-center justify-between">
               <Brand />
@@ -137,6 +196,15 @@ export function AppLayout() {
               <NavItems onNavigate={() => setMobileOpen(false)} />
             </div>
             <div className="absolute inset-x-4 bottom-4">
+              <a
+                href={GITHUB_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="mb-3 flex items-center gap-2 rounded-base border-2 border-border bg-bg/50 px-3 py-2.5 font-heading text-sm text-text/80 transition-all hover:bg-main hover:text-mtext"
+              >
+                <Github className="h-5 w-5" />
+                GitHub
+              </a>
               <SidebarFooter username={username} onLogout={logout} />
             </div>
           </div>
@@ -154,7 +222,7 @@ function SidebarFooter({
   onLogout: () => Promise<void>;
 }) {
   return (
-    <div className="mt-4 rounded-base border-2 border-border bg-bg/50 p-3">
+    <div className="rounded-base border-2 border-border bg-bg/50 p-3">
       <div className="mb-2 flex items-center gap-2">
         <div className="grid h-8 w-8 place-items-center rounded-base border-2 border-border bg-main text-mtext font-heading uppercase">
           {(username || "A").slice(0, 1)}
