@@ -25,7 +25,6 @@ COPY --from=build /app/apps/web/dist ./public
 ENV PORT=8080
 ENV SIDERAIL_DATA_DIR=/data
 ENV XRAY_VERSION=v26.9.9
-VOLUME ["/data"]
 EXPOSE 8080
 
 CMD ["node", "apps/server/dist/index.js"]
