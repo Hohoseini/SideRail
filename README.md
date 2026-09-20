@@ -29,21 +29,21 @@ The interface uses a bold **neobrutalist** design language — thick borders, ha
 
 ## 🚀 **One-Click Deploy**
 
-**SideRail is built to fork-and-deploy:**
+**Three steps — no configuration required:**
 
 1. **Fork** this repository into your own GitHub account.
-2. Head to [railway.app](https://railway.app) → **New Project** → **Deploy from GitHub repo** and pick your fork.
-3. Railway reads the `Dockerfile` and `railway.json`, builds the image, and boots the panel.
-4. Add a **Volume** mounted at `/data` so your database and the Xray binary persist across deploys.
-5. Open the generated `*.up.railway.app` domain — you land on the **Setup** page to create your admin account.
+2. Go to [railway.app](https://railway.app) → **New Project** → **Deploy from GitHub repo** and pick your fork.
+3. Click **Deploy**.
 
-**That's it.** Xray-core `v26.9.9` is downloaded automatically on first boot.
+**That's it.** Railway reads the `Dockerfile` and `railway.json`, builds the image, and boots the panel. Open the generated `*.up.railway.app` domain — you land on the **Setup** page to create your admin account. Xray-core `v26.9.9` is downloaded automatically on first boot, and the session secret is generated automatically, so **no environment variables are needed**.
 
-### **Environment variables**
+> **💡 Optional:** attach a Railway **Volume** at `/data` if you want users and inbounds to survive redeploys. Without it, everything still works but resets on each new deployment.
+
+### **Environment variables (all optional)**
 
 | **Variable** | **Default** | **Description** |
 | --- | --- | --- |
-| `JWT_SECRET` | _(generate!)_ | Signs admin session cookies. Use a long random string. |
+| `JWT_SECRET` | _(auto-generated)_ | Signs admin session cookies. Generated and persisted automatically if unset. |
 | `XRAY_VERSION` | `v26.9.9` | Xray-core release fetched on first boot. |
 | `SIDERAIL_DATA_DIR` | `/data` | Persistent data directory (mount a volume here). |
 | `PORT` | `8080` | HTTP port (Railway injects this automatically). |
