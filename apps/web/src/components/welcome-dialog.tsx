@@ -11,21 +11,21 @@ import { RailLogo } from "@/components/rail-logo";
 import { useGitHubStars } from "@/components/github-button";
 import { GITHUB_URL } from "@/lib/brand";
 
-const STORAGE_KEY = "sr_welcome_seen_v2";
+const STORAGE_KEY = "sr_welcome_seen_session";
 
 export function WelcomeDialog() {
   const [open, setOpen] = React.useState(false);
   const stars = useGitHubStars();
 
   React.useEffect(() => {
-    if (localStorage.getItem(STORAGE_KEY) !== "1") {
+    if (sessionStorage.getItem(STORAGE_KEY) !== "1") {
       const t = setTimeout(() => setOpen(true), 500);
       return () => clearTimeout(t);
     }
   }, []);
 
   const close = () => {
-    localStorage.setItem(STORAGE_KEY, "1");
+    sessionStorage.setItem(STORAGE_KEY, "1");
     setOpen(false);
   };
 

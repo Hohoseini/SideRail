@@ -5,39 +5,103 @@ import { config } from "./config.js";
 import { isRunning, xrayVersion } from "./xray.js";
 import type { SystemStats } from "./types.js";
 
-let lastCpu = os.cpus().map((c) => ({ ...c.times }));
-let lastCpuTime = Date.now();
-
-function cpuUsage(): { usage: number; cores: number; avg: number } {
-  const cpus = os.cpus();
-  const now = Date.now();
-  let totalDiff = 0;
-  let idleDiff = 0;
-  for (let i = 0; i < cpus.length; i++) {
-    const prev = lastCpu[i];
-    const cur = cpus[i].times;
-    if (!prev) continue;
-    const prevTotal = prev.user + prev.nice + prev.sys + prev.idle + prev.irq;
-    const curTotal = cur.user + cur.nice + cur.sys + cur.idle + cur.irq;
-    totalDiff += curTotal - prevTotal;
-    idleDiff += cur.idle - prev.idle;
-  }
-  lastCpu = cpus.map((c) => ({ ...c.times }));
-  lastCpuTime = now;
-  const usage = totalDiff > 0 ? (1 - idleDiff / totalDiff) * 100 : 0;
-  const load = os.loadavg()[0];
-  const avg = cpus.length > 0 ? Math.min(100, (load / cpus.length) * 100) : usage;
-  return { usage: round(usage), cores: cpus.length, avg: round(avg) };
-}
-
 function round(n: number): number {
   return Math.round(n * 10) / 10;
 }
 
+function readNum(path: string): number | null {
+  try {
+    const v = Number(fs.readFileSync(path, "utf8").trim());
+    return Number.isFinite(v) ? v : null;
+  } catch {
+    return null;
+  }
+}
+
+function cgroupCpuLimit(): number | null {
+  const v2 = (() => {
+    try {
+      const raw = fs.readFileSync("/sys/fs/cgroup/cpu.max", "utf8").trim();
+      const [quota, period] = raw.split(/\s+/);
+      if (quota === "max") return null;
+      const q = Number(quota);
+      const p = Number(period) || 100000;
+      if (q > 0 && p > 0) return q / p;
+    } catch {
+      /* noop */
+    }
+    return null;
+  })();
+  if (v2 != null) return v2;
+  const quota = readNum("/sys/fs/cgroup/cpu/cpu.cfs_quota_us");
+  const period = readNum("/sys/fs/cgroup/cpu/cpu.cfs_period_us");
+  if (quota && quota > 0 && period && period > 0) return quota / period;
+  return null;
+}
+
+function cgroupCpuUsageUsec(): number | null {
+  try {
+    const stat = fs.readFileSync("/sys/fs/cgroup/cpu.stat", "utf8");
+    const m = stat.match(/usage_usec\s+(\d+)/);
+    if (m) return Number(m[1]);
+  } catch {
+    /* noop */
+  }
+  const v1 = readNum("/sys/fs/cgroup/cpuacct/cpuacct.usage");
+  if (v1 != null) return Math.round(v1 / 1000);
+  return null;
+}
+
+let lastCpuUsage = cgroupCpuUsageUsec();
+let lastCpuStamp = Date.now();
+
+function cpuUsage(): { usage: number; cores: number; avg: number } {
+  const limit = cgroupCpuLimit();
+  const cores = limit ? Math.max(1, Math.round(limit)) : os.cpus().length;
+  const curUsage = cgroupCpuUsageUsec();
+  const now = Date.now();
+
+  if (curUsage != null && lastCpuUsage != null && now > lastCpuStamp) {
+    const deltaUsec = curUsage - lastCpuUsage;
+    const elapsedUsec = (now - lastCpuStamp) * 1000;
+    const effectiveCores = limit || os.cpus().length;
+    lastCpuUsage = curUsage;
+    lastCpuStamp = now;
+    const usage = elapsedUsec > 0 ? (deltaUsec / (elapsedUsec * effectiveCores)) * 100 : 0;
+    const clamped = Math.max(0, Math.min(100, usage));
+    return { usage: round(clamped), cores, avg: round(clamped) };
+  }
+
+  lastCpuUsage = curUsage;
+  lastCpuStamp = now;
+  const load = os.loadavg()[0];
+  const denom = limit || os.cpus().length;
+  const avg = denom > 0 ? Math.min(100, (load / denom) * 100) : 0;
+  return { usage: round(avg), cores, avg: round(avg) };
+}
+
 function memUsage() {
-  const total = os.totalmem();
-  const free = os.freemem();
-  const used = total - free;
+  const limitV2 = (() => {
+    try {
+      const raw = fs.readFileSync("/sys/fs/cgroup/memory.max", "utf8").trim();
+      if (raw === "max") return null;
+      const v = Number(raw);
+      return Number.isFinite(v) ? v : null;
+    } catch {
+      return null;
+    }
+  })();
+  const usedV2 = readNum("/sys/fs/cgroup/memory.current");
+  const limitV1 = readNum("/sys/fs/cgroup/memory/memory.limit_in_bytes");
+  const usedV1 = readNum("/sys/fs/cgroup/memory/memory.usage_in_bytes");
+
+  const hostTotal = os.totalmem();
+  let total = limitV2 ?? (limitV1 && limitV1 < hostTotal ? limitV1 : null) ?? hostTotal;
+  let used = usedV2 ?? usedV1 ?? hostTotal - os.freemem();
+
+  if (total > hostTotal * 2 || total <= 0) total = hostTotal;
+  if (used > total) used = total;
+
   return { usage: round((used / total) * 100), used, total };
 }
 
@@ -85,7 +149,6 @@ function storageUsage(): { usage: number; free: number; total: number } {
 }
 
 export function getSystemStats(): SystemStats {
-  void lastCpuTime;
   return {
     cpu: cpuUsage(),
     ram: memUsage(),
