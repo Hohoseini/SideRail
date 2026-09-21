@@ -1,131 +1,126 @@
 <div align="center">
 
-<img src="apps/web/public/favicon.svg" width="96" height="96" alt="SideRail logo" />
+<img src=".github/banner.svg" width="100%" alt="SideRail" />
 
-# **SideRail**
+<br/>
+<br/>
 
-### **A modern, neobrutalist VPN management panel powered by Xray-core**
+<a href="https://railway.com/new">
+  <img src="https://img.shields.io/badge/%F0%9F%9A%80%20Deploy%20on%20Railway-a3e635?style=for-the-badge&labelColor=0b0b0f&color=a3e635" alt="Deploy on Railway" height="46" />
+</a>
 
-**One-click deploy on Railway — VLESS · VMess · Trojan over WebSocket, XHTTP & HTTPUpgrade**
+<br/>
+<br/>
+
+![License](https://img.shields.io/badge/License-MIT-a3e635?style=flat-square&labelColor=0b0b0f)
+![Xray](https://img.shields.io/badge/Xray--core-v26.9.9-a3e635?style=flat-square&labelColor=0b0b0f)
+![Protocols](https://img.shields.io/badge/VLESS%20·%20VMess%20·%20Trojan-a3e635?style=flat-square&labelColor=0b0b0f)
+![Transports](https://img.shields.io/badge/WS%20·%20XHTTP%20·%20HTTPUpgrade-a3e635?style=flat-square&labelColor=0b0b0f)
+![TypeScript](https://img.shields.io/badge/TypeScript-a3e635?style=flat-square&labelColor=0b0b0f&logo=typescript&logoColor=a3e635)
+![React](https://img.shields.io/badge/React%20+%20Vite-a3e635?style=flat-square&labelColor=0b0b0f&logo=react&logoColor=a3e635)
 
 <br/>
 
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/new)
-
-<br/>
-
-[![License](https://img.shields.io/badge/License-MIT-a3e635?style=for-the-badge)](LICENSE)
-[![Xray](https://img.shields.io/badge/Xray--core-v26.9.9-000000?style=for-the-badge)](https://github.com/XTLS/Xray-core)
-[![Protocol](https://img.shields.io/badge/Protocol-VLESS%20%2B%20VMess%20%2B%20Trojan-2563eb?style=for-the-badge)](#)
-[![Platform](https://img.shields.io/badge/Platform-Railway-8b5cf6?style=for-the-badge&logo=railway&logoColor=white)](https://railway.app)
-[![TypeScript](https://img.shields.io/badge/Built%20with-TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](#)
-[![React](https://img.shields.io/badge/UI-React%20%2B%20Vite-61DAFB?style=for-the-badge&logo=react&logoColor=black)](#)
+**A modern, neobrutalist VPN management panel powered by [Xray-core](https://github.com/XTLS/Xray-core) — deploy to [Railway](https://railway.app) in one click.**
 
 </div>
 
----
+<br/>
 
-## ✨ **What is SideRail?**
+> [!TIP]
+> **Fork → Deploy on Railway → Expose port `8080` → Open the panel.** That's the whole setup. No env vars required.
 
-**SideRail** is a self-hosted control panel for [Xray-core](https://github.com/XTLS/Xray-core), built to run on **[Railway](https://railway.app)** with a single click. It is designed for one specific, reliable setup: **HTTP-based transports behind a TLS-terminating edge**, so every client link is clean, standard, and always `security=tls` on port `443`.
+<br/>
 
-The interface is built with a bold **neobrutalist** design — thick borders, hard shadows, animated icons — and is **fully responsive**, looking great on both desktop and mobile.
+## ✨ Why SideRail?
 
-> **In short:** fork the repo, deploy it on Railway, open the panel, create your account. Done.
+<table>
+<tr>
+<td width="50%" valign="top">
 
----
+**🎯 Built for one job, done right**
 
-## 🧭 **Full feature list**
+SideRail focuses on **HTTP-based transports behind a TLS-terminating edge**. Every client link is clean, standard, and always `security=tls` on port `443`.
 
-### 📊 Dashboard
-- Live **CPU, RAM, Swap and Storage** metrics that refresh automatically.
-- One-click **Backup & Restore** — export/import **users, inbounds, admins and settings** as a single JSON file.
+</td>
+<td width="50%" valign="top">
 
-### 👥 Users
-- Create clients with a clean form: name, data limit (GB), expiry (days), attached inbounds, plus advanced options (UUID, Trojan password, uTLS fingerprint, ALPN, IP limit, traffic reset).
-- Summary cards: **Clients / Online / Active / Depleting**.
-- Full table with per-user **actions, enable toggle, live online status, traffic bar, remaining data and duration** — fully responsive with card view on mobile.
-- **Connected IPs**: see the real IP addresses currently connected to each client.
-- Per-user actions: copy sub link, open sub page, reset traffic, rotate sub token, delete.
+**🎨 Beautiful & responsive**
 
-### 🔌 Inbounds
-- Five HTTP-based inbounds are **auto-seeded** on first boot: `VLESS-WS`, `VLESS-XHTTP`, `VMess-WS`, `Trojan-WS`, `VLESS-HTTPUpgrade`.
-- You only **enable/disable** them — no manual inbound creation (that's the point).
-- Each inbound gets a unique internal port and a unique `/SideRail/...` path.
+A bold **neobrutalist** interface — thick borders, hard shadows, animated icons — that looks great on both desktop and mobile.
 
-### 📜 Activity Log
-- A live timeline of every administrative event (logins, user changes, inbound toggles, backups, and more).
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
 
-### ⚙️ Settings & Admins
-- Change your own **username and password** from the panel.
-- **Role-based access**: the account created during setup is the **Owner** 👑.
-- The Owner can **add Admins**, choose exactly which pages each admin can access (Dashboard / Users / Inbounds / Activity), and set a **data quota (GB)** per admin.
-- Admins only see and manage **their own users**; the Owner sees everything, with a tag showing which admin created each user.
-- Admins **cannot** reach Settings or manage other admins.
+**⚡ Zero-config deploy**
 
-### 🔗 Subscription pages
-- A gorgeous, responsive **per-user page** with a live **usage chart**, download/upload totals, expiry, and status.
-- **QR codes** for each individual config and for the whole subscription.
-- The same URL serves a base64 subscription to VPN clients and the visual page to browsers.
+Xray-core downloads itself on first boot. The session secret is auto-generated. No environment variables needed.
 
-### 🛡️ Security
-- Admin sessions via signed JWT cookies (secret auto-generated & persisted).
-- Built-in **rate limiting** to blunt DDoS / brute-force attempts.
-- **Sniffing is fully disabled** in the Xray config (`destOverride` with `quic` is known to crash the core).
+</td>
+<td width="50%" valign="top">
 
----
+**👑 Multi-admin ready**
 
-## 🚀 **Deploy on Railway (step by step)**
+An Owner can add Admins with scoped page access and per-admin data quotas. Admins only see their own users.
 
-You don't need to touch a single line of code. Just follow along:
+</td>
+</tr>
+</table>
 
-### 1. Fork this repository
-Click the **Fork** button at the top-right of this page to copy the project into your own GitHub account.
+<br/>
 
-### 2. Create a Railway project
-- Go to **[railway.app](https://railway.app)** and sign in with GitHub.
-- Click **New Project → Deploy from GitHub repo**.
-- Pick your **forked SideRail** repository.
+## 🧭 Features at a glance
 
-### 3. Deploy
-- Railway automatically reads the `Dockerfile` and `railway.json` and starts building.
-- Wait for the build to finish and the service to boot.
+| | Feature | Details |
+|:--:|:--|:--|
+| 📊 | **Dashboard** | Live CPU / RAM / Swap / Storage · one-click Backup & Restore (users, inbounds, admins, settings) |
+| 👥 | **Users** | Rich create form, summary cards, responsive table, live **Connected IPs**, per-user actions |
+| 🔌 | **Inbounds** | 5 auto-seeded HTTP inbounds — enable/disable only, unique port + `/SideRail/...` path each |
+| 📜 | **Activity Log** | Live timeline of every administrative event |
+| ⚙️ | **Settings & Admins** | Owner/Admin roles, scoped permissions, per-admin data quotas |
+| 🔗 | **Subscription** | Gorgeous per-user page — usage chart, QR codes, base64 sub for clients |
+| 🛡️ | **Security** | JWT sessions · built-in rate limiting · sniffing fully disabled (no QUIC crash) |
 
-### 4. ⚠️ Expose port **8080** (important!)
-SideRail listens on port **`8080`**. Railway must publish this exact port:
-- Open your service → **Settings → Networking**.
-- Click **Generate Domain**.
-- When asked for the port, enter **`8080`**.
+<br/>
 
-> **This is the only port you need to expose.** The other ports you may see (`10085`, `20000–20004`) are Xray's internal ports bound to `127.0.0.1` — they are private and must **not** be exposed.
+## 🚀 Deploy on Railway
 
-### 5. (Optional) Add a volume for persistence
-By default your data resets on each redeploy. To keep users, admins and settings across deploys:
-- Open your service → attach a **Volume** mounted at **`/data`**.
+No code required. Just follow these steps:
 
-### 6. Open your panel
-- Open the generated `*.up.railway.app` domain.
-- You'll land on the **Setup** page — create your **Owner** account and you're in. 🎉
+**1. Fork this repository** — click **Fork** at the top-right to copy it to your GitHub.
 
-Xray-core `v26.9.9` is downloaded automatically on first boot, and the session secret is generated for you — **no environment variables are required**.
+**2. Create a Railway project** — go to **[railway.app](https://railway.app)** → **New Project** → **Deploy from GitHub repo** → pick your fork.
 
----
+**3. Deploy** — Railway reads the `Dockerfile` and `railway.json` and builds automatically.
 
-## 🔧 **Environment variables (all optional)**
+**4. ⚠️ Expose port `8080`** — open **Settings → Networking → Generate Domain**, and set the port to **`8080`**.
 
-| **Variable** | **Default** | **Description** |
-| --- | --- | --- |
+> [!IMPORTANT]
+> SideRail listens on port **`8080`** — this is the **only** port you expose. The ports `10085` and `20000–20004` are Xray's internal ports bound to `127.0.0.1`; they are private and must **not** be exposed.
+
+**5. (Optional) Add a volume** — attach a **Volume** at **`/data`** so users, admins and settings survive redeploys.
+
+**6. Open your panel** — visit the generated `*.up.railway.app` domain, land on the **Setup** page, and create your **Owner** account. 🎉
+
+<br/>
+
+## 🔧 Environment variables (all optional)
+
+| Variable | Default | Description |
+|:--|:--|:--|
 | `PORT` | `8080` | HTTP port. **Expose this one on Railway.** |
-| `JWT_SECRET` | _(auto-generated)_ | Signs admin session cookies. Generated & persisted automatically if unset. |
+| `JWT_SECRET` | _auto_ | Signs admin session cookies. Auto-generated & persisted if unset. |
 | `XRAY_VERSION` | `v26.9.9` | Xray-core release fetched on first boot. |
 | `SIDERAIL_DATA_DIR` | `/data` | Persistent data directory (mount a volume here). |
-| `PUBLIC_DOMAIN` | _(auto)_ | Override for a custom domain. Falls back to `RAILWAY_PUBLIC_DOMAIN`. |
+| `PUBLIC_DOMAIN` | _auto_ | Override for a custom domain. Falls back to `RAILWAY_PUBLIC_DOMAIN`. |
 | `XRAY_API_PORT` | `10085` | Internal Xray stats API port. |
 | `XRAY_INBOUND_BASE_PORT` | `20000` | Base port for internal inbound listeners. |
 
----
+<br/>
 
-## 🏗️ **Architecture**
+## 🏗️ Architecture
 
 ```
 apps/
@@ -147,68 +142,62 @@ apps/
       └─ routes.ts        Authenticated REST API
 ```
 
-### How traffic flows
-- **TLS is terminated at the Railway edge.** All client links use `security=tls` on port `443`.
-- The Node process routes inbound requests to Xray:
-  - **WebSocket / HTTPUpgrade** → piped raw with `net.Socket`.
-  - **XHTTP** → forwarded through an HTTP proxy.
-- Only **HTTP-based transports** work: `ws`, `httpupgrade`, `xhttp`. Raw TCP, gRPC, WireGuard and Hysteria are intentionally **not** supported because they don't survive the edge.
+**How traffic flows** — TLS is terminated at the Railway edge; all client links use `security=tls` on port `443`. The Node process routes **WebSocket/HTTPUpgrade** to Xray via raw `net.Socket`, and **XHTTP** through an HTTP proxy. Only `ws`, `httpupgrade` and `xhttp` are supported — raw TCP, gRPC, WireGuard and Hysteria are intentionally left out because they don't survive the edge.
 
----
+<br/>
 
-## 🛠️ **Tech stack**
+## 🛠️ Tech stack
 
-**Backend:** Node.js (Express) in **TypeScript**, using the built-in `node:sqlite` module (no native build step).
+**Backend** — Node.js (Express) in **TypeScript**, using the built-in `node:sqlite` module (no native build step).
 
-**Frontend:** **React + Vite + TypeScript**, styled with **Tailwind CSS** following the [neobrutalism.dev](https://www.neobrutalism.dev) design system, with [Lucide](https://lucide.dev) icons, TanStack Query, Recharts, and `qrcode`.
+**Frontend** — **React + Vite + TypeScript**, styled with **Tailwind CSS** following the [neobrutalism.dev](https://www.neobrutalism.dev) design system, with [Lucide](https://lucide.dev) icons, TanStack Query, Recharts, and `qrcode`.
 
----
+<br/>
 
-## 💻 **Local development**
+## 💻 Local development
 
 Requires **Node.js ≥ 22.5** (Node 24 recommended).
 
 ```bash
 npm install     # install all workspaces
 npm run dev     # web on :5173, server on :8080 (proxied)
+
+npm run build   # production build (web + server)
+npm start       # serve API + built frontend on :8080
 ```
 
-Production build:
+<br/>
 
-```bash
-npm run build   # builds web + server
-npm start       # serves API + built frontend on :8080
-```
-
----
-
-## 📈 **Star History**
+## 📈 Star History
 
 <a href="https://www.star-history.com/#icubaby/SideRail&Date">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=icubaby/SideRail&type=Date&theme=dark" />
     <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=icubaby/SideRail&type=Date" />
-    <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=icubaby/SideRail&type=Date" />
+    <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=icubaby/SideRail&type=Date" width="70%" />
   </picture>
 </a>
 
----
+<br/>
+<br/>
 
-## 💖 **Support the Project**
+## 💖 Support the Project
 
 **If you find SideRail useful, consider supporting its continued development.**
 
-| **Network** | **Address** |
-| --- | --- |
+| Network | Address |
+|:--|:--|
 | **Bitcoin (BTC)** | `bc1qx48j9lj989y5c9z8ewpgul2ed69mr50j97a0sk` |
 | **Ethereum (ETH)** | `0xF2ba522fD846F83D84131D433f56F885740cFc47` |
 | **Litecoin (LTC)** | `ltc1qh6y8ld27fdleuy3r7gykxxg38rkawl7adzc0dw` |
 | **Gram (TON)** | `UQBGN4jXPW44cWQ20EGWqX7sU6K4RlYbnolc3IHoT3UWtmvW` |
 
----
+<br/>
 
-## 📄 **License**
+<div align="center">
 
-[![License](https://img.shields.io/badge/License-MIT-a3e635?style=for-the-badge)](LICENSE)
+**Made with 💚 by [icubaby](https://github.com/icubaby)**
 
-Released under the **MIT License**.
+[![License](https://img.shields.io/badge/License-MIT-a3e635?style=for-the-badge&labelColor=0b0b0f)](LICENSE)
+
+</div>
