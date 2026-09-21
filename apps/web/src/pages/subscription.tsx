@@ -22,11 +22,11 @@ import {
   CircleAlert,
   Wifi,
   WifiOff,
-  Github,
 } from "lucide-react";
 import { QrCode } from "@/components/qr-code";
 import { RailLogo } from "@/components/rail-logo";
 import { AnimatedBackground } from "@/components/animated-background";
+import { GitHubButton } from "@/components/github-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -39,8 +39,6 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { formatBytes, formatDate, relativeTime, cn } from "@/lib/utils";
 import type { SubData, SubLink } from "@/lib/types";
-
-const GITHUB_URL = "https://github.com/icubaby/SideRail";
 
 const protocolColor: Record<string, string> = {
   vless: "#a3e635",
@@ -62,7 +60,17 @@ function useSubData(token: string | undefined) {
   });
 }
 
-function CopyButton({ value, label, icon }: { value: string; label?: string; icon?: boolean }) {
+function CopyButton({
+  value,
+  label,
+  icon,
+  className,
+}: {
+  value: string;
+  label?: string;
+  icon?: boolean;
+  className?: string;
+}) {
   const [copied, setCopied] = React.useState(false);
   const copy = () => {
     void navigator.clipboard.writeText(value);
@@ -71,13 +79,13 @@ function CopyButton({ value, label, icon }: { value: string; label?: string; ico
   };
   if (icon) {
     return (
-      <Button variant="neutral" size="icon" onClick={copy} className="h-9 w-9 shrink-0">
+      <Button variant="neutral" size="icon" onClick={copy} className={cn("h-9 w-9 shrink-0", className)}>
         {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
       </Button>
     );
   }
   return (
-    <Button variant="neutral" size="sm" onClick={copy} className="shrink-0">
+    <Button variant="neutral" onClick={copy} className={cn("shrink-0", className)}>
       {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
       {label || (copied ? "Copied" : "Copy")}
     </Button>
@@ -165,6 +173,7 @@ export default function SubscriptionPage() {
               )}
               {user.active ? "Active" : "Inactive"}
             </Badge>
+            <GitHubButton className="py-1 text-xs" />
           </div>
         </header>
 
@@ -276,16 +285,18 @@ export default function SubscriptionPage() {
           </CardContent>
         </Card>
 
-        <div className="mt-4 flex flex-wrap items-center gap-2">
-          <div className="flex min-w-0 flex-1 basis-full items-center gap-2 rounded-base border-2 border-border bg-bw px-3 py-2 neo-shadow sm:basis-0">
+        <div className="mt-4 space-y-2">
+          <div className="flex min-w-0 items-center gap-2 rounded-base border-2 border-border bg-bw px-3 py-2 neo-shadow">
             <Link2 className="h-4 w-4 shrink-0 text-text/50" />
             <span className="truncate font-mono text-xs text-text/80">{subUrl}</span>
           </div>
-          <CopyButton value={subUrl} label="Copy sub" />
-          <Button variant="default" size="sm" onClick={() => setSubQrOpen(true)}>
-            <QrIcon className="h-4 w-4" />
-            QR
-          </Button>
+          <div className="grid grid-cols-2 gap-2">
+            <CopyButton value={subUrl} label="Copy sub" className="w-full" />
+            <Button variant="default" onClick={() => setSubQrOpen(true)} className="w-full">
+              <QrIcon className="h-4 w-4" />
+              QR
+            </Button>
+          </div>
         </div>
 
         <div className="mt-8">
@@ -334,16 +345,8 @@ export default function SubscriptionPage() {
           </div>
         </div>
 
-        <footer className="mt-10 flex flex-col items-center gap-2 text-center">
-          <a
-            href={GITHUB_URL}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-base border-2 border-border bg-bw px-3 py-1.5 text-sm font-heading transition-all hover:bg-main hover:text-mtext hover:neo-shadow"
-          >
-            <Github className="h-4 w-4" />
-            icubaby/SideRail
-          </a>
+        <footer className="mt-10 flex justify-center">
+          <GitHubButton />
         </footer>
       </div>
 

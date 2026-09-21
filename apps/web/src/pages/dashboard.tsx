@@ -165,12 +165,17 @@ export default function DashboardPage() {
           <CardDescription>Export or import users and inbounds.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-wrap gap-3">
-            <Button onClick={onExport}>
+          <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
+            <Button onClick={onExport} className="w-full sm:w-auto">
               <Download className="h-4 w-4" />
               Export
             </Button>
-            <Button variant="neutral" onClick={onImportClick} disabled={importing}>
+            <Button
+              variant="neutral"
+              onClick={onImportClick}
+              disabled={importing}
+              className="w-full sm:w-auto"
+            >
               <Upload className="h-4 w-4" />
               {importing ? "Importing..." : "Import"}
             </Button>

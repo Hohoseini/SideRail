@@ -123,7 +123,7 @@ function CredentialsCard() {
               autoComplete="current-password"
             />
           </div>
-          <Button type="submit" disabled={credMut.isPending}>
+          <Button type="submit" disabled={credMut.isPending} className="w-full sm:w-auto">
             <Save className="h-4 w-4" />
             {credMut.isPending ? "Saving..." : "Save changes"}
           </Button>
@@ -321,6 +321,7 @@ function AdminsCard() {
             <CardDescription>Add admins and control their access.</CardDescription>
           </div>
           <Button
+            className="w-full sm:w-auto"
             onClick={() => {
               setEditing(null);
               setDialogOpen(true);

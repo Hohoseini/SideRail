@@ -95,7 +95,7 @@ export default function SetupPage() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Rocket className="h-5 w-5 text-main animate-bounce" />
+              <Rocket className="h-5 w-5 text-main" />
               <h1 className="font-heading text-2xl">First-time setup</h1>
             </div>
             <p className="text-sm font-base text-text/60">

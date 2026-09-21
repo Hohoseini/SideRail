@@ -322,9 +322,9 @@ export default function UsersPage() {
                     <TableHead className="text-center">Actions</TableHead>
                     <TableHead className="text-center">Enabled</TableHead>
                     <TableHead className="text-center">Status</TableHead>
-                    <TableHead>Client</TableHead>
+                    <TableHead className="text-center">Client</TableHead>
                     <TableHead className="text-center">Inbounds</TableHead>
-                    <TableHead className="min-w-[180px]">Traffic</TableHead>
+                    <TableHead className="min-w-[180px] text-center">Traffic</TableHead>
                     <TableHead className="text-center">Remaining</TableHead>
                     <TableHead className="text-center">Duration</TableHead>
                   </TableRow>
@@ -349,26 +349,28 @@ export default function UsersPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="max-w-[180px] truncate font-heading" title={u.email}>
-                          {u.email}
-                        </div>
-                        {u.comment && (
-                          <div className="max-w-[180px] truncate text-xs text-text/50">
-                            {u.comment}
+                        <div className="mx-auto max-w-[160px] text-center">
+                          <div className="truncate font-heading" title={u.email}>
+                            {u.email}
                           </div>
-                        )}
-                        {isOwner && u.creator && (
-                          <Badge variant="neutral" className="mt-1 gap-1 text-[10px]">
-                            <UserCog2 className="h-3 w-3" />
-                            {u.creator}
-                          </Badge>
-                        )}
+                          {u.comment && (
+                            <div className="truncate text-xs text-text/50">{u.comment}</div>
+                          )}
+                          {isOwner && u.creator && (
+                            <Badge variant="neutral" className="mt-1 gap-1 text-[10px]">
+                              <UserCog2 className="h-3 w-3" />
+                              {u.creator}
+                            </Badge>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex justify-center">{inboundBadges(u)}</div>
                       </TableCell>
                       <TableCell>
-                        <TrafficBar user={u} />
+                        <div className="mx-auto max-w-[200px]">
+                          <TrafficBar user={u} />
+                        </div>
                       </TableCell>
                       <TableCell className="text-center text-sm font-base">
                         <div className="flex flex-col items-center">
@@ -402,57 +404,63 @@ export default function UsersPage() {
 
       <div className="grid min-w-0 gap-3 lg:hidden">
         {users.map((u) => (
-          <Card key={u.id}>
+          <Card key={u.id} className="overflow-hidden">
             <CardContent className="space-y-3 p-4">
-              <div className="flex items-start justify-between gap-2">
+              <div className="flex min-w-0 items-center gap-3">
+                <div
+                  className="grid h-11 w-11 shrink-0 place-items-center rounded-base border-2 border-border bg-main font-heading text-lg uppercase text-mtext"
+                >
+                  {u.email.slice(0, 1)}
+                </div>
                 <div className="min-w-0 flex-1">
-                  <div className="truncate font-heading text-lg" title={u.email}>
+                  <div className="truncate font-heading text-base" title={u.email}>
                     {u.email}
                   </div>
-                  {u.comment && <div className="truncate text-xs text-text/50">{u.comment}</div>}
-                  {isOwner && u.creator && (
-                    <div className="mt-1">
-                      <Badge variant="neutral" className="max-w-full gap-1 truncate text-[10px]">
-                        <UserCog2 className="h-3 w-3 shrink-0" />
-                        <span className="truncate">{u.creator}</span>
-                      </Badge>
-                    </div>
-                  )}
-                  <div className="mt-1">
+                  <div className="mt-0.5">
                     <OnlineDot online={u.online} />
                   </div>
                 </div>
-                <div className="flex shrink-0 items-center gap-2">
-                  <Switch
-                    checked={!!u.enabled}
-                    onCheckedChange={(v) => toggleMut.mutate({ id: u.id, enabled: v })}
-                  />
-                  {rowActions(u)}
-                </div>
+                <Switch
+                  checked={!!u.enabled}
+                  onCheckedChange={(v) => toggleMut.mutate({ id: u.id, enabled: v })}
+                />
               </div>
+
+              {u.comment && (
+                <div className="truncate text-xs text-text/50" title={u.comment}>
+                  {u.comment}
+                </div>
+              )}
+              {isOwner && u.creator && (
+                <Badge variant="neutral" className="max-w-full gap-1 text-[10px]">
+                  <UserCog2 className="h-3 w-3 shrink-0" />
+                  <span className="truncate">by {u.creator}</span>
+                </Badge>
+              )}
 
               <div className="min-w-0">{inboundBadges(u)}</div>
               <TrafficBar user={u} />
 
-              <div className="flex items-center justify-between border-t-2 border-border/30 pt-2 text-xs font-base text-text/60">
-                <span className="flex items-center gap-1">
-                  {u.data_limit <= 0 ? (
-                    <>
-                      <InfinityIcon className="h-3.5 w-3.5" /> left
-                    </>
-                  ) : (
-                    `${formatBytes(Math.max(0, u.data_limit - u.total))} left`
-                  )}
-                </span>
-                <span className="flex items-center gap-1">
-                  {u.expire_at ? (
-                    relativeTime(u.expire_at)
-                  ) : (
-                    <InfinityIcon className="h-3.5 w-3.5" />
-                  )}
-                </span>
-                <span>{durationSince(u.created_at)}</span>
+              <div className="grid grid-cols-2 gap-2 border-t-2 border-border/30 pt-3 text-center">
+                <div className="rounded-base border-2 border-border bg-bg/40 py-2">
+                  <div className="flex items-center justify-center gap-1 font-heading text-sm">
+                    {u.data_limit <= 0 ? (
+                      <InfinityIcon className="h-4 w-4" />
+                    ) : (
+                      formatBytes(Math.max(0, u.data_limit - u.total))
+                    )}
+                  </div>
+                  <div className="text-[10px] uppercase tracking-widest text-text/50">Remaining</div>
+                </div>
+                <div className="rounded-base border-2 border-border bg-bg/40 py-2">
+                  <div className="flex items-center justify-center gap-1 font-heading text-sm">
+                    {u.expire_at ? relativeTime(u.expire_at) : <InfinityIcon className="h-4 w-4" />}
+                  </div>
+                  <div className="text-[10px] uppercase tracking-widest text-text/50">Expires</div>
+                </div>
               </div>
+
+              <div className="flex justify-end">{rowActions(u)}</div>
             </CardContent>
           </Card>
         ))}

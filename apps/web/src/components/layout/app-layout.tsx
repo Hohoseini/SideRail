@@ -14,6 +14,10 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
+import { GitHubButton, useGitHubStars } from "@/components/github-button";
+import { WelcomeDialog } from "@/components/welcome-dialog";
+import { PANEL_VERSION } from "@/lib/brand";
+import { Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RailLogo } from "@/components/rail-logo";
 import { AnimatedBackground } from "@/components/animated-background";
@@ -38,7 +42,7 @@ function Brand() {
       </div>
       <div className="leading-tight">
         <div className="font-heading text-lg tracking-tight">SideRail</div>
-        <div className="text-[10px] uppercase tracking-widest text-text/60">Xray Panel</div>
+        <div className="text-[10px] uppercase tracking-widest text-text/60">icubaby</div>
       </div>
     </div>
   );
@@ -113,11 +117,17 @@ export function AppLayout() {
             href={GITHUB_URL}
             target="_blank"
             rel="noreferrer"
-            className="mb-3 flex items-center gap-2 rounded-base border-2 border-border bg-bg/50 px-3 py-2.5 font-heading text-sm text-text/80 transition-all hover:bg-main hover:text-mtext hover:neo-shadow"
+            className="mb-2 flex items-center justify-between gap-2 rounded-base border-2 border-border bg-bg/50 px-3 py-2.5 font-heading text-sm text-text/80 transition-all hover:bg-main hover:text-mtext hover:neo-shadow"
           >
-            <Github className="h-5 w-5" />
-            GitHub
+            <span className="flex items-center gap-2">
+              <Github className="h-5 w-5" />
+              GitHub
+            </span>
+            <StarCount />
           </a>
+          <div className="mb-3 text-center text-[10px] uppercase tracking-widest text-text/40">
+            SideRail v{PANEL_VERSION}
+          </div>
           <SidebarFooter username={username} role={admin?.role} onLogout={logout} />
         </aside>
 
@@ -134,15 +144,12 @@ export function AppLayout() {
               </Button>
               <Brand />
             </div>
-            <a
-              href={GITHUB_URL}
-              target="_blank"
-              rel="noreferrer"
-              className="hidden items-center gap-2 rounded-base border-2 border-border bg-bw px-3 py-1.5 transition-all hover:bg-main hover:text-mtext hover:neo-shadow lg:flex"
-            >
-              <Github className="h-4 w-4" />
-              <span className="text-sm font-heading">icubaby / SideRail</span>
-            </a>
+            <div className="hidden items-center gap-2 lg:flex">
+              <GitHubButton />
+              <span className="rounded-base border-2 border-border bg-bg/50 px-2 py-1 text-xs font-heading text-text/70">
+                v{PANEL_VERSION}
+              </span>
+            </div>
             <div className="flex items-center gap-2">
               <Button variant="neutral" size="icon" asChild title="GitHub" className="lg:hidden">
                 <a href={GITHUB_URL} target="_blank" rel="noreferrer">
@@ -206,6 +213,7 @@ export function AppLayout() {
             </div>
           </main>
         </div>
+        <WelcomeDialog />
       </div>
 
       {mobileOpen && (
@@ -237,6 +245,17 @@ export function AppLayout() {
         </div>
       )}
     </div>
+  );
+}
+
+function StarCount() {
+  const stars = useGitHubStars();
+  if (stars === null) return null;
+  return (
+    <span className="flex items-center gap-1 rounded-[4px] border-2 border-border bg-main px-1.5 text-xs text-mtext">
+      <Star className="h-3 w-3" fill="currentColor" />
+      {stars}
+    </span>
   );
 }
 
