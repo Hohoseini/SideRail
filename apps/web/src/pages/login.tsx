@@ -2,6 +2,7 @@ import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { LogIn } from "lucide-react";
 import { RailLogo } from "@/components/rail-logo";
+import { AnimatedBackground } from "@/components/animated-background";
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,10 @@ export default function LoginPage() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!username || !password) {
+      toast.push("error", "Enter your username and password");
+      return;
+    }
     setLoading(true);
     try {
       await login(username, password);
@@ -31,21 +36,19 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden p-4">
-      <div className="pointer-events-none absolute inset-0 grid-dots" />
-      <div className="pointer-events-none absolute -left-16 top-10 h-64 w-64 rounded-full bg-main/20 blur-3xl" />
-      <div className="pointer-events-none absolute -right-16 bottom-10 h-64 w-64 rounded-full bg-fuchsia-400/20 blur-3xl" />
+    <div className="relative flex min-h-screen items-center justify-center p-4">
+      <AnimatedBackground />
 
       <Card className="relative w-full max-w-md animate-pop-in">
         <CardHeader className="items-center text-center">
-          <div className="mx-auto mb-2 grid h-14 w-14 place-items-center rounded-base border-2 border-border bg-main text-mtext neo-shadow">
-            <RailLogo className="h-8 w-8" />
+          <div className="mx-auto mb-2 grid h-16 w-16 place-items-center rounded-base border-2 border-border bg-main text-mtext neo-shadow animate-float">
+            <RailLogo className="h-9 w-9" />
           </div>
           <h1 className="font-heading text-2xl">Welcome back</h1>
           <p className="text-sm font-base text-text/60">Sign in to your SideRail panel</p>
         </CardHeader>
         <CardContent>
-          <form onSubmit={submit} className="space-y-4">
+          <form onSubmit={submit} className="space-y-4" noValidate>
             <div className="space-y-2">
               <Label htmlFor="username">Username</Label>
               <Input
@@ -53,7 +56,6 @@ export default function LoginPage() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 autoComplete="username"
-                required
               />
             </div>
             <div className="space-y-2">
@@ -64,7 +66,6 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="current-password"
-                required
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>

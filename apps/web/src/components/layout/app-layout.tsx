@@ -16,6 +16,7 @@ import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { RailLogo } from "@/components/rail-logo";
+import { AnimatedBackground } from "@/components/animated-background";
 
 const GITHUB_URL = "https://github.com/icubaby/SideRail";
 
@@ -99,7 +100,7 @@ export function AppLayout() {
 
   return (
     <div className="relative min-h-screen">
-      <div className="pointer-events-none fixed inset-0 grid-dots" />
+      <AnimatedBackground />
       <div className="relative flex min-h-screen">
         <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r-2 border-border bg-bw/60 p-4 backdrop-blur lg:flex">
           <div className="px-2 py-2">

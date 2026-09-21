@@ -69,15 +69,23 @@ function CredentialsCard() {
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (newUsername.trim().length < 3) {
+      toast.push("error", "Username must be at least 3 characters");
+      return;
+    }
     if (newPassword && newPassword.length < 6) {
       toast.push("error", "New password must be at least 6 characters");
+      return;
+    }
+    if (!currentPassword) {
+      toast.push("error", "Enter your current password");
       return;
     }
     credMut.mutate();
   };
 
   return (
-    <Card className="max-w-lg">
+    <Card>
       <CardHeader>
         <div className="flex items-center gap-2">
           <KeyRound className="h-5 w-5 text-main" />
@@ -86,14 +94,13 @@ function CredentialsCard() {
         <CardDescription>Update your username or password.</CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={submit} className="space-y-4">
+        <form onSubmit={submit} className="space-y-4" noValidate>
           <div className="space-y-2">
             <Label htmlFor="newUsername">Username</Label>
             <Input
               id="newUsername"
               value={newUsername}
               onChange={(e) => setNewUsername(e.target.value)}
-              minLength={3}
             />
           </div>
           <div className="space-y-2">
@@ -115,7 +122,6 @@ function CredentialsCard() {
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               autoComplete="current-password"
-              required
             />
           </div>
           <Button type="submit" disabled={credMut.isPending}>
@@ -217,7 +223,7 @@ function AdminDialog({
         <DialogHeader>
           <DialogTitle>{editing ? `Edit ${editing.username}` : "Add admin"}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={submit} className="space-y-4">
+        <form onSubmit={submit} className="space-y-4" noValidate>
           {!editing && (
             <div className="space-y-2">
               <Label htmlFor="adminUsername">Username</Label>
@@ -325,7 +331,7 @@ function AdminsCard() {
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="grid gap-3 sm:grid-cols-2">
+      <CardContent className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {admins.map((a) => (
           <div
             key={a.id}
@@ -457,8 +463,14 @@ export default function SettingsPage() {
         <p className="text-sm font-base text-text/60">Manage your account and admins</p>
       </div>
 
-      <CredentialsCard />
-      {isOwner && <AdminsCard />}
+      {isOwner ? (
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,380px)_1fr] lg:items-start">
+          <CredentialsCard />
+          <AdminsCard />
+        </div>
+      ) : (
+        <CredentialsCard />
+      )}
     </div>
   );
 }

@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { QrCode } from "@/components/qr-code";
 import { RailLogo } from "@/components/rail-logo";
+import { AnimatedBackground } from "@/components/animated-background";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -133,9 +134,7 @@ export default function SubscriptionPage() {
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-bg pb-16">
-      <div className="pointer-events-none absolute inset-0 grid-dots" />
-      <div className="pointer-events-none absolute -left-24 top-0 h-72 w-72 rounded-full bg-main/20 blur-3xl" />
-      <div className="pointer-events-none absolute -right-24 top-40 h-72 w-72 rounded-full bg-sky-400/20 blur-3xl" />
+      <AnimatedBackground />
 
       <div className="relative mx-auto w-full max-w-3xl px-4 pt-6 sm:pt-10">
         <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -166,11 +165,6 @@ export default function SubscriptionPage() {
               )}
               {user.active ? "Active" : "Inactive"}
             </Badge>
-            <Button variant="neutral" size="icon" asChild title="GitHub">
-              <a href={GITHUB_URL} target="_blank" rel="noreferrer">
-                <Github className="h-5 w-5" />
-              </a>
-            </Button>
           </div>
         </header>
 
@@ -303,7 +297,7 @@ export default function SubscriptionPage() {
                 className="animate-fade-in"
                 style={{ animationDelay: `${i * 40}ms` }}
               >
-                <CardContent className="flex items-center gap-3 p-3 sm:p-4">
+                <CardContent className="flex items-center gap-3 overflow-hidden p-3 sm:p-4">
                   <div
                     className="grid h-11 w-11 shrink-0 place-items-center rounded-base border-2 border-border font-heading text-black uppercase"
                     style={{ background: protocolColor[link.protocol] || "#a3e635" }}
@@ -398,19 +392,17 @@ function MiniStat({
   accent: string;
 }) {
   return (
-    <div className="rounded-base border-2 border-border bg-bg/40 p-3">
-      <div className="flex items-center gap-2">
-        <div
-          className="grid h-7 w-7 shrink-0 place-items-center rounded-[5px] border-2 border-border"
-          style={{ background: accent }}
-        >
-          <Icon className="h-3.5 w-3.5 text-black" />
-        </div>
-        <span className="text-[10px] font-heading uppercase tracking-widest text-text/60">
-          {label}
-        </span>
+    <div className="flex flex-col items-center gap-1.5 rounded-base border-2 border-border bg-bg/40 p-3 text-center">
+      <div
+        className="grid h-8 w-8 shrink-0 place-items-center rounded-[5px] border-2 border-border"
+        style={{ background: accent }}
+      >
+        <Icon className="h-4 w-4 text-black" />
       </div>
-      <div className="mt-1.5 truncate font-heading text-sm">{value}</div>
+      <span className="text-[10px] font-heading uppercase tracking-widest text-text/60">
+        {label}
+      </span>
+      <div className="w-full truncate font-heading text-sm">{value}</div>
     </div>
   );
 }

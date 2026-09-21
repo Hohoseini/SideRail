@@ -11,6 +11,14 @@ import ActivityPage from "./pages/activity";
 import SettingsPage from "./pages/settings";
 import SubscriptionPage from "./pages/subscription";
 
+const PERM_ROUTE: Record<string, string> = {
+  dashboard: "/",
+  users: "/users",
+  inbounds: "/inbounds",
+  activity: "/activity",
+  settings: "/settings",
+};
+
 function Protected({ children }: { children: React.ReactNode }) {
   const { ready, authed, needsSetup } = useAuth();
   const location = useLocation();
@@ -18,6 +26,13 @@ function Protected({ children }: { children: React.ReactNode }) {
   if (needsSetup) return <Navigate to="/setup" replace />;
   if (!authed) return <Navigate to="/login" state={{ from: location }} replace />;
   return <>{children}</>;
+}
+
+function RequirePerm({ perm, children }: { perm: string; children: React.ReactNode }) {
+  const { can, admin } = useAuth();
+  if (can(perm as never)) return <>{children}</>;
+  const first = admin?.permissions[0];
+  return <Navigate to={first ? PERM_ROUTE[first] : "/login"} replace />;
 }
 
 function FullscreenLoader() {
@@ -68,11 +83,46 @@ export default function App() {
           </Protected>
         }
       >
-        <Route path="/" element={<DashboardPage />} />
-        <Route path="/users" element={<UsersPage />} />
-        <Route path="/inbounds" element={<InboundsPage />} />
-        <Route path="/activity" element={<ActivityPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
+        <Route
+          path="/"
+          element={
+            <RequirePerm perm="dashboard">
+              <DashboardPage />
+            </RequirePerm>
+          }
+        />
+        <Route
+          path="/users"
+          element={
+            <RequirePerm perm="users">
+              <UsersPage />
+            </RequirePerm>
+          }
+        />
+        <Route
+          path="/inbounds"
+          element={
+            <RequirePerm perm="inbounds">
+              <InboundsPage />
+            </RequirePerm>
+          }
+        />
+        <Route
+          path="/activity"
+          element={
+            <RequirePerm perm="activity">
+              <ActivityPage />
+            </RequirePerm>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <RequirePerm perm="settings">
+              <SettingsPage />
+            </RequirePerm>
+          }
+        />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { api } from "@/lib/api";
+import { useToast } from "@/components/ui/toast";
 import { cn, relativeTime } from "@/lib/utils";
 import type { Inbound, TrafficReset, User, UserFormValues } from "@/lib/types";
 
@@ -87,6 +88,7 @@ export function UserFormDialog({
   editing,
   onSubmit,
 }: UserFormDialogProps) {
+  const toast = useToast();
   const [email, setEmail] = React.useState("");
   const [uuid, setUuid] = React.useState("");
   const [password, setPassword] = React.useState("");
@@ -143,6 +145,14 @@ export function UserFormDialog({
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email.trim()) {
+      toast.push("error", "Enter a name for this user");
+      return;
+    }
+    if (inboundIds.length === 0) {
+      toast.push("error", "Attach at least one inbound");
+      return;
+    }
     setSaving(true);
     try {
       await onSubmit({
@@ -169,7 +179,7 @@ export function UserFormDialog({
         <DialogHeader>
           <DialogTitle>{editing ? "Edit user" : "New user"}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={submit} className="space-y-5">
+        <form onSubmit={submit} className="space-y-5" noValidate>
           <div className="space-y-2">
             <Label htmlFor="email">Name / email</Label>
             <Input
@@ -177,7 +187,6 @@ export function UserFormDialog({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="icubaby/SideRail"
-              required
               autoFocus
             />
           </div>
@@ -273,7 +282,7 @@ export function UserFormDialog({
               <div className="space-y-2">
                 <Label htmlFor="uuid">UUID</Label>
                 <div className="flex gap-2">
-                  <Input id="uuid" value={uuid} onChange={(e) => setUuid(e.target.value)} required />
+                  <Input id="uuid" value={uuid} onChange={(e) => setUuid(e.target.value)} />
                   <Button
                     type="button"
                     variant="neutral"
@@ -293,7 +302,6 @@ export function UserFormDialog({
                     id="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    required
                   />
                   <Button
                     type="button"
