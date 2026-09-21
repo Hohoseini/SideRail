@@ -35,6 +35,7 @@ export interface UserRecord {
   down: number;
   last_reset: number;
   online_at: number | null;
+  created_by: number | null;
   created_at: number;
 }
 
@@ -42,6 +43,7 @@ export interface UserWithInbounds extends UserRecord {
   inbound_ids: number[];
   total: number;
   online: boolean;
+  creator?: string;
 }
 
 export interface ActivityEntry {

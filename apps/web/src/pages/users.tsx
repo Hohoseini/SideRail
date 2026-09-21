@@ -44,7 +44,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Progress } from "@/components/ui/progress";
 import { UserFormDialog } from "@/components/users/user-form-dialog";
-import { Infinity as InfinityIcon } from "lucide-react";
+import { Infinity as InfinityIcon, UserCog as UserCog2 } from "lucide-react";
+import { useAuth } from "@/lib/auth";
 import { formatBytes, relativeTime, durationSince, cn } from "@/lib/utils";
 import type { Inbound, User, UserFormValues, UserSummary } from "@/lib/types";
 
@@ -119,6 +120,7 @@ function OnlineDot({ online }: { online: boolean }) {
 export default function UsersPage() {
   const toast = useToast();
   const qc = useQueryClient();
+  const { isOwner } = useAuth();
   const [formOpen, setFormOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<User | null>(null);
   const [deleteTarget, setDeleteTarget] = React.useState<User | null>(null);
@@ -349,6 +351,12 @@ export default function UsersPage() {
                       <TableCell>
                         <div className="font-heading">{u.email}</div>
                         {u.comment && <div className="text-xs text-text/50">{u.comment}</div>}
+                        {isOwner && u.creator && (
+                          <Badge variant="neutral" className="mt-1 gap-1 text-[10px]">
+                            <UserCog2 className="h-3 w-3" />
+                            {u.creator}
+                          </Badge>
+                        )}
                       </TableCell>
                       <TableCell>
                         <div className="flex justify-center">{inboundBadges(u)}</div>

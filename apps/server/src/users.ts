@@ -19,6 +19,7 @@ export interface CreateUserInput {
   telegramId?: string;
   comment?: string;
   inboundIds?: number[];
+  createdBy?: number | null;
 }
 
 export type UpdateUserInput = Partial<CreateUserInput> & { enabled?: boolean };
@@ -46,13 +47,17 @@ export function seedDefaultClient(): void {
   const enabledInbounds = (
     db.prepare("SELECT id FROM inbounds WHERE enabled = 1").all() as { id: number }[]
   ).map((r) => r.id);
+  const owner = db.prepare("SELECT id FROM admins WHERE role = 'owner' LIMIT 1").get() as
+    | { id: number }
+    | undefined;
   createUser({
-    email: "client",
+    email: "sample-user",
     dataLimit: 0,
     ipLimit: 0,
     expireDays: 0,
     comment: "Default unlimited client",
     inboundIds: enabledInbounds,
+    createdBy: owner?.id ?? null,
   });
 }
 
@@ -62,8 +67,8 @@ export function createUser(input: CreateUserInput): UserWithInbounds {
     .prepare(
       `INSERT INTO users
         (email, uuid, password, sub_token, fingerprint, alpn, data_limit, ip_limit,
-         expire_at, sub_expire_days, traffic_reset, telegram_id, comment, enabled, last_reset, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`,
+         expire_at, sub_expire_days, traffic_reset, telegram_id, comment, enabled, last_reset, created_by, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?)`,
     )
     .run(
       input.email,
@@ -80,6 +85,7 @@ export function createUser(input: CreateUserInput): UserWithInbounds {
       input.telegramId || "",
       input.comment || "",
       now,
+      input.createdBy ?? null,
       now,
     );
   const id = Number(info.lastInsertRowid);
@@ -150,12 +156,21 @@ function inboundIdsFor(userId: number): number[] {
   ).map((r) => r.inbound_id);
 }
 
+function creatorName(id: number | null): string | undefined {
+  if (id == null) return undefined;
+  const row = db.prepare("SELECT username FROM admins WHERE id = ?").get(id) as
+    | { username: string }
+    | undefined;
+  return row?.username;
+}
+
 function decorate(row: UserRecord): UserWithInbounds {
   return {
     ...row,
     inbound_ids: inboundIdsFor(row.id),
     total: row.up + row.down,
     online: row.online_at != null && Date.now() - row.online_at < ONLINE_WINDOW_MS,
+    creator: creatorName(row.created_by),
   };
 }
 
@@ -171,9 +186,21 @@ export function getUserByToken(token: string): UserWithInbounds | null {
   return row ? decorate(row) : null;
 }
 
-export function listUsers(): UserWithInbounds[] {
-  const rows = db.prepare("SELECT * FROM users ORDER BY id DESC").all() as unknown as UserRecord[];
+export function listUsers(createdBy?: number): UserWithInbounds[] {
+  const rows =
+    createdBy === undefined
+      ? (db.prepare("SELECT * FROM users ORDER BY id DESC").all() as unknown as UserRecord[])
+      : (db
+          .prepare("SELECT * FROM users WHERE created_by = ? ORDER BY id DESC")
+          .all(createdBy) as unknown as UserRecord[]);
   return rows.map(decorate);
+}
+
+export function usageByAdmin(adminId: number): { used: number; count: number } {
+  const row = db
+    .prepare("SELECT COALESCE(SUM(up + down), 0) AS used, COUNT(*) AS count FROM users WHERE created_by = ?")
+    .get(adminId) as { used: number; count: number };
+  return { used: row.used, count: row.count };
 }
 
 export function markSubFirstSeen(id: number): void {

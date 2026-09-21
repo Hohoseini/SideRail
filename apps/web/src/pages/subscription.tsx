@@ -103,7 +103,7 @@ export default function SubscriptionPage() {
     return (
       <div className="grid min-h-screen place-items-center bg-bg">
         <div className="flex flex-col items-center gap-3">
-          <RailLogo className="animate-pulse text-4xl text-main" />
+          <RailLogo className="h-10 w-10 animate-pulse text-main" />
           <p className="font-heading text-text/60">Loading subscription…</p>
         </div>
       </div>
@@ -141,7 +141,7 @@ export default function SubscriptionPage() {
         <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <div className="grid h-12 w-12 shrink-0 place-items-center rounded-base border-2 border-border bg-main text-mtext neo-shadow">
-              <RailLogo className="text-2xl" />
+              <RailLogo className="h-7 w-7" />
             </div>
             <div className="min-w-0">
               <div className="font-heading text-2xl leading-tight">SideRail</div>

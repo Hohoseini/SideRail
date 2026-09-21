@@ -50,7 +50,7 @@ export default function SetupPage() {
         <div className="hidden flex-col justify-center gap-6 lg:flex">
           <div className="flex items-center gap-3">
             <div className="grid h-14 w-14 place-items-center rounded-base border-2 border-border bg-main text-mtext neo-shadow">
-              <RailLogo className="text-2xl" />
+              <RailLogo className="h-7 w-7" />
             </div>
             <div>
               <div className="font-heading text-3xl">SideRail</div>
@@ -78,7 +78,7 @@ export default function SetupPage() {
           <CardHeader>
             <div className="mb-1 flex justify-center lg:hidden">
               <div className="grid h-16 w-16 place-items-center rounded-base border-2 border-border bg-main text-mtext neo-shadow animate-float">
-                <RailLogo className="text-2xl" />
+                <RailLogo className="h-7 w-7" />
               </div>
             </div>
             <div className="flex items-center gap-2">

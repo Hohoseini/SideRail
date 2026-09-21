@@ -9,10 +9,10 @@ import {
   changeCredentials,
   requirePermission,
   requireOwner,
-  listAdmins,
   createAdmin,
   updateAdmin,
   deleteAdmin,
+  listAdminsWithStats,
   ALL_PERMISSIONS,
   type Permission,
   type AuthedRequest,
@@ -141,20 +141,45 @@ api.patch("/inbounds/:id", requirePermission("inbounds"), async (req: AuthedRequ
   res.json({ ok: true });
 });
 
-api.get("/users", requirePermission("users"), (_req, res) => {
-  const users = listUsers();
+function scopeFor(req: AuthedRequest): number | undefined {
+  return req.admin!.role === "owner" ? undefined : req.admin!.id;
+}
+
+function canAccessUser(req: AuthedRequest, userId: number): boolean {
+  if (req.admin!.role === "owner") return true;
+  const user = getUser(userId);
+  return !!user && user.created_by === req.admin!.id;
+}
+
+function quotaExceeded(req: AuthedRequest): boolean {
+  if (req.admin!.role === "owner" || req.admin!.dataLimit <= 0) return false;
+  const users = listUsers(req.admin!.id);
+  const used = users.reduce((sum, u) => sum + u.total, 0);
+  return used >= req.admin!.dataLimit;
+}
+
+api.get("/users", requirePermission("users"), (req: AuthedRequest, res) => {
+  const users = listUsers(scopeFor(req));
   res.json({ users, summary: summarize(users) });
 });
 
-api.get("/users/summary", requirePermission("users"), (_req, res) => {
-  res.json(summarize(listUsers()));
+api.get("/users/summary", requirePermission("users"), (req: AuthedRequest, res) => {
+  res.json(summarize(listUsers(scopeFor(req))));
 });
 
-api.get("/users/:id/ips", requirePermission("users"), (req, res) => {
+api.get("/users/:id/ips", requirePermission("users"), (req: AuthedRequest, res) => {
+  if (!canAccessUser(req, Number(req.params.id))) {
+    res.status(403).json({ error: "forbidden" });
+    return;
+  }
   res.json(getClientIps(Number(req.params.id)));
 });
 
-api.get("/users/:id", requirePermission("users"), (req, res) => {
+api.get("/users/:id", requirePermission("users"), (req: AuthedRequest, res) => {
+  if (!canAccessUser(req, Number(req.params.id))) {
+    res.status(403).json({ error: "forbidden" });
+    return;
+  }
   const user = getUser(Number(req.params.id));
   if (!user) {
     res.status(404).json({ error: "not found" });
@@ -169,8 +194,12 @@ api.post("/users", requirePermission("users"), async (req: AuthedRequest, res) =
     res.status(400).json({ error: "invalid input", detail: body.error.flatten() });
     return;
   }
+  if (quotaExceeded(req)) {
+    res.status(403).json({ error: "data quota exceeded" });
+    return;
+  }
   try {
-    const user = createUser(body.data);
+    const user = createUser({ ...body.data, createdBy: req.admin!.id });
     logActivity(req.admin!.username, "user_create", user.email);
     await restartXray();
     res.json(user);
@@ -180,6 +209,10 @@ api.post("/users", requirePermission("users"), async (req: AuthedRequest, res) =
 });
 
 api.put("/users/:id", requirePermission("users"), async (req: AuthedRequest, res) => {
+  if (!canAccessUser(req, Number(req.params.id))) {
+    res.status(403).json({ error: "forbidden" });
+    return;
+  }
   const body = updateSchema.safeParse(req.body);
   if (!body.success) {
     res.status(400).json({ error: "invalid input" });
@@ -196,6 +229,10 @@ api.put("/users/:id", requirePermission("users"), async (req: AuthedRequest, res
 });
 
 api.delete("/users/:id", requirePermission("users"), async (req: AuthedRequest, res) => {
+  if (!canAccessUser(req, Number(req.params.id))) {
+    res.status(403).json({ error: "forbidden" });
+    return;
+  }
   const user = getUser(Number(req.params.id));
   deleteUser(Number(req.params.id));
   logActivity(req.admin!.username, "user_delete", user?.email || String(req.params.id));
@@ -204,6 +241,10 @@ api.delete("/users/:id", requirePermission("users"), async (req: AuthedRequest, 
 });
 
 api.post("/users/:id/toggle", requirePermission("users"), async (req: AuthedRequest, res) => {
+  if (!canAccessUser(req, Number(req.params.id))) {
+    res.status(403).json({ error: "forbidden" });
+    return;
+  }
   const body = z.object({ enabled: z.boolean() }).safeParse(req.body);
   if (!body.success) {
     res.status(400).json({ error: "invalid" });
@@ -216,12 +257,20 @@ api.post("/users/:id/toggle", requirePermission("users"), async (req: AuthedRequ
 });
 
 api.post("/users/:id/reset-traffic", requirePermission("users"), (req: AuthedRequest, res) => {
+  if (!canAccessUser(req, Number(req.params.id))) {
+    res.status(403).json({ error: "forbidden" });
+    return;
+  }
   resetUserTraffic(Number(req.params.id));
   logActivity(req.admin!.username, "user_reset_traffic", `#${req.params.id}`);
   res.json({ ok: true });
 });
 
 api.post("/users/:id/rotate-token", requirePermission("users"), (req: AuthedRequest, res) => {
+  if (!canAccessUser(req, Number(req.params.id))) {
+    res.status(403).json({ error: "forbidden" });
+    return;
+  }
   rotateSubToken(Number(req.params.id));
   logActivity(req.admin!.username, "user_rotate_token", `#${req.params.id}`);
   res.json(getUser(Number(req.params.id)));
@@ -282,7 +331,7 @@ api.post("/settings/credentials", requirePermission("settings"), (req: AuthedReq
 });
 
 api.get("/admins", requireOwner, (_req, res) => {
-  res.json({ admins: listAdmins(), permissions: ALL_PERMISSIONS });
+  res.json({ admins: listAdminsWithStats(), permissions: ALL_PERMISSIONS });
 });
 
 api.post("/admins", requireOwner, (req: AuthedRequest, res) => {

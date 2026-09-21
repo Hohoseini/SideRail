@@ -87,6 +87,16 @@ export function listAdmins(): AdminInfo[] {
   return rows.map(toInfo);
 }
 
+export function listAdminsWithStats(): (AdminInfo & { used: number; userCount: number })[] {
+  const rows = db.prepare("SELECT * FROM admins ORDER BY id ASC").all() as unknown as AdminRow[];
+  return rows.map((row) => {
+    const stat = db
+      .prepare("SELECT COALESCE(SUM(up + down), 0) AS used, COUNT(*) AS count FROM users WHERE created_by = ?")
+      .get(row.id) as { used: number; count: number };
+    return { ...toInfo(row), used: stat.used, userCount: stat.count };
+  });
+}
+
 export function createAdmin(
   username: string,
   password: string,

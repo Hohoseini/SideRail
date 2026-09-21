@@ -11,6 +11,8 @@ export interface AdminInfo {
   permissions: Permission[];
   dataLimit: number;
   createdAt: number;
+  used?: number;
+  userCount?: number;
 }
 
 export interface SystemStats {
@@ -59,6 +61,8 @@ export interface User {
   inbound_ids: number[];
   total: number;
   online: boolean;
+  created_by: number | null;
+  creator?: string;
 }
 
 export interface UserSummary {

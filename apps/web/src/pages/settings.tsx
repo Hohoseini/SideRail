@@ -32,7 +32,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
+import { cn, formatBytes } from "@/lib/utils";
 import type { AdminInfo, Permission } from "@/lib/types";
 
 const PERMISSION_LABELS: Record<Permission, string> = {
@@ -42,7 +42,7 @@ const PERMISSION_LABELS: Record<Permission, string> = {
   activity: "Activity Log",
   settings: "Settings",
 };
-const ALL_PERMS: Permission[] = ["dashboard", "users", "inbounds", "activity", "settings"];
+const ASSIGNABLE_PERMS: Permission[] = ["dashboard", "users", "inbounds", "activity"];
 
 function CredentialsCard() {
   const toast = useToast();
@@ -169,6 +169,8 @@ function AdminDialog({
     onError: (e: Error) => toast.push("error", e.message),
   });
 
+
+
   const updateMut = useMutation({
     mutationFn: () =>
       api.updateAdmin(editing!.id, {
@@ -189,6 +191,22 @@ function AdminDialog({
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!editing && username.trim().length < 3) {
+      toast.push("error", "Username must be at least 3 characters");
+      return;
+    }
+    if (!editing && password.length < 6) {
+      toast.push("error", "Password must be at least 6 characters");
+      return;
+    }
+    if (editing && password && password.length < 6) {
+      toast.push("error", "Password must be at least 6 characters");
+      return;
+    }
+    if (permissions.length === 0) {
+      toast.push("error", "Select at least one page the admin can access");
+      return;
+    }
     if (editing) updateMut.mutate();
     else createMut.mutate();
   };
@@ -207,8 +225,6 @@ function AdminDialog({
                 id="adminUsername"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                minLength={3}
-                required
                 autoFocus
               />
             </div>
@@ -220,15 +236,14 @@ function AdminDialog({
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              minLength={editing ? 0 : 6}
-              required={!editing}
               autoComplete="new-password"
+              placeholder={editing ? "Leave blank to keep current" : "At least 6 characters"}
             />
           </div>
           <div className="space-y-2">
             <Label>Page access</Label>
             <div className="grid grid-cols-2 gap-2">
-              {ALL_PERMS.map((p) => {
+              {ASSIGNABLE_PERMS.map((p) => {
                 const active = permissions.includes(p);
                 return (
                   <button
@@ -246,7 +261,7 @@ function AdminDialog({
               })}
             </div>
             <p className="text-[11px] text-text/50">
-              Admins with Settings access still cannot manage other admins.
+              Admins cannot access Settings or manage other admins.
             </p>
           </div>
           <div className="space-y-2">
@@ -310,45 +325,55 @@ function AdminsCard() {
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="grid gap-3 sm:grid-cols-2">
         {admins.map((a) => (
           <div
             key={a.id}
-            className="flex flex-wrap items-center justify-between gap-3 rounded-base border-2 border-border bg-bg/40 p-4"
+            className="flex flex-col gap-3 rounded-base border-2 border-border bg-bg/40 p-4"
           >
-            <div className="flex items-center gap-3">
-              <div className="grid h-10 w-10 place-items-center rounded-base border-2 border-border bg-main text-mtext font-heading uppercase">
-                {a.username.slice(0, 1)}
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-heading">{a.username}</span>
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex items-center gap-3">
+                <div
+                  className={cn(
+                    "grid h-11 w-11 place-items-center rounded-base border-2 border-border font-heading uppercase",
+                    a.role === "owner" ? "bg-yellow-300 text-black" : "bg-main text-mtext",
+                  )}
+                >
                   {a.role === "owner" ? (
-                    <Badge variant="warning" className="gap-1 text-[10px]">
-                      <Crown className="h-3 w-3" /> Owner
-                    </Badge>
+                    <Crown className="h-5 w-5" />
                   ) : (
-                    <Badge variant="info" className="gap-1 text-[10px]">
-                      <ShieldCheck className="h-3 w-3" /> Admin
-                    </Badge>
+                    a.username.slice(0, 1)
                   )}
                 </div>
-                <div className="mt-1 flex flex-wrap gap-1">
-                  {a.role === "owner" ? (
-                    <span className="text-xs text-text/50">Full access</span>
-                  ) : a.permissions.length === 0 ? (
-                    <span className="text-xs text-text/40">No access</span>
-                  ) : (
-                    a.permissions.map((p) => (
-                      <Badge key={p} variant="neutral" className="text-[10px]">
-                        {PERMISSION_LABELS[p]}
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-heading">{a.username}</span>
+                    {a.role === "owner" ? (
+                      <Badge variant="warning" className="gap-1 text-[10px]">
+                        <Crown className="h-3 w-3" /> Owner
                       </Badge>
-                    ))
-                  )}
+                    ) : (
+                      <Badge variant="info" className="gap-1 text-[10px]">
+                        <ShieldCheck className="h-3 w-3" /> Admin
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {a.role === "owner" ? (
+                      <span className="text-xs text-text/50">Full access</span>
+                    ) : a.permissions.length === 0 ? (
+                      <span className="text-xs text-text/40">No access</span>
+                    ) : (
+                      a.permissions.map((p) => (
+                        <Badge key={p} variant="neutral" className="text-[10px]">
+                          {PERMISSION_LABELS[p]}
+                        </Badge>
+                      ))
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-            {a.role !== "owner" && (
+              {a.role !== "owner" && (
               <div className="flex items-center gap-1">
                 <Button
                   variant="neutral"
@@ -369,6 +394,25 @@ function AdminsCard() {
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </Button>
+              </div>
+              )}
+            </div>
+            {a.role !== "owner" && (
+              <div className="grid grid-cols-3 gap-2 border-t-2 border-border/30 pt-3 text-center">
+                <div>
+                  <div className="font-heading text-sm">{a.userCount ?? 0}</div>
+                  <div className="text-[10px] uppercase tracking-widest text-text/50">Users</div>
+                </div>
+                <div>
+                  <div className="font-heading text-sm">{formatBytes(a.used ?? 0)}</div>
+                  <div className="text-[10px] uppercase tracking-widest text-text/50">Used</div>
+                </div>
+                <div>
+                  <div className="font-heading text-sm">
+                    {a.dataLimit > 0 ? formatBytes(a.dataLimit) : "∞"}
+                  </div>
+                  <div className="text-[10px] uppercase tracking-widest text-text/50">Quota</div>
+                </div>
               </div>
             )}
           </div>

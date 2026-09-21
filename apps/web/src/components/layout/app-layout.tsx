@@ -10,6 +10,7 @@ import {
   Menu,
   X,
   Github,
+  Crown,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
@@ -32,7 +33,7 @@ function Brand() {
   return (
     <div className="flex items-center gap-2">
       <div className="grid h-9 w-9 place-items-center rounded-base border-2 border-border bg-main text-mtext neo-shadow">
-        <RailLogo className="text-lg" />
+        <RailLogo className="h-5 w-5" />
       </div>
       <div className="leading-tight">
         <div className="font-heading text-lg tracking-tight">SideRail</div>
@@ -153,8 +154,19 @@ export function AppLayout() {
                   className="flex items-center gap-2 rounded-base border-2 border-transparent px-1 py-1 transition-all hover:border-border"
                 >
                   <span className="hidden text-sm font-heading sm:block">{username}</span>
-                  <div className="grid h-9 w-9 place-items-center rounded-base border-2 border-border bg-main text-mtext font-heading uppercase">
-                    {(username || "A").slice(0, 1)}
+                  <div
+                    className={cn(
+                      "grid h-9 w-9 place-items-center rounded-base border-2 border-border font-heading uppercase",
+                      admin?.role === "owner"
+                        ? "bg-yellow-300 text-black"
+                        : "bg-main text-mtext",
+                    )}
+                  >
+                    {admin?.role === "owner" ? (
+                      <Crown className="h-4 w-4" />
+                    ) : (
+                      (username || "A").slice(0, 1)
+                    )}
                   </div>
                 </button>
                 {menuOpen && (
@@ -239,8 +251,13 @@ function SidebarFooter({
   return (
     <div className="rounded-base border-2 border-border bg-bg/50 p-3">
       <div className="mb-2 flex items-center gap-2">
-        <div className="grid h-8 w-8 place-items-center rounded-base border-2 border-border bg-main text-mtext font-heading uppercase">
-          {(username || "A").slice(0, 1)}
+        <div
+          className={cn(
+            "grid h-8 w-8 place-items-center rounded-base border-2 border-border font-heading uppercase",
+            role === "owner" ? "bg-yellow-300 text-black" : "bg-main text-mtext",
+          )}
+        >
+          {role === "owner" ? <Crown className="h-4 w-4" /> : (username || "A").slice(0, 1)}
         </div>
         <div className="min-w-0">
           <div className="truncate text-sm font-heading">{username || "admin"}</div>

@@ -1,12 +1,24 @@
 import { db } from "./db.js";
 import type { Inbound, UserRecord } from "./types.js";
 
+interface AdminBackup {
+  id: number;
+  username: string;
+  password_hash: string;
+  role: string;
+  permissions: string;
+  data_limit: number;
+  created_at: number;
+}
+
 interface BackupPayload {
   version: number;
   exported_at: number;
   users: UserRecord[];
   user_inbounds: { user_id: number; inbound_id: number }[];
   inbounds: Inbound[];
+  admins?: AdminBackup[];
+  settings?: { key: string; value: string }[];
 }
 
 export function exportData(): BackupPayload {
@@ -16,17 +28,25 @@ export function exportData(): BackupPayload {
     user_id: number;
     inbound_id: number;
   }[];
+  const admins = db.prepare("SELECT * FROM admins").all() as unknown as AdminBackup[];
+  const settings = db.prepare("SELECT key, value FROM settings").all() as unknown as {
+    key: string;
+    value: string;
+  }[];
   return {
-    version: 1,
+    version: 2,
     exported_at: Date.now(),
     users,
     inbounds,
     user_inbounds: links,
+    admins,
+    settings,
   };
 }
 
 export function importData(payload: BackupPayload): { users: number; inbounds: number } {
-  if (!payload || payload.version !== 1) throw new Error("invalid backup version");
+  if (!payload || (payload.version !== 1 && payload.version !== 2))
+    throw new Error("invalid backup version");
   const tx = () => {
     db.exec("DELETE FROM user_inbounds; DELETE FROM users; DELETE FROM inbounds;");
 
@@ -52,8 +72,8 @@ export function importData(payload: BackupPayload): { users: number; inbounds: n
       `INSERT INTO users
         (id, email, uuid, password, sub_token, fingerprint, alpn, data_limit, ip_limit,
          expire_at, sub_expire_days, sub_first_seen, traffic_reset, telegram_id, comment,
-         enabled, up, down, last_reset, online_at, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         enabled, up, down, last_reset, online_at, created_by, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     );
     for (const u of payload.users) {
       insUser.run(
@@ -77,6 +97,7 @@ export function importData(payload: BackupPayload): { users: number; inbounds: n
         u.down,
         u.last_reset,
         u.online_at,
+        u.created_by ?? null,
         u.created_at,
       );
     }
@@ -85,6 +106,32 @@ export function importData(payload: BackupPayload): { users: number; inbounds: n
       "INSERT OR IGNORE INTO user_inbounds (user_id, inbound_id) VALUES (?, ?)",
     );
     for (const l of payload.user_inbounds) insLink.run(l.user_id, l.inbound_id);
+
+    if (payload.admins && payload.admins.length > 0) {
+      db.exec("DELETE FROM admins");
+      const insAdmin = db.prepare(
+        `INSERT INTO admins (id, username, password_hash, role, permissions, data_limit, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      );
+      for (const a of payload.admins) {
+        insAdmin.run(
+          a.id,
+          a.username,
+          a.password_hash,
+          a.role || "admin",
+          a.permissions || "[]",
+          a.data_limit || 0,
+          a.created_at,
+        );
+      }
+    }
+
+    if (payload.settings) {
+      const insSetting = db.prepare(
+        "INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+      );
+      for (const s of payload.settings) insSetting.run(s.key, s.value);
+    }
   };
   db.exec("BEGIN");
   try {
