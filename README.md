@@ -30,14 +30,16 @@
 <br/>
 <br/>
 
-**A modern, neobrutalist VPN management panel powered by [Xray-core](https://github.com/XTLS/Xray-core) — deploy to [Railway](https://railway.app) in one click.**
+**A bold, neobrutalist VPN control panel — powered by&nbsp;<a href="https://github.com/XTLS/Xray-core"><img src=".github/badges/link-xray.svg" alt="Xray-core" height="22" valign="middle" /></a>&nbsp;and shipped to&nbsp;<a href="https://railway.app"><img src=".github/badges/link-railway.svg" alt="Railway" height="22" valign="middle" /></a>&nbsp;in one click.**
+
+*Clean client links. Live stats. Gorgeous subscription pages. No config, no fuss.*
 
 </div>
 
 <br/>
 
 > [!TIP]
-> **Fork, deploy on Railway, expose port `8080`, open the panel.** That is the whole setup. No environment variables required.
+> **Fork → Deploy on Railway → Expose port `8080` → Open the panel.** Four steps, zero config, live in minutes.
 
 <br/>
 
@@ -47,32 +49,32 @@
 <tr>
 <td width="50%" valign="top">
 
-**Built for one job, done right**
+**One job, done right**
 
-SideRail focuses on **HTTP-based transports behind a TLS-terminating edge**. Every client link is clean, standard, and always `security=tls` on port `443`.
+No feature bloat. SideRail masters **HTTP-based transports behind a TLS edge** — every link is clean, standard, and always `security=tls` on port `443`.
 
 </td>
 <td width="50%" valign="top">
 
-**Beautiful and responsive**
+**Impossible to ignore**
 
-A bold **neobrutalist** interface with thick borders, hard shadows and animated icons that looks great on both desktop and mobile.
+A loud **neobrutalist** UI — thick borders, hard shadows, animated icons — that looks razor-sharp on phone and desktop alike.
 
 </td>
 </tr>
 <tr>
 <td width="50%" valign="top">
 
-**Zero-config deploy**
+**Deploy and forget**
 
-Xray-core downloads itself on first boot. The session secret is auto-generated. **No environment variables needed.**
+Xray-core pulls itself on first boot, the session secret is generated for you, and the DB just works. **Zero environment variables required.**
 
 </td>
 <td width="50%" valign="top">
 
-**Multi-admin ready**
+**Team-friendly**
 
-An Owner can add Admins with scoped page access and per-admin data quotas. Admins only see their own users.
+The Owner adds Admins with scoped page access and personal data quotas — and every Admin only ever sees the users they created.
 
 </td>
 </tr>
@@ -121,7 +123,7 @@ An Owner can add Admins with scoped page access and per-admin data quotas. Admin
 
 **1. Fork this repository** — click **Fork** at the top-right to copy it to your GitHub account.
 
-**2. Create a Railway project** — go to **[railway.app](https://railway.app)**, then **New Project → Deploy from GitHub repo**, and pick your fork.
+**2. Create a Railway project** — head to&nbsp;<a href="https://railway.app"><img src=".github/badges/link-railwayapp.svg" alt="railway.app" height="22" valign="middle" /></a>, then **New Project → Deploy from GitHub repo**, and pick your fork.
 
 **3. Deploy** — Railway reads the `Dockerfile` and `railway.json` and builds automatically.
 
@@ -207,48 +209,24 @@ npm start       # serve API + built frontend on :8080
 
 <img src=".github/sections/support.svg" width="380" alt="Support the project" />
 
-**Built with countless late nights and a lot of coffee.** If SideRail powers your setup and saves you time, a small crypto tip goes straight into keeping it fast, secure and free for everyone.
+**Countless late nights and a lot of coffee went into this.** If SideRail powers your setup, a small crypto tip goes straight back into keeping it fast, secure and free for everyone.
 
 <table>
   <tr>
-    <td align="center" width="220">
-      <img src="https://img.shields.io/badge/BITCOIN-BTC-F7931A?style=for-the-badge&logo=bitcoin&logoColor=white&labelColor=0b0b0f" alt="Bitcoin" />
-    </td>
-    <td>
-
-`bc1qx48j9lj989y5c9z8ewpgul2ed69mr50j97a0sk`
-
-</td>
+    <td align="center" width="180"><img src=".github/badges/coin-btc.svg" alt="Bitcoin" height="34" /></td>
+    <td><code>bc1qx48j9lj989y5c9z8ewpgul2ed69mr50j97a0sk</code></td>
   </tr>
   <tr>
-    <td align="center">
-      <img src="https://img.shields.io/badge/ETHEREUM-ETH-627EEA?style=for-the-badge&logo=ethereum&logoColor=white&labelColor=0b0b0f" alt="Ethereum" />
-    </td>
-    <td>
-
-`0xF2ba522fD846F83D84131D433f56F885740cFc47`
-
-</td>
+    <td align="center"><img src=".github/badges/coin-eth.svg" alt="Ethereum" height="34" /></td>
+    <td><code>0xF2ba522fD846F83D84131D433f56F885740cFc47</code></td>
   </tr>
   <tr>
-    <td align="center">
-      <img src="https://img.shields.io/badge/LITECOIN-LTC-A6A9AA?style=for-the-badge&logo=litecoin&logoColor=white&labelColor=0b0b0f" alt="Litecoin" />
-    </td>
-    <td>
-
-`ltc1qh6y8ld27fdleuy3r7gykxxg38rkawl7adzc0dw`
-
-</td>
+    <td align="center"><img src=".github/badges/coin-ltc.svg" alt="Litecoin" height="34" /></td>
+    <td><code>ltc1qh6y8ld27fdleuy3r7gykxxg38rkawl7adzc0dw</code></td>
   </tr>
   <tr>
-    <td align="center">
-      <img src="https://img.shields.io/badge/TON-GRAM-0098EA?style=for-the-badge&logo=ton&logoColor=white&labelColor=0b0b0f" alt="TON" />
-    </td>
-    <td>
-
-`UQBGN4jXPW44cWQ20EGWqX7sU6K4RlYbnolc3IHoT3UWtmvW`
-
-</td>
+    <td align="center"><img src=".github/badges/coin-ton.svg" alt="TON" height="34" /></td>
+    <td><code>UQBGN4jXPW44cWQ20EGWqX7sU6K4RlYbnolc3IHoT3UWtmvW</code></td>
   </tr>
 </table>
 
