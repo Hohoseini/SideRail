@@ -243,7 +243,9 @@ It is published for transparency and personal self-hosting only. You are welcome
 - Removing or altering the **icubaby / SideRail** attribution, branding, logos, repository links, or the embedded authorship watermarks.
 - Claiming authorship of the project.
 
-The source code carries embedded authorship identifiers and watermarks used to prove origin. See the full terms in [LICENSE](LICENSE).
+The source code carries embedded authorship identifiers and watermarks used to prove origin.
+
+<a href="LICENSE"><img src=".github/badges/license-terms.svg" alt="Full license terms" height="38" /></a>
 
 <br/>
 
