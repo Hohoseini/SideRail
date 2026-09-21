@@ -263,21 +263,24 @@ export default function UsersPage() {
     </div>
   );
 
-  const inboundBadges = (u: User, center = false) => (
-    <div className={cn("flex flex-wrap gap-1", center && "justify-center")}>
-      {u.inbound_ids.length === 0 && <span className="text-xs text-text/40">none</span>}
-      {u.inbound_ids.slice(0, 3).map((id) => (
-        <Badge key={id} variant="neutral" className="text-[10px]">
-          {inboundName(id)}
-        </Badge>
-      ))}
-      {u.inbound_ids.length > 3 && (
-        <Badge variant="info" className="text-[10px]">
-          +{u.inbound_ids.length - 3}
-        </Badge>
-      )}
-    </div>
-  );
+  const inboundBadges = (u: User, opts?: { center?: boolean; all?: boolean }) => {
+    const ids = opts?.all ? u.inbound_ids : u.inbound_ids.slice(0, 3);
+    return (
+      <div className={cn("flex flex-wrap gap-1", opts?.center && "justify-center")}>
+        {u.inbound_ids.length === 0 && <span className="text-xs text-text/40">none</span>}
+        {ids.map((id) => (
+          <Badge key={id} variant="neutral" className="text-[10px]">
+            {inboundName(id)}
+          </Badge>
+        ))}
+        {!opts?.all && u.inbound_ids.length > 3 && (
+          <Badge variant="info" className="text-[10px]">
+            +{u.inbound_ids.length - 3}
+          </Badge>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -440,7 +443,7 @@ export default function UsersPage() {
                 </div>
               )}
 
-              <div className="min-w-0">{inboundBadges(u, true)}</div>
+              <div className="min-w-0">{inboundBadges(u, { center: true, all: true })}</div>
               <TrafficBar user={u} />
 
               <div className="grid grid-cols-2 gap-2 border-t-2 border-border/30 pt-3 text-center">

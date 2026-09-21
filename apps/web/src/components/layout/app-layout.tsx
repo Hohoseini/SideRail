@@ -126,9 +126,18 @@ export function AppLayout() {
             </span>
             <StarCount />
           </a>
-          <div className="mb-3 text-center text-[10px] uppercase tracking-widest text-text/40">
-            SideRail v{PANEL_VERSION}
-          </div>
+          <a
+            href={`${GITHUB_URL}/releases`}
+            target="_blank"
+            rel="noreferrer"
+            className="mb-3 flex items-center justify-between gap-2 rounded-base border-2 border-border bg-bg/50 px-3 py-2.5 font-heading text-sm text-text/80 transition-all hover:bg-main hover:text-mtext hover:neo-shadow"
+          >
+            <span className="flex items-center gap-2">
+              <Tag className="h-5 w-5" />
+              Version
+            </span>
+            <span className="text-xs text-text/60">v{PANEL_VERSION}</span>
+          </a>
           <SidebarFooter username={username} role={admin?.role} onLogout={logout} />
         </aside>
 
@@ -243,10 +252,25 @@ export function AppLayout() {
                 href={GITHUB_URL}
                 target="_blank"
                 rel="noreferrer"
-                className="mb-3 flex items-center gap-2 rounded-base border-2 border-border bg-bg/50 px-3 py-2.5 font-heading text-sm text-text/80 transition-all hover:bg-main hover:text-mtext"
+                className="mb-2 flex items-center justify-between gap-2 rounded-base border-2 border-border bg-bg/50 px-3 py-2.5 font-heading text-sm text-text/80 transition-all hover:bg-main hover:text-mtext"
               >
-                <Github className="h-5 w-5" />
-                GitHub
+                <span className="flex items-center gap-2">
+                  <Github className="h-5 w-5" />
+                  GitHub
+                </span>
+                <StarCount />
+              </a>
+              <a
+                href={`${GITHUB_URL}/releases`}
+                target="_blank"
+                rel="noreferrer"
+                className="mb-3 flex items-center justify-between gap-2 rounded-base border-2 border-border bg-bg/50 px-3 py-2.5 font-heading text-sm text-text/80 transition-all hover:bg-main hover:text-mtext"
+              >
+                <span className="flex items-center gap-2">
+                  <Tag className="h-5 w-5" />
+                  Version
+                </span>
+                <span className="text-xs text-text/60">v{PANEL_VERSION}</span>
               </a>
               <SidebarFooter username={username} role={admin?.role} onLogout={logout} />
             </div>

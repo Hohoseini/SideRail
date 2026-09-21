@@ -144,7 +144,7 @@ export default function SubscriptionPage() {
     <div className="relative min-h-screen overflow-x-hidden bg-bg pb-16">
       <AnimatedBackground />
 
-      <div className="relative mx-auto w-full max-w-3xl px-4 pt-6 sm:pt-10">
+      <div className="relative mx-auto w-full min-w-0 max-w-3xl px-4 pt-6 sm:pt-10">
         <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <div className="grid h-12 w-12 shrink-0 place-items-center rounded-base border-2 border-border bg-main text-mtext neo-shadow">
@@ -173,7 +173,6 @@ export default function SubscriptionPage() {
               )}
               {user.active ? "Active" : "Inactive"}
             </Badge>
-            <GitHubButton className="py-1 text-xs" />
           </div>
         </header>
 
@@ -305,23 +304,23 @@ export default function SubscriptionPage() {
             {links.map((link, i) => (
               <Card
                 key={`${link.tag}-${i}`}
-                className="animate-fade-in"
+                className="animate-fade-in overflow-hidden"
                 style={{ animationDelay: `${i * 40}ms` }}
               >
-                <CardContent className="flex items-center gap-3 overflow-hidden p-3 sm:p-4">
+                <CardContent className="flex items-center gap-2.5 p-3 sm:gap-3 sm:p-4">
                   <div
-                    className="grid h-11 w-11 shrink-0 place-items-center rounded-base border-2 border-border font-heading text-black uppercase"
+                    className="grid h-10 w-10 shrink-0 place-items-center rounded-base border-2 border-border font-heading text-black uppercase sm:h-11 sm:w-11"
                     style={{ background: protocolColor[link.protocol] || "#a3e635" }}
                   >
                     {link.protocol.slice(0, 2)}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="truncate font-heading">{link.tag}</div>
+                    <div className="truncate font-heading text-sm sm:text-base">{link.tag}</div>
                     <Badge variant="neutral" className="mt-0.5 text-[10px] uppercase">
                       {link.transport}
                     </Badge>
                   </div>
-                  <div className="flex shrink-0 items-center gap-1.5">
+                  <div className="flex shrink-0 items-center gap-1">
                     <CopyButton value={link.link} icon />
                     <Button
                       variant="neutral"
@@ -346,7 +345,7 @@ export default function SubscriptionPage() {
         </div>
 
         <footer className="mt-10 flex justify-center">
-          <GitHubButton />
+          <GitHubButton className="max-w-full" />
         </footer>
       </div>
 

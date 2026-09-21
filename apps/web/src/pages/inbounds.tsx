@@ -50,24 +50,26 @@ export default function InboundsPage() {
         </Badge>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {inbounds.map((ib) => (
           <Card key={ib.id} className="overflow-hidden transition-transform hover:-translate-y-0.5">
-            <CardContent className="p-5">
-              <div className="flex items-start justify-between">
-                <div
-                  className="grid h-11 w-11 place-items-center rounded-base border-2 border-border font-heading uppercase text-black"
-                  style={{ background: protocolAccent[ib.protocol] || "#a3e635" }}
-                >
-                  {ib.protocol.slice(0, 2)}
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex min-w-0 items-center gap-2">
+                  <div
+                    className="grid h-9 w-9 shrink-0 place-items-center rounded-base border-2 border-border font-heading text-sm uppercase text-black"
+                    style={{ background: protocolAccent[ib.protocol] || "#a3e635" }}
+                  >
+                    {ib.protocol.slice(0, 2)}
+                  </div>
+                  <div className="truncate font-heading text-sm">{ib.tag}</div>
                 </div>
                 <Switch
                   checked={!!ib.enabled}
                   onCheckedChange={(v) => toggle.mutate({ id: ib.id, enabled: v })}
                 />
               </div>
-              <div className="mt-3 font-heading text-lg">{ib.tag}</div>
-              <div className="mt-1 flex flex-wrap gap-1.5">
+              <div className="mt-2 flex flex-wrap gap-1">
                 <Badge variant="neutral" className="text-[10px] uppercase">
                   {ib.protocol}
                 </Badge>
@@ -78,14 +80,14 @@ export default function InboundsPage() {
                   <Lock className="h-3 w-3" /> TLS 443
                 </Badge>
               </div>
-              <div className="mt-4 space-y-1.5 border-t-2 border-border/30 pt-3 text-xs font-base text-text/60">
+              <div className="mt-3 space-y-1 border-t-2 border-border/30 pt-2 text-[11px] font-base text-text/60">
                 <div className="flex items-center gap-2">
-                  <Network className="h-3.5 w-3.5" />
-                  <span>internal port</span>
+                  <Network className="h-3 w-3 shrink-0" />
+                  <span className="shrink-0">port</span>
                   <span className="ml-auto font-mono text-text/80">{ib.port}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Router className="h-3.5 w-3.5 shrink-0" />
+                  <Router className="h-3 w-3 shrink-0" />
                   <span className="shrink-0">path</span>
                   <span className="ml-auto min-w-0 truncate font-mono text-text/80">{ib.path}</span>
                 </div>
