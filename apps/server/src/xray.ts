@@ -7,6 +7,7 @@ import { createWriteStream } from "node:fs";
 import { config } from "./config.js";
 import { buildXrayConfig } from "./xray-config.js";
 import { db } from "./db.js";
+import { realIpForPort } from "./tunnel.js";
 
 let proc: ChildProcess | null = null;
 let running = false;
@@ -215,12 +216,19 @@ export function collectClientIps(): void {
     "INSERT INTO client_ips (user_id, ip, last_seen) VALUES (?, ?, ?) ON CONFLICT(user_id, ip) DO UPDATE SET last_seen = excluded.last_seen",
   );
   for (const line of chunk.split("\n")) {
-    const ipMatch = line.match(/from (?:tcp:|udp:)?\[?([0-9a-fA-F:.]+)\]?:\d+/);
+    const ipMatch = line.match(/from (?:tcp:|udp:)?\[?([0-9a-fA-F:.]+)\]?:(\d+)/);
     const emailMatch = line.match(/email:\s*(\S+)/);
     if (!ipMatch || !emailMatch) continue;
     const uid = emailToId.get(emailMatch[1]);
     if (!uid) continue;
-    upsert.run(uid, ipMatch[1], now);
+    let ip = ipMatch[1];
+    if (ip === "127.0.0.1" || ip === "::1") {
+      const port = Number(ipMatch[2]);
+      const real = realIpForPort(port);
+      if (real) ip = real;
+      else continue;
+    }
+    upsert.run(uid, ip, now);
   }
   db.prepare("DELETE FROM client_ips WHERE last_seen < ?").run(now - 5 * 60_000);
   if (size > 5_000_000) {

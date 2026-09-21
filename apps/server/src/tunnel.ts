@@ -8,6 +8,27 @@ import type { Inbound } from "./types.js";
 const xhttpProxy = httpProxy.createProxyServer({ ws: false, xfwd: true });
 xhttpProxy.on("error", () => {});
 
+const portToIp = new Map<number, { ip: string; ts: number }>();
+
+export function realIpForPort(port: number): string | null {
+  const entry = portToIp.get(port);
+  return entry ? entry.ip : null;
+}
+
+function prunePortMap(): void {
+  const now = Date.now();
+  for (const [port, entry] of portToIp) {
+    if (now - entry.ts > 300_000) portToIp.delete(port);
+  }
+}
+setInterval(prunePortMap, 60_000).unref?.();
+
+function clientIp(req: IncomingMessage): string {
+  const fwd = req.headers["x-forwarded-for"];
+  if (typeof fwd === "string" && fwd.length > 0) return fwd.split(",")[0].trim();
+  return req.socket.remoteAddress || "";
+}
+
 function matchInbound(url: string | undefined): Inbound | null {
   if (!url) return null;
   const pathname = url.split("?")[0];
@@ -19,7 +40,11 @@ function matchInbound(url: string | undefined): Inbound | null {
 }
 
 function pipeToXray(req: IncomingMessage, clientSocket: Socket, head: Buffer, inbound: Inbound) {
+  const realIp = clientIp(req);
   const upstream = net.connect(inbound.port, "127.0.0.1", () => {
+    if (realIp && upstream.localPort) {
+      portToIp.set(upstream.localPort, { ip: realIp, ts: Date.now() });
+    }
     const headers = [`${req.method} ${req.url} HTTP/${req.httpVersion}`];
     for (let i = 0; i < req.rawHeaders.length; i += 2) {
       headers.push(`${req.rawHeaders[i]}: ${req.rawHeaders[i + 1]}`);
