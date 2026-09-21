@@ -18,19 +18,21 @@ import { RailLogo } from "@/components/rail-logo";
 
 const GITHUB_URL = "https://github.com/icubaby/SideRail";
 
-const nav = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
-  { to: "/users", label: "Users", icon: Users, end: false },
-  { to: "/inbounds", label: "Inbounds", icon: Router, end: false },
-  { to: "/activity", label: "Activity Log", icon: ScrollText, end: false },
-  { to: "/settings", label: "Settings", icon: Settings, end: false },
+import type { Permission } from "@/lib/types";
+
+const nav: { to: string; label: string; icon: typeof LayoutDashboard; end: boolean; perm: Permission }[] = [
+  { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true, perm: "dashboard" },
+  { to: "/users", label: "Users", icon: Users, end: false, perm: "users" },
+  { to: "/inbounds", label: "Inbounds", icon: Router, end: false, perm: "inbounds" },
+  { to: "/activity", label: "Activity Log", icon: ScrollText, end: false, perm: "activity" },
+  { to: "/settings", label: "Settings", icon: Settings, end: false, perm: "settings" },
 ];
 
 function Brand() {
   return (
     <div className="flex items-center gap-2">
       <div className="grid h-9 w-9 place-items-center rounded-base border-2 border-border bg-main text-mtext neo-shadow">
-        <RailLogo className="h-5 w-5" />
+        <RailLogo className="text-lg" />
       </div>
       <div className="leading-tight">
         <div className="font-heading text-lg tracking-tight">SideRail</div>
@@ -40,10 +42,18 @@ function Brand() {
   );
 }
 
-function NavItems({ onNavigate }: { onNavigate?: () => void }) {
+function NavItems({
+  onNavigate,
+  can,
+}: {
+  onNavigate?: () => void;
+  can: (perm: Permission) => boolean;
+}) {
   return (
     <nav className="flex flex-col gap-2">
-      {nav.map((item) => (
+      {nav
+        .filter((item) => can(item.perm))
+        .map((item) => (
         <NavLink
           key={item.to}
           to={item.to}
@@ -61,13 +71,13 @@ function NavItems({ onNavigate }: { onNavigate?: () => void }) {
           <item.icon className="h-5 w-5 transition-transform group-hover:scale-110" />
           {item.label}
         </NavLink>
-      ))}
+        ))}
     </nav>
   );
 }
 
 export function AppLayout() {
-  const { username, logout } = useAuth();
+  const { username, logout, can, admin } = useAuth();
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [menuOpen, setMenuOpen] = React.useState(false);
   const location = useLocation();
@@ -95,7 +105,7 @@ export function AppLayout() {
             <Brand />
           </div>
           <div className="mt-6 flex-1">
-            <NavItems />
+            <NavItems can={can} />
           </div>
           <a
             href={GITHUB_URL}
@@ -106,7 +116,7 @@ export function AppLayout() {
             <Github className="h-5 w-5" />
             GitHub
           </a>
-          <SidebarFooter username={username} onLogout={logout} />
+          <SidebarFooter username={username} role={admin?.role} onLogout={logout} />
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">
@@ -152,7 +162,7 @@ export function AppLayout() {
                     <div className="border-b-2 border-border/30 px-2 pb-2">
                       <div className="truncate text-sm font-heading">{username || "admin"}</div>
                       <div className="text-[10px] uppercase tracking-widest text-text/50">
-                        Administrator
+                        {admin?.role === "owner" ? "Owner" : "Admin"}
                       </div>
                     </div>
                     <a
@@ -196,7 +206,7 @@ export function AppLayout() {
               </Button>
             </div>
             <div className="mt-6">
-              <NavItems onNavigate={() => setMobileOpen(false)} />
+              <NavItems can={can} onNavigate={() => setMobileOpen(false)} />
             </div>
             <div className="absolute inset-x-4 bottom-4">
               <a
@@ -208,7 +218,7 @@ export function AppLayout() {
                 <Github className="h-5 w-5" />
                 GitHub
               </a>
-              <SidebarFooter username={username} onLogout={logout} />
+              <SidebarFooter username={username} role={admin?.role} onLogout={logout} />
             </div>
           </div>
         </div>
@@ -219,9 +229,11 @@ export function AppLayout() {
 
 function SidebarFooter({
   username,
+  role,
   onLogout,
 }: {
   username: string | null;
+  role: "owner" | "admin" | undefined;
   onLogout: () => Promise<void>;
 }) {
   return (
@@ -232,7 +244,9 @@ function SidebarFooter({
         </div>
         <div className="min-w-0">
           <div className="truncate text-sm font-heading">{username || "admin"}</div>
-          <div className="text-[10px] uppercase tracking-widest text-text/50">Administrator</div>
+          <div className="text-[10px] uppercase tracking-widest text-text/50">
+            {role === "owner" ? "Owner" : "Admin"}
+          </div>
         </div>
       </div>
       <Button variant="neutral" size="sm" className="w-full" onClick={() => void onLogout()}>

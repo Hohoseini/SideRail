@@ -182,3 +182,59 @@ function recordUsageHistory(now: number): void {
   for (const u of users) insert.run(u.id, now, u.up + u.down);
   db.prepare("DELETE FROM usage_history WHERE ts < ?").run(now - 24 * 3_600_000);
 }
+
+let logOffset = 0;
+
+export function collectClientIps(): void {
+  const logFile = config.xrayAccessLog;
+  if (!fs.existsSync(logFile)) return;
+  let size = 0;
+  try {
+    size = fs.statSync(logFile).size;
+  } catch {
+    return;
+  }
+  if (size < logOffset) logOffset = 0;
+  if (size === logOffset) return;
+  let chunk = "";
+  try {
+    const fd = fs.openSync(logFile, "r");
+    const buf = Buffer.alloc(size - logOffset);
+    fs.readSync(fd, buf, 0, buf.length, logOffset);
+    fs.closeSync(fd);
+    chunk = buf.toString("utf8");
+    logOffset = size;
+  } catch {
+    return;
+  }
+  const now = Date.now();
+  const emailToId = new Map<string, number>();
+  const rows = db.prepare("SELECT id, email FROM users").all() as { id: number; email: string }[];
+  for (const r of rows) emailToId.set(r.email, r.id);
+  const upsert = db.prepare(
+    "INSERT INTO client_ips (user_id, ip, last_seen) VALUES (?, ?, ?) ON CONFLICT(user_id, ip) DO UPDATE SET last_seen = excluded.last_seen",
+  );
+  for (const line of chunk.split("\n")) {
+    const ipMatch = line.match(/from (?:tcp:|udp:)?\[?([0-9a-fA-F:.]+)\]?:\d+/);
+    const emailMatch = line.match(/email:\s*(\S+)/);
+    if (!ipMatch || !emailMatch) continue;
+    const uid = emailToId.get(emailMatch[1]);
+    if (!uid) continue;
+    upsert.run(uid, ipMatch[1], now);
+  }
+  db.prepare("DELETE FROM client_ips WHERE last_seen < ?").run(now - 5 * 60_000);
+  if (size > 5_000_000) {
+    try {
+      fs.writeFileSync(logFile, "");
+      logOffset = 0;
+    } catch {
+      /* noop */
+    }
+  }
+}
+
+export function getClientIps(userId: number): { ip: string; last_seen: number }[] {
+  return db
+    .prepare("SELECT ip, last_seen FROM client_ips WHERE user_id = ? ORDER BY last_seen DESC")
+    .all(userId) as { ip: string; last_seen: number }[];
+}

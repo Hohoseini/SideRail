@@ -49,8 +49,8 @@ export default function SetupPage() {
       <div className="relative grid w-full max-w-4xl gap-6 lg:grid-cols-2">
         <div className="hidden flex-col justify-center gap-6 lg:flex">
           <div className="flex items-center gap-3">
-            <div className="grid h-12 w-12 place-items-center rounded-base border-2 border-border bg-main text-mtext neo-shadow">
-              <RailLogo className="h-6 w-6" />
+            <div className="grid h-14 w-14 place-items-center rounded-base border-2 border-border bg-main text-mtext neo-shadow">
+              <RailLogo className="text-2xl" />
             </div>
             <div>
               <div className="font-heading text-3xl">SideRail</div>
@@ -76,12 +76,17 @@ export default function SetupPage() {
 
         <Card className="animate-pop-in">
           <CardHeader>
+            <div className="mb-1 flex justify-center lg:hidden">
+              <div className="grid h-16 w-16 place-items-center rounded-base border-2 border-border bg-main text-mtext neo-shadow animate-float">
+                <RailLogo className="text-2xl" />
+              </div>
+            </div>
             <div className="flex items-center gap-2">
               <Rocket className="h-5 w-5 text-main animate-bounce" />
               <h1 className="font-heading text-2xl">First-time setup</h1>
             </div>
             <p className="text-sm font-base text-text/60">
-              Create your administrator account to get started.
+              Create your owner account to get started.
             </p>
           </CardHeader>
           <CardContent>

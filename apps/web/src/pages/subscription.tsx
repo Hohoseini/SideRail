@@ -103,7 +103,7 @@ export default function SubscriptionPage() {
     return (
       <div className="grid min-h-screen place-items-center bg-bg">
         <div className="flex flex-col items-center gap-3">
-          <RailLogo className="h-10 w-10 animate-pulse text-main" />
+          <RailLogo className="animate-pulse text-4xl text-main" />
           <p className="font-heading text-text/60">Loading subscription…</p>
         </div>
       </div>
@@ -141,7 +141,7 @@ export default function SubscriptionPage() {
         <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <div className="grid h-12 w-12 shrink-0 place-items-center rounded-base border-2 border-border bg-main text-mtext neo-shadow">
-              <RailLogo className="h-6 w-6" />
+              <RailLogo className="text-2xl" />
             </div>
             <div className="min-w-0">
               <div className="font-heading text-2xl leading-tight">SideRail</div>
@@ -305,19 +305,16 @@ export default function SubscriptionPage() {
               >
                 <CardContent className="flex items-center gap-3 p-3 sm:p-4">
                   <div
-                    className="grid h-10 w-10 shrink-0 place-items-center rounded-base border-2 border-border font-heading text-black uppercase"
+                    className="grid h-11 w-11 shrink-0 place-items-center rounded-base border-2 border-border font-heading text-black uppercase"
                     style={{ background: protocolColor[link.protocol] || "#a3e635" }}
                   >
                     {link.protocol.slice(0, 2)}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="truncate font-heading">{link.tag}</span>
-                      <Badge variant="neutral" className="shrink-0 text-[10px] uppercase">
-                        {link.transport}
-                      </Badge>
-                    </div>
-                    <div className="truncate font-mono text-[11px] text-text/50">{link.link}</div>
+                    <div className="truncate font-heading">{link.tag}</div>
+                    <Badge variant="neutral" className="mt-0.5 text-[10px] uppercase">
+                      {link.transport}
+                    </Badge>
                   </div>
                   <div className="flex shrink-0 items-center gap-1.5">
                     <CopyButton value={link.link} icon />
@@ -359,7 +356,7 @@ export default function SubscriptionPage() {
       <Dialog open={!!qrConfig} onOpenChange={(o) => !o && setQrConfig(null)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>{qrConfig?.tag}</DialogTitle>
+            <DialogTitle className="text-center">{qrConfig?.tag}</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col items-center gap-4">
             {qrConfig && <QrCode value={qrConfig.link} size={220} />}
@@ -374,7 +371,7 @@ export default function SubscriptionPage() {
       <Dialog open={subQrOpen} onOpenChange={setSubQrOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Subscription QR</DialogTitle>
+            <DialogTitle className="text-center">Subscription QR</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col items-center gap-4">
             <QrCode value={subUrl} size={220} />

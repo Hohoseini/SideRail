@@ -26,6 +26,7 @@ export const config = {
   dataDir,
   xrayDir,
   dbPath: path.join(dataDir, "siderail.db"),
+  xrayAccessLog: path.join(xrayDir, "access.log"),
   port: Number(process.env.PORT || 8080),
   host: "0.0.0.0",
   jwtSecret: resolveSecret(),

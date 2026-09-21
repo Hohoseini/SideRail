@@ -2,6 +2,17 @@ export type Protocol = "vless" | "vmess" | "trojan";
 export type Transport = "ws" | "xhttp" | "httpupgrade";
 export type TrafficReset = "never" | "daily" | "weekly" | "monthly";
 
+export type Permission = "dashboard" | "users" | "inbounds" | "activity" | "settings";
+
+export interface AdminInfo {
+  id: number;
+  username: string;
+  role: "owner" | "admin";
+  permissions: Permission[];
+  dataLimit: number;
+  createdAt: number;
+}
+
 export interface SystemStats {
   cpu: { usage: number; cores: number; avg: number };
   ram: { usage: number; used: number; total: number };

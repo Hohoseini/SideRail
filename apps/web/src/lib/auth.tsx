@@ -1,11 +1,15 @@
 import * as React from "react";
 import { api } from "@/lib/api";
+import type { AdminInfo, Permission } from "@/lib/types";
 
 interface AuthState {
   ready: boolean;
   authed: boolean;
   needsSetup: boolean;
+  admin: AdminInfo | null;
   username: string | null;
+  can: (perm: Permission) => boolean;
+  isOwner: boolean;
   refresh: () => Promise<void>;
   login: (username: string, password: string) => Promise<void>;
   setup: (username: string, password: string) => Promise<void>;
@@ -24,7 +28,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = React.useState(false);
   const [authed, setAuthed] = React.useState(false);
   const [needsSetup, setNeedsSetup] = React.useState(false);
-  const [username, setUsername] = React.useState<string | null>(null);
+  const [admin, setAdmin] = React.useState<AdminInfo | null>(null);
 
   const refresh = React.useCallback(async () => {
     try {
@@ -34,10 +38,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
           const me = await api.me();
           setAuthed(true);
-          setUsername(me.admin.username);
+          setAdmin(me.admin);
         } catch {
           setAuthed(false);
-          setUsername(null);
+          setAdmin(null);
         }
       } else {
         setAuthed(false);
@@ -70,12 +74,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = React.useCallback(async () => {
     await api.logout();
     setAuthed(false);
-    setUsername(null);
+    setAdmin(null);
   }, []);
+
+  const can = React.useCallback(
+    (perm: Permission) =>
+      admin?.role === "owner" || (admin?.permissions.includes(perm) ?? false),
+    [admin],
+  );
 
   return (
     <AuthContext.Provider
-      value={{ ready, authed, needsSetup, username, refresh, login, setup, logout }}
+      value={{
+        ready,
+        authed,
+        needsSetup,
+        admin,
+        username: admin?.username ?? null,
+        can,
+        isOwner: admin?.role === "owner",
+        refresh,
+        login,
+        setup,
+        logout,
+      }}
     >
       {children}
     </AuthContext.Provider>

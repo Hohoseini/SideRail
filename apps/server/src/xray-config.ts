@@ -52,7 +52,7 @@ export function buildXrayConfig() {
   }));
 
   return {
-    log: { loglevel: "warning" },
+    log: { loglevel: "warning", access: config.xrayAccessLog },
     api: {
       tag: "api",
       services: ["HandlerService", "StatsService", "LoggerService"],

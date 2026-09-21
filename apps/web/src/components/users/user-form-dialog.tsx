@@ -1,5 +1,6 @@
 import * as React from "react";
-import { Dice5, KeyRound } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Dice5, KeyRound, ChevronDown, Settings2, Globe } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -10,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { NumberInput } from "@/components/ui/number-input";
 import {
   Select,
@@ -18,7 +20,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { api } from "@/lib/api";
+import { cn, relativeTime } from "@/lib/utils";
 import type { Inbound, TrafficReset, User, UserFormValues } from "@/lib/types";
 
 interface UserFormDialogProps {
@@ -41,6 +44,42 @@ function randomToken(len: number): string {
   return out;
 }
 
+function ConnectedIps({ userId }: { userId: number }) {
+  const { data: ips = [] } = useQuery({
+    queryKey: ["client-ips", userId],
+    queryFn: () => api.clientIps(userId),
+    refetchInterval: 5000,
+  });
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <Globe className="h-4 w-4 text-main" />
+        <Label>Connected IPs</Label>
+        <Badge variant="info" className="text-[10px]">
+          {ips.length} active
+        </Badge>
+      </div>
+      {ips.length === 0 ? (
+        <p className="rounded-base border-2 border-dashed border-border/40 px-3 py-2 text-xs text-text/50">
+          No active connections in the last 5 minutes.
+        </p>
+      ) : (
+        <div className="flex flex-wrap gap-2">
+          {ips.map((entry) => (
+            <div
+              key={entry.ip}
+              className="flex items-center gap-2 rounded-base border-2 border-border bg-bg/40 px-2.5 py-1.5"
+            >
+              <span className="font-mono text-xs">{entry.ip}</span>
+              <span className="text-[10px] text-text/50">{relativeTime(entry.last_seen)}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function UserFormDialog({
   open,
   onOpenChange,
@@ -56,7 +95,6 @@ export function UserFormDialog({
   const [dataLimit, setDataLimit] = React.useState(0);
   const [expireDays, setExpireDays] = React.useState(30);
   const [ipLimit, setIpLimit] = React.useState(0);
-  const [subExpireDays, setSubExpireDays] = React.useState(0);
   const [trafficReset, setTrafficReset] = React.useState<TrafficReset>("never");
   const [comment, setComment] = React.useState("");
   const [inboundIds, setInboundIds] = React.useState<number[]>([]);
@@ -79,7 +117,6 @@ export function UserFormDialog({
           ? Math.max(0, Math.round((editing.expire_at - Date.now()) / 86_400_000))
           : 0,
       );
-      setSubExpireDays(editing.sub_expire_days);
       setTrafficReset(editing.traffic_reset);
       setComment(editing.comment);
       setInboundIds(editing.inbound_ids);
@@ -92,7 +129,6 @@ export function UserFormDialog({
       setDataLimit(0);
       setIpLimit(0);
       setExpireDays(30);
-      setSubExpireDays(0);
       setTrafficReset("never");
       setComment("");
       setInboundIds(inbounds.filter((i) => i.enabled).map((i) => i.id));
@@ -102,6 +138,8 @@ export function UserFormDialog({
   const toggleInbound = (id: number) => {
     setInboundIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   };
+
+  const allSelected = inboundIds.length === inbounds.length && inbounds.length > 0;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,7 +154,6 @@ export function UserFormDialog({
         dataLimit,
         ipLimit,
         expireDays,
-        subExpireDays,
         trafficReset,
         comment,
         inboundIds,
@@ -128,18 +165,18 @@ export function UserFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>{editing ? "Edit user" : "New user"}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={submit} className="space-y-4">
+        <form onSubmit={submit} className="space-y-5">
           <div className="space-y-2">
             <Label htmlFor="email">Name / email</Label>
             <Input
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="client"
+              placeholder="icubaby/SideRail"
               required
               autoFocus
             />
@@ -161,19 +198,29 @@ export function UserFormDialog({
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label>Attached inbounds</Label>
-              <button
-                type="button"
-                onClick={() =>
-                  setInboundIds(
-                    inboundIds.length === inbounds.length ? [] : inbounds.map((i) => i.id),
-                  )
-                }
-                className="text-xs font-heading text-text/60 underline-offset-2 hover:underline"
-              >
-                {inboundIds.length === inbounds.length ? "Clear all" : "Select all"}
-              </button>
+              <div className="flex gap-1.5">
+                <Button
+                  type="button"
+                  variant="neutral"
+                  size="sm"
+                  className="h-7 px-2 text-xs"
+                  onClick={() => setInboundIds(inbounds.map((i) => i.id))}
+                >
+                  Select all
+                </Button>
+                <Button
+                  type="button"
+                  variant="neutral"
+                  size="sm"
+                  className="h-7 px-2 text-xs"
+                  onClick={() => setInboundIds([])}
+                  disabled={inboundIds.length === 0}
+                >
+                  Clear all
+                </Button>
+              </div>
             </div>
-            <div className="grid gap-2 sm:grid-cols-2">
+            <div className="grid gap-2.5 sm:grid-cols-2">
               {inbounds.map((ib) => {
                 const active = inboundIds.includes(ib.id);
                 return (
@@ -182,29 +229,43 @@ export function UserFormDialog({
                     type="button"
                     onClick={() => toggleInbound(ib.id)}
                     className={cn(
-                      "flex items-center justify-between rounded-base border-2 border-border px-3 py-2 text-left text-sm font-heading transition-all",
+                      "flex w-full flex-col gap-1 rounded-base border-2 border-border px-4 py-3 text-left transition-all",
                       active
                         ? "bg-main text-mtext neo-shadow"
-                        : "bg-bw text-text hover:bg-main/10",
+                        : "bg-bw text-text hover:-translate-y-0.5 hover:bg-main/10",
                       !ib.enabled && "opacity-50",
                     )}
                   >
-                    <span>{ib.tag}</span>
-                    <span className="text-[10px] uppercase tracking-wide opacity-70">
-                      {ib.protocol}/{ib.transport}
+                    <span className="font-heading text-base">{ib.tag}</span>
+                    <span className="text-xs uppercase tracking-wide opacity-70">
+                      {ib.protocol} / {ib.transport}
                     </span>
                   </button>
                 );
               })}
             </div>
+            {allSelected && (
+              <p className="text-[11px] text-text/50">All inbounds attached.</p>
+            )}
           </div>
+
+          {editing && <ConnectedIps userId={editing.id} />}
 
           <button
             type="button"
             onClick={() => setShowAdvanced((v) => !v)}
-            className="text-sm font-heading text-text/70 underline-offset-2 hover:underline"
+            className={cn(
+              "flex w-full items-center justify-between rounded-base border-2 border-border px-4 py-3 font-heading text-sm transition-all",
+              showAdvanced ? "bg-main text-mtext neo-shadow" : "bg-bw hover:bg-main/10",
+            )}
           >
-            {showAdvanced ? "Hide advanced options" : "Show advanced options"}
+            <span className="flex items-center gap-2">
+              <Settings2 className="h-4 w-4" />
+              Advanced options
+            </span>
+            <ChevronDown
+              className={cn("h-4 w-4 transition-transform", showAdvanced && "rotate-180")}
+            />
           </button>
 
           {showAdvanced && (
@@ -280,10 +341,7 @@ export function UserFormDialog({
                 <div className="space-y-2">
                   <Label>IP limit</Label>
                   <NumberInput value={ipLimit} onChange={setIpLimit} step={1} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Sub expires (days after first visit)</Label>
-                  <NumberInput value={subExpireDays} onChange={setSubExpireDays} step={1} />
+                  <p className="text-[11px] text-text/50">0 = unlimited devices</p>
                 </div>
                 <div className="space-y-2">
                   <Label>Traffic reset</Label>
@@ -303,7 +361,7 @@ export function UserFormDialog({
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2 sm:col-span-2">
                   <Label htmlFor="comment">Comment</Label>
                   <Input id="comment" value={comment} onChange={(e) => setComment(e.target.value)} />
                 </div>

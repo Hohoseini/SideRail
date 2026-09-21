@@ -1,12 +1,23 @@
 import * as React from "react";
-import { useMutation } from "@tanstack/react-query";
-import { KeyRound, Save } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  KeyRound,
+  Save,
+  Users2,
+  Plus,
+  Trash2,
+  Crown,
+  ShieldCheck,
+  Pencil,
+} from "lucide-react";
 import { api } from "@/lib/api";
 import { useToast } from "@/components/ui/toast";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { NumberInput } from "@/components/ui/number-input";
 import {
   Card,
   CardContent,
@@ -14,11 +25,28 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
+import type { AdminInfo, Permission } from "@/lib/types";
 
-export default function SettingsPage() {
+const PERMISSION_LABELS: Record<Permission, string> = {
+  dashboard: "Dashboard",
+  users: "Users",
+  inbounds: "Inbounds",
+  activity: "Activity Log",
+  settings: "Settings",
+};
+const ALL_PERMS: Permission[] = ["dashboard", "users", "inbounds", "activity", "settings"];
+
+function CredentialsCard() {
   const toast = useToast();
   const { username, refresh } = useAuth();
-
   const [newUsername, setNewUsername] = React.useState(username || "");
   const [newPassword, setNewPassword] = React.useState("");
   const [currentPassword, setCurrentPassword] = React.useState("");
@@ -49,60 +77,344 @@ export default function SettingsPage() {
   };
 
   return (
+    <Card className="max-w-lg">
+      <CardHeader>
+        <div className="flex items-center gap-2">
+          <KeyRound className="h-5 w-5 text-main" />
+          <CardTitle>Change credentials</CardTitle>
+        </div>
+        <CardDescription>Update your username or password.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={submit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="newUsername">Username</Label>
+            <Input
+              id="newUsername"
+              value={newUsername}
+              onChange={(e) => setNewUsername(e.target.value)}
+              minLength={3}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="newPassword">New password</Label>
+            <Input
+              id="newPassword"
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="Leave blank to keep current"
+              autoComplete="new-password"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="currentPassword">Current password</Label>
+            <Input
+              id="currentPassword"
+              type="password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              autoComplete="current-password"
+              required
+            />
+          </div>
+          <Button type="submit" disabled={credMut.isPending}>
+            <Save className="h-4 w-4" />
+            {credMut.isPending ? "Saving..." : "Save changes"}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
+
+function AdminDialog({
+  open,
+  onOpenChange,
+  editing,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  editing: AdminInfo | null;
+}) {
+  const toast = useToast();
+  const qc = useQueryClient();
+  const [username, setUsername] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [permissions, setPermissions] = React.useState<Permission[]>(["users"]);
+  const [dataLimit, setDataLimit] = React.useState(0);
+
+  React.useEffect(() => {
+    if (!open) return;
+    if (editing) {
+      setUsername(editing.username);
+      setPassword("");
+      setPermissions(editing.permissions);
+      setDataLimit(Math.round((editing.dataLimit / 1024 ** 3) * 100) / 100);
+    } else {
+      setUsername("");
+      setPassword("");
+      setPermissions(["users"]);
+      setDataLimit(0);
+    }
+  }, [open, editing]);
+
+  const createMut = useMutation({
+    mutationFn: () => api.createAdmin({ username, password, permissions, dataLimit }),
+    onSuccess: () => {
+      toast.push("success", "Admin created");
+      qc.invalidateQueries({ queryKey: ["admins"] });
+      onOpenChange(false);
+    },
+    onError: (e: Error) => toast.push("error", e.message),
+  });
+
+  const updateMut = useMutation({
+    mutationFn: () =>
+      api.updateAdmin(editing!.id, {
+        permissions,
+        dataLimit,
+        password: password || undefined,
+      }),
+    onSuccess: () => {
+      toast.push("success", "Admin updated");
+      qc.invalidateQueries({ queryKey: ["admins"] });
+      onOpenChange(false);
+    },
+    onError: (e: Error) => toast.push("error", e.message),
+  });
+
+  const toggle = (p: Permission) =>
+    setPermissions((prev) => (prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p]));
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editing) updateMut.mutate();
+    else createMut.mutate();
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>{editing ? `Edit ${editing.username}` : "Add admin"}</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={submit} className="space-y-4">
+          {!editing && (
+            <div className="space-y-2">
+              <Label htmlFor="adminUsername">Username</Label>
+              <Input
+                id="adminUsername"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                minLength={3}
+                required
+                autoFocus
+              />
+            </div>
+          )}
+          <div className="space-y-2">
+            <Label htmlFor="adminPassword">{editing ? "New password (optional)" : "Password"}</Label>
+            <Input
+              id="adminPassword"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              minLength={editing ? 0 : 6}
+              required={!editing}
+              autoComplete="new-password"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Page access</Label>
+            <div className="grid grid-cols-2 gap-2">
+              {ALL_PERMS.map((p) => {
+                const active = permissions.includes(p);
+                return (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => toggle(p)}
+                    className={cn(
+                      "rounded-base border-2 border-border px-3 py-2 text-left text-sm font-heading transition-all",
+                      active ? "bg-main text-mtext neo-shadow" : "bg-bw hover:bg-main/10",
+                    )}
+                  >
+                    {PERMISSION_LABELS[p]}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-[11px] text-text/50">
+              Admins with Settings access still cannot manage other admins.
+            </p>
+          </div>
+          <div className="space-y-2">
+            <Label>Data quota</Label>
+            <NumberInput value={dataLimit} onChange={setDataLimit} step={1} suffix="GB" />
+            <p className="text-[11px] text-text/50">0 = unlimited</p>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="neutral" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={createMut.isPending || updateMut.isPending}>
+              {editing ? "Save" : "Create admin"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function AdminsCard() {
+  const toast = useToast();
+  const qc = useQueryClient();
+  const [dialogOpen, setDialogOpen] = React.useState(false);
+  const [editing, setEditing] = React.useState<AdminInfo | null>(null);
+  const [deleteTarget, setDeleteTarget] = React.useState<AdminInfo | null>(null);
+
+  const { data } = useQuery({ queryKey: ["admins"], queryFn: api.admins });
+  const admins = data?.admins ?? [];
+
+  const deleteMut = useMutation({
+    mutationFn: (id: number) => api.deleteAdmin(id),
+    onSuccess: () => {
+      toast.push("success", "Admin removed");
+      setDeleteTarget(null);
+      qc.invalidateQueries({ queryKey: ["admins"] });
+    },
+    onError: (e: Error) => toast.push("error", e.message),
+  });
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <Users2 className="h-5 w-5 text-main" />
+              <CardTitle>Admins</CardTitle>
+            </div>
+            <CardDescription>Owner can add admins and control their access.</CardDescription>
+          </div>
+          <Button
+            onClick={() => {
+              setEditing(null);
+              setDialogOpen(true);
+            }}
+          >
+            <Plus className="h-4 w-4" />
+            Add admin
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {admins.map((a) => (
+          <div
+            key={a.id}
+            className="flex flex-wrap items-center justify-between gap-3 rounded-base border-2 border-border bg-bg/40 p-4"
+          >
+            <div className="flex items-center gap-3">
+              <div className="grid h-10 w-10 place-items-center rounded-base border-2 border-border bg-main text-mtext font-heading uppercase">
+                {a.username.slice(0, 1)}
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-heading">{a.username}</span>
+                  {a.role === "owner" ? (
+                    <Badge variant="warning" className="gap-1 text-[10px]">
+                      <Crown className="h-3 w-3" /> Owner
+                    </Badge>
+                  ) : (
+                    <Badge variant="info" className="gap-1 text-[10px]">
+                      <ShieldCheck className="h-3 w-3" /> Admin
+                    </Badge>
+                  )}
+                </div>
+                <div className="mt-1 flex flex-wrap gap-1">
+                  {a.role === "owner" ? (
+                    <span className="text-xs text-text/50">Full access</span>
+                  ) : a.permissions.length === 0 ? (
+                    <span className="text-xs text-text/40">No access</span>
+                  ) : (
+                    a.permissions.map((p) => (
+                      <Badge key={p} variant="neutral" className="text-[10px]">
+                        {PERMISSION_LABELS[p]}
+                      </Badge>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+            {a.role !== "owner" && (
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="neutral"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => {
+                    setEditing(a);
+                    setDialogOpen(true);
+                  }}
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  variant="danger"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setDeleteTarget(a)}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            )}
+          </div>
+        ))}
+      </CardContent>
+
+      <AdminDialog open={dialogOpen} onOpenChange={setDialogOpen} editing={editing} />
+
+      <Dialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Remove admin</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm font-base text-text/70">
+            Remove <span className="font-heading text-text">{deleteTarget?.username}</span>?
+          </p>
+          <DialogFooter>
+            <Button variant="neutral" onClick={() => setDeleteTarget(null)}>
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              onClick={() => deleteTarget && deleteMut.mutate(deleteTarget.id)}
+            >
+              <Trash2 className="h-4 w-4" />
+              Remove
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </Card>
+  );
+}
+
+export default function SettingsPage() {
+  const { isOwner } = useAuth();
+
+  return (
     <div className="space-y-6">
       <div>
         <h1 className="font-heading text-3xl">Settings</h1>
-        <p className="text-sm font-base text-text/60">Manage your admin account</p>
+        <p className="text-sm font-base text-text/60">Manage your account and admins</p>
       </div>
 
-      <Card className="max-w-lg">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <KeyRound className="h-5 w-5 text-main" />
-            <CardTitle>Change credentials</CardTitle>
-          </div>
-          <CardDescription>Update your username or password.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={submit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="newUsername">Username</Label>
-              <Input
-                id="newUsername"
-                value={newUsername}
-                onChange={(e) => setNewUsername(e.target.value)}
-                minLength={3}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="newPassword">New password</Label>
-              <Input
-                id="newPassword"
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Leave blank to keep current"
-                autoComplete="new-password"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="currentPassword">Current password</Label>
-              <Input
-                id="currentPassword"
-                type="password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                autoComplete="current-password"
-                required
-              />
-            </div>
-            <Button type="submit" disabled={credMut.isPending}>
-              <Save className="h-4 w-4" />
-              {credMut.isPending ? "Saving..." : "Save changes"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+      <CredentialsCard />
+      {isOwner && <AdminsCard />}
     </div>
   );
 }

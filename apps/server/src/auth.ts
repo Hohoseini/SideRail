@@ -4,15 +4,56 @@ import type { Request, Response, NextFunction } from "express";
 import { db, getSetting, setSetting } from "./db.js";
 import { config } from "./config.js";
 
+export type Permission = "dashboard" | "users" | "inbounds" | "activity" | "settings";
+export const ALL_PERMISSIONS: Permission[] = [
+  "dashboard",
+  "users",
+  "inbounds",
+  "activity",
+  "settings",
+];
+
 interface AdminRow {
   id: number;
   username: string;
   password_hash: string;
+  role: string;
+  permissions: string;
+  data_limit: number;
   created_at: number;
 }
 
+export interface AdminInfo {
+  id: number;
+  username: string;
+  role: "owner" | "admin";
+  permissions: Permission[];
+  dataLimit: number;
+  createdAt: number;
+}
+
 export interface AuthedRequest extends Request {
-  admin?: { id: number; username: string };
+  admin?: AdminInfo;
+}
+
+function toInfo(row: AdminRow): AdminInfo {
+  return {
+    id: row.id,
+    username: row.username,
+    role: row.role === "owner" ? "owner" : "admin",
+    permissions: row.role === "owner" ? ALL_PERMISSIONS : safeParsePerms(row.permissions),
+    dataLimit: row.data_limit,
+    createdAt: row.created_at,
+  };
+}
+
+function safeParsePerms(raw: string): Permission[] {
+  try {
+    const arr = JSON.parse(raw) as string[];
+    return arr.filter((p): p is Permission => ALL_PERMISSIONS.includes(p as Permission));
+  } catch {
+    return [];
+  }
 }
 
 export function isSetupDone(): boolean {
@@ -22,11 +63,9 @@ export function isSetupDone(): boolean {
 export function completeSetup(username: string, password: string): void {
   const hash = bcrypt.hashSync(password, 10);
   db.prepare("DELETE FROM admins").run();
-  db.prepare("INSERT INTO admins (username, password_hash, created_at) VALUES (?, ?, ?)").run(
-    username,
-    hash,
-    Date.now(),
-  );
+  db.prepare(
+    "INSERT INTO admins (username, password_hash, role, permissions, data_limit, created_at) VALUES (?, ?, 'owner', ?, 0, ?)",
+  ).run(username, hash, JSON.stringify(ALL_PERMISSIONS), Date.now());
   setSetting("setup_done", "1");
 }
 
@@ -38,16 +77,82 @@ export function verifyCredentials(username: string, password: string): AdminRow 
   return bcrypt.compareSync(password, admin.password_hash) ? admin : null;
 }
 
+export function getAdminById(id: number): AdminInfo | null {
+  const row = db.prepare("SELECT * FROM admins WHERE id = ?").get(id) as AdminRow | undefined;
+  return row ? toInfo(row) : null;
+}
+
+export function listAdmins(): AdminInfo[] {
+  const rows = db.prepare("SELECT * FROM admins ORDER BY id ASC").all() as unknown as AdminRow[];
+  return rows.map(toInfo);
+}
+
+export function createAdmin(
+  username: string,
+  password: string,
+  permissions: Permission[],
+  dataLimit: number,
+): { ok: boolean; error?: string } {
+  const exists = db.prepare("SELECT id FROM admins WHERE username = ?").get(username);
+  if (exists) return { ok: false, error: "username already exists" };
+  const hash = bcrypt.hashSync(password, 10);
+  const perms = permissions.filter((p) => ALL_PERMISSIONS.includes(p));
+  db.prepare(
+    "INSERT INTO admins (username, password_hash, role, permissions, data_limit, created_at) VALUES (?, ?, 'admin', ?, ?, ?)",
+  ).run(username, hash, JSON.stringify(perms), Math.round(dataLimit * 1024 ** 3), Date.now());
+  return { ok: true };
+}
+
+export function updateAdmin(
+  id: number,
+  patch: { permissions?: Permission[]; dataLimit?: number; password?: string },
+): { ok: boolean; error?: string } {
+  const row = db.prepare("SELECT * FROM admins WHERE id = ?").get(id) as AdminRow | undefined;
+  if (!row) return { ok: false, error: "not found" };
+  if (row.role === "owner") return { ok: false, error: "cannot modify owner" };
+  const perms =
+    patch.permissions !== undefined
+      ? JSON.stringify(patch.permissions.filter((p) => ALL_PERMISSIONS.includes(p)))
+      : row.permissions;
+  const dataLimit =
+    patch.dataLimit !== undefined ? Math.round(patch.dataLimit * 1024 ** 3) : row.data_limit;
+  const hash = patch.password ? bcrypt.hashSync(patch.password, 10) : row.password_hash;
+  db.prepare(
+    "UPDATE admins SET permissions = ?, data_limit = ?, password_hash = ? WHERE id = ?",
+  ).run(perms, dataLimit, hash, id);
+  return { ok: true };
+}
+
+export function deleteAdmin(id: number): { ok: boolean; error?: string } {
+  const row = db.prepare("SELECT role FROM admins WHERE id = ?").get(id) as
+    | { role: string }
+    | undefined;
+  if (!row) return { ok: false, error: "not found" };
+  if (row.role === "owner") return { ok: false, error: "cannot delete owner" };
+  db.prepare("DELETE FROM admins WHERE id = ?").run(id);
+  return { ok: true };
+}
+
 export function changeCredentials(
+  adminId: number,
   currentPassword: string,
   newUsername: string | undefined,
   newPassword: string | undefined,
 ): { ok: boolean; error?: string } {
-  const admin = db.prepare("SELECT * FROM admins LIMIT 1").get() as AdminRow | undefined;
+  const admin = db.prepare("SELECT * FROM admins WHERE id = ?").get(adminId) as
+    | AdminRow
+    | undefined;
   if (!admin) return { ok: false, error: "no admin" };
   if (!bcrypt.compareSync(currentPassword, admin.password_hash))
     return { ok: false, error: "current password incorrect" };
   const username = newUsername?.trim() || admin.username;
+  if (username !== admin.username) {
+    const clash = db.prepare("SELECT id FROM admins WHERE username = ? AND id != ?").get(
+      username,
+      adminId,
+    );
+    if (clash) return { ok: false, error: "username already exists" };
+  }
   const hash = newPassword ? bcrypt.hashSync(newPassword, 10) : admin.password_hash;
   db.prepare("UPDATE admins SET username = ?, password_hash = ? WHERE id = ?").run(
     username,
@@ -57,10 +162,8 @@ export function changeCredentials(
   return { ok: true };
 }
 
-export function signToken(admin: { id: number; username: string }): string {
-  return jwt.sign({ id: admin.id, username: admin.username }, config.jwtSecret, {
-    expiresIn: "7d",
-  });
+export function signToken(admin: { id: number }): string {
+  return jwt.sign({ id: admin.id }, config.jwtSecret, { expiresIn: "7d" });
 }
 
 export function authGuard(req: AuthedRequest, res: Response, next: NextFunction): void {
@@ -70,10 +173,37 @@ export function authGuard(req: AuthedRequest, res: Response, next: NextFunction)
     return;
   }
   try {
-    const payload = jwt.verify(token, config.jwtSecret) as { id: number; username: string };
-    req.admin = { id: payload.id, username: payload.username };
+    const payload = jwt.verify(token, config.jwtSecret) as { id: number };
+    const admin = getAdminById(payload.id);
+    if (!admin) {
+      res.status(401).json({ error: "unauthorized" });
+      return;
+    }
+    req.admin = admin;
     next();
   } catch {
     res.status(401).json({ error: "unauthorized" });
   }
+}
+
+export function requirePermission(perm: Permission) {
+  return (req: AuthedRequest, res: Response, next: NextFunction): void => {
+    if (!req.admin) {
+      res.status(401).json({ error: "unauthorized" });
+      return;
+    }
+    if (req.admin.role === "owner" || req.admin.permissions.includes(perm)) {
+      next();
+      return;
+    }
+    res.status(403).json({ error: "forbidden" });
+  };
+}
+
+export function requireOwner(req: AuthedRequest, res: Response, next: NextFunction): void {
+  if (req.admin?.role === "owner") {
+    next();
+    return;
+  }
+  res.status(403).json({ error: "owner only" });
 }

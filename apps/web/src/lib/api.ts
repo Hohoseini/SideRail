@@ -38,7 +38,7 @@ export const api = {
       body: JSON.stringify({ username, password }),
     }),
   logout: () => request<{ ok: boolean }>("/api/logout", { method: "POST" }),
-  me: () => request<{ admin: { id: number; username: string } }>("/api/me"),
+  me: () => request<{ admin: import("./types").AdminInfo }>("/api/me"),
   system: () => request<import("./types").SystemStats>("/api/system"),
   inbounds: () => request<import("./types").Inbound[]>("/api/inbounds"),
   toggleInbound: (id: number, enabled: boolean) =>
@@ -70,6 +70,8 @@ export const api = {
     request(`/api/users/${id}/reset-traffic`, { method: "POST" }),
   rotateToken: (id: number) =>
     request<import("./types").User>(`/api/users/${id}/rotate-token`, { method: "POST" }),
+  clientIps: (id: number) =>
+    request<{ ip: string; last_seen: number }[]>(`/api/users/${id}/ips`),
   activity: () => request<import("./types").ActivityEntry[]>("/api/activity"),
   clearActivity: () => request("/api/activity", { method: "DELETE" }),
   settings: () => request<{ subTitle: string }>("/api/settings"),
@@ -86,6 +88,19 @@ export const api = {
     }),
   importBackup: (data: unknown) =>
     request("/api/backup/import", { method: "POST", body: JSON.stringify(data) }),
+  admins: () =>
+    request<{ admins: import("./types").AdminInfo[]; permissions: string[] }>("/api/admins"),
+  createAdmin: (payload: {
+    username: string;
+    password: string;
+    permissions: string[];
+    dataLimit: number;
+  }) => request("/api/admins", { method: "POST", body: JSON.stringify(payload) }),
+  updateAdmin: (
+    id: number,
+    payload: { permissions?: string[]; dataLimit?: number; password?: string },
+  ) => request(`/api/admins/${id}`, { method: "PUT", body: JSON.stringify(payload) }),
+  deleteAdmin: (id: number) => request(`/api/admins/${id}`, { method: "DELETE" }),
 };
 
 export function exportBackupUrl(): string {

@@ -7,6 +7,14 @@ import {
   signToken,
   authGuard,
   changeCredentials,
+  requirePermission,
+  requireOwner,
+  listAdmins,
+  createAdmin,
+  updateAdmin,
+  deleteAdmin,
+  ALL_PERMISSIONS,
+  type Permission,
   type AuthedRequest,
 } from "./auth.js";
 import { db, getSetting, setSetting } from "./db.js";
@@ -23,13 +31,15 @@ import {
   getUser,
   summarize,
 } from "./users.js";
+import { getClientIps, restartXray } from "./xray.js";
 import { listActivity, logActivity, clearActivity } from "./activity.js";
 import { exportData, importData } from "./backup.js";
-import { restartXray } from "./xray.js";
+import { loginRateLimit } from "./ratelimit.js";
 
 export const api = Router();
 
 const trafficReset = z.enum(["never", "daily", "weekly", "monthly"]);
+const permissionEnum = z.enum(["dashboard", "users", "inbounds", "activity", "settings"]);
 
 const userSchema = z.object({
   email: z.string().min(1),
@@ -49,6 +59,14 @@ const userSchema = z.object({
 
 const updateSchema = userSchema.partial().extend({ enabled: z.boolean().optional() });
 
+function setAuthCookie(res: import("express").Response, token: string): void {
+  res.cookie("sr_token", token, {
+    httpOnly: true,
+    sameSite: "lax",
+    maxAge: 7 * 86_400_000,
+  });
+}
+
 api.get("/status", (_req, res) => {
   res.json({ setup: isSetupDone(), name: "SideRail" });
 });
@@ -67,15 +85,14 @@ api.post("/setup", (req, res) => {
   }
   completeSetup(body.data.username, body.data.password);
   logActivity(body.data.username, "setup", "panel initialized");
-  const token = signToken({ id: 1, username: body.data.username });
+  const admin = verifyCredentials(body.data.username, body.data.password)!;
+  const token = signToken(admin);
   setAuthCookie(res, token);
   res.json({ ok: true, token });
 });
 
-api.post("/login", (req, res) => {
-  const body = z
-    .object({ username: z.string(), password: z.string() })
-    .safeParse(req.body);
+api.post("/login", loginRateLimit, (req, res) => {
+  const body = z.object({ username: z.string(), password: z.string() }).safeParse(req.body);
   if (!body.success) {
     res.status(400).json({ error: "invalid input" });
     return;
@@ -103,7 +120,7 @@ api.get("/me", (req: AuthedRequest, res) => {
   res.json({ admin: req.admin });
 });
 
-api.get("/system", (_req, res) => {
+api.get("/system", requirePermission("dashboard"), (_req, res) => {
   res.json(getSystemStats());
 });
 
@@ -111,7 +128,7 @@ api.get("/inbounds", (_req, res) => {
   res.json(listInbounds());
 });
 
-api.patch("/inbounds/:id", async (req: AuthedRequest, res) => {
+api.patch("/inbounds/:id", requirePermission("inbounds"), async (req: AuthedRequest, res) => {
   const id = Number(req.params.id);
   const body = z.object({ enabled: z.boolean() }).safeParse(req.body);
   if (!body.success || !getInbound(id)) {
@@ -124,16 +141,20 @@ api.patch("/inbounds/:id", async (req: AuthedRequest, res) => {
   res.json({ ok: true });
 });
 
-api.get("/users", (_req, res) => {
+api.get("/users", requirePermission("users"), (_req, res) => {
   const users = listUsers();
   res.json({ users, summary: summarize(users) });
 });
 
-api.get("/users/summary", (_req, res) => {
+api.get("/users/summary", requirePermission("users"), (_req, res) => {
   res.json(summarize(listUsers()));
 });
 
-api.get("/users/:id", (req, res) => {
+api.get("/users/:id/ips", requirePermission("users"), (req, res) => {
+  res.json(getClientIps(Number(req.params.id)));
+});
+
+api.get("/users/:id", requirePermission("users"), (req, res) => {
   const user = getUser(Number(req.params.id));
   if (!user) {
     res.status(404).json({ error: "not found" });
@@ -142,7 +163,7 @@ api.get("/users/:id", (req, res) => {
   res.json(user);
 });
 
-api.post("/users", async (req: AuthedRequest, res) => {
+api.post("/users", requirePermission("users"), async (req: AuthedRequest, res) => {
   const body = userSchema.safeParse(req.body);
   if (!body.success) {
     res.status(400).json({ error: "invalid input", detail: body.error.flatten() });
@@ -158,7 +179,7 @@ api.post("/users", async (req: AuthedRequest, res) => {
   }
 });
 
-api.put("/users/:id", async (req: AuthedRequest, res) => {
+api.put("/users/:id", requirePermission("users"), async (req: AuthedRequest, res) => {
   const body = updateSchema.safeParse(req.body);
   if (!body.success) {
     res.status(400).json({ error: "invalid input" });
@@ -174,7 +195,7 @@ api.put("/users/:id", async (req: AuthedRequest, res) => {
   res.json(user);
 });
 
-api.delete("/users/:id", async (req: AuthedRequest, res) => {
+api.delete("/users/:id", requirePermission("users"), async (req: AuthedRequest, res) => {
   const user = getUser(Number(req.params.id));
   deleteUser(Number(req.params.id));
   logActivity(req.admin!.username, "user_delete", user?.email || String(req.params.id));
@@ -182,7 +203,7 @@ api.delete("/users/:id", async (req: AuthedRequest, res) => {
   res.json({ ok: true });
 });
 
-api.post("/users/:id/toggle", async (req: AuthedRequest, res) => {
+api.post("/users/:id/toggle", requirePermission("users"), async (req: AuthedRequest, res) => {
   const body = z.object({ enabled: z.boolean() }).safeParse(req.body);
   if (!body.success) {
     res.status(400).json({ error: "invalid" });
@@ -194,39 +215,37 @@ api.post("/users/:id/toggle", async (req: AuthedRequest, res) => {
   res.json({ ok: true });
 });
 
-api.post("/users/:id/reset-traffic", (req: AuthedRequest, res) => {
+api.post("/users/:id/reset-traffic", requirePermission("users"), (req: AuthedRequest, res) => {
   resetUserTraffic(Number(req.params.id));
   logActivity(req.admin!.username, "user_reset_traffic", `#${req.params.id}`);
   res.json({ ok: true });
 });
 
-api.post("/users/:id/rotate-token", (req: AuthedRequest, res) => {
+api.post("/users/:id/rotate-token", requirePermission("users"), (req: AuthedRequest, res) => {
   rotateSubToken(Number(req.params.id));
   logActivity(req.admin!.username, "user_rotate_token", `#${req.params.id}`);
   res.json(getUser(Number(req.params.id)));
 });
 
-api.get("/activity", (_req, res) => {
+api.get("/activity", requirePermission("activity"), (_req, res) => {
   res.json(listActivity(300));
 });
 
-api.delete("/activity", (req: AuthedRequest, res) => {
+api.delete("/activity", requirePermission("activity"), (req: AuthedRequest, res) => {
   clearActivity();
   logActivity(req.admin!.username, "activity_clear", "");
   res.json({ ok: true });
 });
 
-api.get("/settings", (_req, res) => {
+api.get("/settings", requirePermission("settings"), (_req, res) => {
   res.json({
     xrayVersion: getSetting("xray_version") || "",
     subTitle: getSetting("sub_title") || "SideRail",
   });
 });
 
-api.put("/settings", (req: AuthedRequest, res) => {
-  const body = z
-    .object({ subTitle: z.string().optional() })
-    .safeParse(req.body);
+api.put("/settings", requirePermission("settings"), (req: AuthedRequest, res) => {
+  const body = z.object({ subTitle: z.string().optional() }).safeParse(req.body);
   if (!body.success) {
     res.status(400).json({ error: "invalid" });
     return;
@@ -236,7 +255,7 @@ api.put("/settings", (req: AuthedRequest, res) => {
   res.json({ ok: true });
 });
 
-api.post("/settings/credentials", (req: AuthedRequest, res) => {
+api.post("/settings/credentials", requirePermission("settings"), (req: AuthedRequest, res) => {
   const body = z
     .object({
       currentPassword: z.string().min(1),
@@ -249,6 +268,7 @@ api.post("/settings/credentials", (req: AuthedRequest, res) => {
     return;
   }
   const result = changeCredentials(
+    req.admin!.id,
     body.data.currentPassword,
     body.data.newUsername,
     body.data.newPassword,
@@ -261,33 +281,92 @@ api.post("/settings/credentials", (req: AuthedRequest, res) => {
   res.json({ ok: true });
 });
 
-api.get("/backup/export", (req: AuthedRequest, res) => {
+api.get("/admins", requireOwner, (_req, res) => {
+  res.json({ admins: listAdmins(), permissions: ALL_PERMISSIONS });
+});
+
+api.post("/admins", requireOwner, (req: AuthedRequest, res) => {
+  const body = z
+    .object({
+      username: z.string().min(3),
+      password: z.string().min(6),
+      permissions: z.array(permissionEnum),
+      dataLimit: z.number().min(0).default(0),
+    })
+    .safeParse(req.body);
+  if (!body.success) {
+    res.status(400).json({ error: "invalid input" });
+    return;
+  }
+  const result = createAdmin(
+    body.data.username,
+    body.data.password,
+    body.data.permissions as Permission[],
+    body.data.dataLimit,
+  );
+  if (!result.ok) {
+    res.status(400).json({ error: result.error });
+    return;
+  }
+  logActivity(req.admin!.username, "admin_create", body.data.username);
+  res.json({ ok: true });
+});
+
+api.put("/admins/:id", requireOwner, (req: AuthedRequest, res) => {
+  const body = z
+    .object({
+      permissions: z.array(permissionEnum).optional(),
+      dataLimit: z.number().min(0).optional(),
+      password: z.string().min(6).optional(),
+    })
+    .safeParse(req.body);
+  if (!body.success) {
+    res.status(400).json({ error: "invalid input" });
+    return;
+  }
+  const result = updateAdmin(Number(req.params.id), {
+    permissions: body.data.permissions as Permission[] | undefined,
+    dataLimit: body.data.dataLimit,
+    password: body.data.password,
+  });
+  if (!result.ok) {
+    res.status(400).json({ error: result.error });
+    return;
+  }
+  logActivity(req.admin!.username, "admin_update", `#${req.params.id}`);
+  res.json({ ok: true });
+});
+
+api.delete("/admins/:id", requireOwner, (req: AuthedRequest, res) => {
+  const result = deleteAdmin(Number(req.params.id));
+  if (!result.ok) {
+    res.status(400).json({ error: result.error });
+    return;
+  }
+  logActivity(req.admin!.username, "admin_delete", `#${req.params.id}`);
+  res.json({ ok: true });
+});
+
+api.get("/backup/export", requirePermission("dashboard"), (req: AuthedRequest, res) => {
   logActivity(req.admin!.username, "backup_export", "");
   res.setHeader("Content-Type", "application/json");
-  res.setHeader(
-    "Content-Disposition",
-    `attachment; filename="siderail-backup-${Date.now()}.json"`,
-  );
+  res.setHeader("Content-Disposition", `attachment; filename="siderail-backup-${Date.now()}.json"`);
   res.send(JSON.stringify(exportData(), null, 2));
 });
 
-api.post("/backup/import", async (req: AuthedRequest, res) => {
+api.post("/backup/import", requirePermission("dashboard"), async (req: AuthedRequest, res) => {
   try {
     const result = importData(req.body);
-    logActivity(req.admin!.username, "backup_import", `${result.users} users, ${result.inbounds} inbounds`);
+    logActivity(
+      req.admin!.username,
+      "backup_import",
+      `${result.users} users, ${result.inbounds} inbounds`,
+    );
     await restartXray();
     res.json({ ok: true, ...result });
   } catch (e) {
     res.status(400).json({ error: (e as Error).message });
   }
 });
-
-function setAuthCookie(res: import("express").Response, token: string): void {
-  res.cookie("sr_token", token, {
-    httpOnly: true,
-    sameSite: "lax",
-    maxAge: 7 * 86_400_000,
-  });
-}
 
 void db;

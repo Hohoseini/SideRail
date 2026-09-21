@@ -16,6 +16,9 @@ export function migrate(): void {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       username TEXT UNIQUE NOT NULL,
       password_hash TEXT NOT NULL,
+      role TEXT NOT NULL DEFAULT 'admin',
+      permissions TEXT NOT NULL DEFAULT '[]',
+      data_limit INTEGER NOT NULL DEFAULT 0,
       created_at INTEGER NOT NULL
     );
 
@@ -75,10 +78,28 @@ export function migrate(): void {
       total INTEGER NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS client_ips (
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      ip TEXT NOT NULL,
+      last_seen INTEGER NOT NULL,
+      PRIMARY KEY (user_id, ip)
+    );
+
     CREATE INDEX IF NOT EXISTS idx_activity_ts ON activity(ts DESC);
     CREATE INDEX IF NOT EXISTS idx_users_token ON users(sub_token);
     CREATE INDEX IF NOT EXISTS idx_usage_user_ts ON usage_history(user_id, ts);
   `);
+  migrateColumns();
+}
+
+function migrateColumns(): void {
+  const cols = db.prepare("PRAGMA table_info(admins)").all() as { name: string }[];
+  const names = cols.map((c) => c.name);
+  if (!names.includes("role")) db.exec("ALTER TABLE admins ADD COLUMN role TEXT NOT NULL DEFAULT 'admin'");
+  if (!names.includes("permissions"))
+    db.exec("ALTER TABLE admins ADD COLUMN permissions TEXT NOT NULL DEFAULT '[]'");
+  if (!names.includes("data_limit"))
+    db.exec("ALTER TABLE admins ADD COLUMN data_limit INTEGER NOT NULL DEFAULT 0");
 }
 
 export function getSetting(key: string): string | null {

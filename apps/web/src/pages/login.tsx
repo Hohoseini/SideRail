@@ -39,7 +39,7 @@ export default function LoginPage() {
       <Card className="relative w-full max-w-md animate-pop-in">
         <CardHeader className="items-center text-center">
           <div className="mx-auto mb-2 grid h-14 w-14 place-items-center rounded-base border-2 border-border bg-main text-mtext neo-shadow">
-            <RailLogo className="h-7 w-7" />
+            <RailLogo className="text-3xl" />
           </div>
           <h1 className="font-heading text-2xl">Welcome back</h1>
           <p className="text-sm font-base text-text/60">Sign in to your SideRail panel</p>

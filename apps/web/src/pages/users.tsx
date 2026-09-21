@@ -317,53 +317,65 @@ export default function UsersPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Actions</TableHead>
-                    <TableHead>Enabled</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead className="text-center">Actions</TableHead>
+                    <TableHead className="text-center">Enabled</TableHead>
+                    <TableHead className="text-center">Status</TableHead>
                     <TableHead>Client</TableHead>
-                    <TableHead>Inbounds</TableHead>
+                    <TableHead className="text-center">Inbounds</TableHead>
                     <TableHead className="min-w-[180px]">Traffic</TableHead>
-                    <TableHead>Remaining</TableHead>
-                    <TableHead>Duration</TableHead>
+                    <TableHead className="text-center">Remaining</TableHead>
+                    <TableHead className="text-center">Duration</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {users.map((u) => (
                     <TableRow key={u.id}>
-                      <TableCell>{rowActions(u)}</TableCell>
                       <TableCell>
-                        <Switch
-                          checked={!!u.enabled}
-                          onCheckedChange={(v) => toggleMut.mutate({ id: u.id, enabled: v })}
-                        />
+                        <div className="flex justify-center">{rowActions(u)}</div>
                       </TableCell>
                       <TableCell>
-                        <OnlineDot online={u.online} />
+                        <div className="flex justify-center">
+                          <Switch
+                            checked={!!u.enabled}
+                            onCheckedChange={(v) => toggleMut.mutate({ id: u.id, enabled: v })}
+                          />
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex justify-center">
+                          <OnlineDot online={u.online} />
+                        </div>
                       </TableCell>
                       <TableCell>
                         <div className="font-heading">{u.email}</div>
                         {u.comment && <div className="text-xs text-text/50">{u.comment}</div>}
                       </TableCell>
-                      <TableCell>{inboundBadges(u)}</TableCell>
+                      <TableCell>
+                        <div className="flex justify-center">{inboundBadges(u)}</div>
+                      </TableCell>
                       <TableCell>
                         <TrafficBar user={u} />
                       </TableCell>
-                      <TableCell className="text-sm font-base">
-                        {u.data_limit <= 0 ? (
-                          <InfinityIcon className="h-4 w-4 text-text/60" />
-                        ) : (
-                          formatBytes(Math.max(0, u.data_limit - u.total))
-                        )}
-                        {u.expire_at && (
-                          <div className="text-xs text-text/50">{relativeTime(u.expire_at)}</div>
-                        )}
+                      <TableCell className="text-center text-sm font-base">
+                        <div className="flex flex-col items-center">
+                          {u.data_limit <= 0 ? (
+                            <InfinityIcon className="h-4 w-4 text-text/60" />
+                          ) : (
+                            formatBytes(Math.max(0, u.data_limit - u.total))
+                          )}
+                          {u.expire_at && (
+                            <div className="text-xs text-text/50">{relativeTime(u.expire_at)}</div>
+                          )}
+                        </div>
                       </TableCell>
-                      <TableCell className="text-sm font-base">
-                        {u.expire_at ? (
-                          durationSince(u.created_at)
-                        ) : (
-                          <InfinityIcon className="h-4 w-4 text-text/60" />
-                        )}
+                      <TableCell className="text-center text-sm font-base">
+                        <div className="flex justify-center">
+                          {u.expire_at ? (
+                            durationSince(u.created_at)
+                          ) : (
+                            <InfinityIcon className="h-4 w-4 text-text/60" />
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
