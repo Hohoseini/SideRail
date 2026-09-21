@@ -6,19 +6,21 @@
 <br/>
 
 <a href="https://railway.com/new">
-  <img src="https://img.shields.io/badge/%F0%9F%9A%80%20Deploy%20on%20Railway-a3e635?style=for-the-badge&labelColor=0b0b0f&color=a3e635" alt="Deploy on Railway" height="46" />
+  <img src="https://img.shields.io/badge/DEPLOY%20ON%20RAILWAY-a3e635?style=for-the-badge&labelColor=0b0b0f&color=a3e635" alt="Deploy on Railway" height="48" />
 </a>
 
 <br/>
 <br/>
 
-![License](https://img.shields.io/badge/License-MIT-a3e635?style=flat-square&labelColor=0b0b0f)
-![Xray](https://img.shields.io/badge/Xray--core-v26.9.9-a3e635?style=flat-square&labelColor=0b0b0f)
-![Protocols](https://img.shields.io/badge/VLESS%20·%20VMess%20·%20Trojan-a3e635?style=flat-square&labelColor=0b0b0f)
-![Transports](https://img.shields.io/badge/WS%20·%20XHTTP%20·%20HTTPUpgrade-a3e635?style=flat-square&labelColor=0b0b0f)
-![TypeScript](https://img.shields.io/badge/TypeScript-a3e635?style=flat-square&labelColor=0b0b0f&logo=typescript&logoColor=a3e635)
-![React](https://img.shields.io/badge/React%20+%20Vite-a3e635?style=flat-square&labelColor=0b0b0f&logo=react&logoColor=a3e635)
+<img src="https://img.shields.io/badge/LICENSE-MIT-a3e635?style=for-the-badge&labelColor=0b0b0f" alt="License" />
+<img src="https://img.shields.io/badge/XRAY--CORE-v26.9.9-a3e635?style=for-the-badge&labelColor=0b0b0f" alt="Xray" />
+<img src="https://img.shields.io/badge/PROTOCOLS-VLESS%20·%20VMESS%20·%20TROJAN-a3e635?style=for-the-badge&labelColor=0b0b0f" alt="Protocols" />
+<br/>
+<img src="https://img.shields.io/badge/TRANSPORTS-WS%20·%20XHTTP%20·%20HTTPUPGRADE-a3e635?style=for-the-badge&labelColor=0b0b0f" alt="Transports" />
+<img src="https://img.shields.io/badge/TYPESCRIPT-a3e635?style=for-the-badge&labelColor=0b0b0f&logo=typescript&logoColor=a3e635" alt="TypeScript" />
+<img src="https://img.shields.io/badge/REACT%20+%20VITE-a3e635?style=for-the-badge&labelColor=0b0b0f&logo=react&logoColor=a3e635" alt="React" />
 
+<br/>
 <br/>
 
 **A modern, neobrutalist VPN management panel powered by [Xray-core](https://github.com/XTLS/Xray-core) — deploy to [Railway](https://railway.app) in one click.**
@@ -28,40 +30,40 @@
 <br/>
 
 > [!TIP]
-> **Fork → Deploy on Railway → Expose port `8080` → Open the panel.** That's the whole setup. No env vars required.
+> **Fork, deploy on Railway, expose port `8080`, open the panel.** That is the whole setup. No environment variables required.
 
 <br/>
 
-## ✨ Why SideRail?
+<img src=".github/sections/why.svg" width="380" alt="Why SideRail" />
 
 <table>
 <tr>
 <td width="50%" valign="top">
 
-**🎯 Built for one job, done right**
+**Built for one job, done right**
 
 SideRail focuses on **HTTP-based transports behind a TLS-terminating edge**. Every client link is clean, standard, and always `security=tls` on port `443`.
 
 </td>
 <td width="50%" valign="top">
 
-**🎨 Beautiful & responsive**
+**Beautiful and responsive**
 
-A bold **neobrutalist** interface — thick borders, hard shadows, animated icons — that looks great on both desktop and mobile.
+A bold **neobrutalist** interface with thick borders, hard shadows and animated icons that looks great on both desktop and mobile.
 
 </td>
 </tr>
 <tr>
 <td width="50%" valign="top">
 
-**⚡ Zero-config deploy**
+**Zero-config deploy**
 
-Xray-core downloads itself on first boot. The session secret is auto-generated. No environment variables needed.
+Xray-core downloads itself on first boot. The session secret is auto-generated. **No environment variables needed.**
 
 </td>
 <td width="50%" valign="top">
 
-**👑 Multi-admin ready**
+**Multi-admin ready**
 
 An Owner can add Admins with scoped page access and per-admin data quotas. Admins only see their own users.
 
@@ -71,56 +73,79 @@ An Owner can add Admins with scoped page access and per-admin data quotas. Admin
 
 <br/>
 
-## 🧭 Features at a glance
+<img src=".github/sections/features.svg" width="380" alt="Features" />
 
-| | Feature | Details |
-|:--:|:--|:--|
-| 📊 | **Dashboard** | Live CPU / RAM / Swap / Storage · one-click Backup & Restore (users, inbounds, admins, settings) |
-| 👥 | **Users** | Rich create form, summary cards, responsive table, live **Connected IPs**, per-user actions |
-| 🔌 | **Inbounds** | 5 auto-seeded HTTP inbounds — enable/disable only, unique port + `/SideRail/...` path each |
-| 📜 | **Activity Log** | Live timeline of every administrative event |
-| ⚙️ | **Settings & Admins** | Owner/Admin roles, scoped permissions, per-admin data quotas |
-| 🔗 | **Subscription** | Gorgeous per-user page — usage chart, QR codes, base64 sub for clients |
-| 🛡️ | **Security** | JWT sessions · built-in rate limiting · sniffing fully disabled (no QUIC crash) |
+<table>
+<tr>
+<td valign="top"><b>Dashboard</b></td>
+<td>Live CPU, RAM, Swap and Storage metrics, plus one-click Backup &amp; Restore of users, inbounds, admins and settings.</td>
+</tr>
+<tr>
+<td valign="top"><b>Users</b></td>
+<td>Rich create form, summary cards, a fully responsive table, live <b>Connected IPs</b>, and per-user actions.</td>
+</tr>
+<tr>
+<td valign="top"><b>Inbounds</b></td>
+<td>Five HTTP inbounds auto-seeded on first boot. Enable or disable only, each with a unique port and <code>/SideRail/...</code> path.</td>
+</tr>
+<tr>
+<td valign="top"><b>Activity Log</b></td>
+<td>A live timeline of every administrative event.</td>
+</tr>
+<tr>
+<td valign="top"><b>Settings &amp; Admins</b></td>
+<td>Owner and Admin roles, scoped permissions, and per-admin data quotas.</td>
+</tr>
+<tr>
+<td valign="top"><b>Subscription</b></td>
+<td>A gorgeous per-user page with a live usage chart, QR codes and a base64 subscription for clients.</td>
+</tr>
+<tr>
+<td valign="top"><b>Security</b></td>
+<td>JWT sessions, built-in rate limiting, and sniffing fully disabled to prevent the QUIC crash.</td>
+</tr>
+</table>
 
 <br/>
 
-## 🚀 Deploy on Railway
+<img src=".github/sections/deploy.svg" width="380" alt="Deploy on Railway" />
 
-No code required. Just follow these steps:
+**No code required. Just follow these steps:**
 
-**1. Fork this repository** — click **Fork** at the top-right to copy it to your GitHub.
+**1. Fork this repository** — click **Fork** at the top-right to copy it to your GitHub account.
 
-**2. Create a Railway project** — go to **[railway.app](https://railway.app)** → **New Project** → **Deploy from GitHub repo** → pick your fork.
+**2. Create a Railway project** — go to **[railway.app](https://railway.app)**, then **New Project → Deploy from GitHub repo**, and pick your fork.
 
 **3. Deploy** — Railway reads the `Dockerfile` and `railway.json` and builds automatically.
 
-**4. ⚠️ Expose port `8080`** — open **Settings → Networking → Generate Domain**, and set the port to **`8080`**.
+**4. Expose port `8080`** — open **Settings → Networking → Generate Domain**, and set the port to **`8080`**.
 
 > [!IMPORTANT]
 > SideRail listens on port **`8080`** — this is the **only** port you expose. The ports `10085` and `20000–20004` are Xray's internal ports bound to `127.0.0.1`; they are private and must **not** be exposed.
 
-**5. (Optional) Add a volume** — attach a **Volume** at **`/data`** so users, admins and settings survive redeploys.
+**5. Add a volume (optional)** — attach a **Volume** at **`/data`** so users, admins and settings survive redeploys.
 
-**6. Open your panel** — visit the generated `*.up.railway.app` domain, land on the **Setup** page, and create your **Owner** account. 🎉
+**6. Open your panel** — visit the generated `*.up.railway.app` domain, land on the **Setup** page, and create your **Owner** account.
 
 <br/>
 
-## 🔧 Environment variables (all optional)
+<img src=".github/sections/env.svg" width="440" alt="Environment variables" />
+
+**All optional.**
 
 | Variable | Default | Description |
 |:--|:--|:--|
 | `PORT` | `8080` | HTTP port. **Expose this one on Railway.** |
-| `JWT_SECRET` | _auto_ | Signs admin session cookies. Auto-generated & persisted if unset. |
+| `JWT_SECRET` | *auto* | Signs admin session cookies. Auto-generated and persisted if unset. |
 | `XRAY_VERSION` | `v26.9.9` | Xray-core release fetched on first boot. |
 | `SIDERAIL_DATA_DIR` | `/data` | Persistent data directory (mount a volume here). |
-| `PUBLIC_DOMAIN` | _auto_ | Override for a custom domain. Falls back to `RAILWAY_PUBLIC_DOMAIN`. |
+| `PUBLIC_DOMAIN` | *auto* | Override for a custom domain. Falls back to `RAILWAY_PUBLIC_DOMAIN`. |
 | `XRAY_API_PORT` | `10085` | Internal Xray stats API port. |
 | `XRAY_INBOUND_BASE_PORT` | `20000` | Base port for internal inbound listeners. |
 
 <br/>
 
-## 🏗️ Architecture
+<img src=".github/sections/architecture.svg" width="380" alt="Architecture" />
 
 ```
 apps/
@@ -146,17 +171,17 @@ apps/
 
 <br/>
 
-## 🛠️ Tech stack
+<img src=".github/sections/stack.svg" width="380" alt="Tech stack" />
 
-**Backend** — Node.js (Express) in **TypeScript**, using the built-in `node:sqlite` module (no native build step).
+**Backend** — Node.js (Express) in **TypeScript**, using the built-in `node:sqlite` module with no native build step.
 
-**Frontend** — **React + Vite + TypeScript**, styled with **Tailwind CSS** following the [neobrutalism.dev](https://www.neobrutalism.dev) design system, with [Lucide](https://lucide.dev) icons, TanStack Query, Recharts, and `qrcode`.
+**Frontend** — **React + Vite + TypeScript**, styled with **Tailwind CSS** following the [neobrutalism.dev](https://www.neobrutalism.dev) design system, with [Lucide](https://lucide.dev) icons, TanStack Query, Recharts and `qrcode`.
 
 <br/>
 
-## 💻 Local development
+<img src=".github/sections/dev.svg" width="440" alt="Local development" />
 
-Requires **Node.js ≥ 22.5** (Node 24 recommended).
+**Requires Node.js ≥ 22.5 (Node 24 recommended).**
 
 ```bash
 npm install     # install all workspaces
@@ -168,33 +193,27 @@ npm start       # serve API + built frontend on :8080
 
 <br/>
 
-## 📈 Star History
+<img src=".github/sections/stars.svg" width="380" alt="Star history" />
 
 <a href="https://www.star-history.com/#icubaby/SideRail&Date">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=icubaby/SideRail&type=Date&theme=dark" />
     <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=icubaby/SideRail&type=Date" />
-    <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=icubaby/SideRail&type=Date" width="70%" />
+    <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=icubaby/SideRail&type=Date" width="80%" />
   </picture>
 </a>
 
 <br/>
 <br/>
 
-## 💖 Support the Project
+<img src=".github/sections/support.svg" width="440" alt="Support the project" />
 
-<div align="center">
-
-**If SideRail is useful to you, a small donation keeps it moving forward.** 🚀
-
-</div>
-
-<br/>
+**If SideRail is useful to you, a small donation keeps it moving forward.**
 
 <table>
   <tr>
-    <td align="center" width="25%">
-      <img src="https://img.shields.io/badge/Bitcoin-BTC-F7931A?style=for-the-badge&logo=bitcoin&logoColor=white&labelColor=0b0b0f" alt="Bitcoin" />
+    <td align="center" width="220">
+      <img src="https://img.shields.io/badge/BITCOIN-BTC-F7931A?style=for-the-badge&logo=bitcoin&logoColor=white&labelColor=0b0b0f" alt="Bitcoin" />
     </td>
     <td>
 
@@ -204,7 +223,7 @@ npm start       # serve API + built frontend on :8080
   </tr>
   <tr>
     <td align="center">
-      <img src="https://img.shields.io/badge/Ethereum-ETH-627EEA?style=for-the-badge&logo=ethereum&logoColor=white&labelColor=0b0b0f" alt="Ethereum" />
+      <img src="https://img.shields.io/badge/ETHEREUM-ETH-627EEA?style=for-the-badge&logo=ethereum&logoColor=white&labelColor=0b0b0f" alt="Ethereum" />
     </td>
     <td>
 
@@ -214,7 +233,7 @@ npm start       # serve API + built frontend on :8080
   </tr>
   <tr>
     <td align="center">
-      <img src="https://img.shields.io/badge/Litecoin-LTC-A6A9AA?style=for-the-badge&logo=litecoin&logoColor=white&labelColor=0b0b0f" alt="Litecoin" />
+      <img src="https://img.shields.io/badge/LITECOIN-LTC-A6A9AA?style=for-the-badge&logo=litecoin&logoColor=white&labelColor=0b0b0f" alt="Litecoin" />
     </td>
     <td>
 
@@ -224,7 +243,7 @@ npm start       # serve API + built frontend on :8080
   </tr>
   <tr>
     <td align="center">
-      <img src="https://img.shields.io/badge/TON-Gram-0098EA?style=for-the-badge&logo=ton&logoColor=white&labelColor=0b0b0f" alt="TON" />
+      <img src="https://img.shields.io/badge/TON-GRAM-0098EA?style=for-the-badge&logo=ton&logoColor=white&labelColor=0b0b0f" alt="TON" />
     </td>
     <td>
 
@@ -238,6 +257,8 @@ npm start       # serve API + built frontend on :8080
 
 <div align="center">
 
-[![License](https://img.shields.io/badge/License-MIT-a3e635?style=for-the-badge&labelColor=0b0b0f)](LICENSE)
+<img src="https://img.shields.io/badge/LICENSE-MIT-a3e635?style=for-the-badge&labelColor=0b0b0f" alt="MIT License" />
+
+**Released under the MIT License.**
 
 </div>

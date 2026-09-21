@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="900" height="300" viewBox="0 0 900 300" fill="none" role="img" aria-label="SideRail">
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="320" viewBox="0 0 1000 320" fill="none" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" role="img" aria-label="SideRail">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="900" y2="300" gradientUnits="userSpaceOnUse">
+    <linearGradient id="bg" x1="0" y1="0" x2="1000" y2="320" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#0d0d12"/>
       <stop offset="1" stop-color="#17171f"/>
     </linearGradient>
@@ -8,23 +8,23 @@
       <stop offset="0" stop-color="#c6ff5e"/>
       <stop offset="1" stop-color="#a3e635"/>
     </linearGradient>
-    <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse">
-      <circle cx="2" cy="2" r="1.5" fill="#a3e635" fill-opacity="0.14"/>
+    <pattern id="dots" width="30" height="30" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.5" fill="#a3e635" fill-opacity="0.13"/>
     </pattern>
-    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
-      <feGaussianBlur stdDeviation="12" result="b"/>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="26" result="b"/>
       <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
   </defs>
 
-  <rect x="5" y="5" width="890" height="290" rx="26" fill="url(#bg)" stroke="#a3e635" stroke-width="5"/>
-  <rect x="5" y="5" width="890" height="290" rx="26" fill="url(#dots)"/>
-  <circle cx="800" cy="70" r="120" fill="#a3e635" fill-opacity="0.10" filter="url(#glow)"/>
-  <circle cx="120" cy="250" r="120" fill="#7dd3fc" fill-opacity="0.08" filter="url(#glow)"/>
+  <rect x="6" y="6" width="988" height="308" rx="28" fill="url(#bg)" stroke="#a3e635" stroke-width="5"/>
+  <rect x="6" y="6" width="988" height="308" rx="28" fill="url(#dots)"/>
+  <circle cx="890" cy="60" r="130" fill="#a3e635" fill-opacity="0.10" filter="url(#glow)"/>
+  <circle cx="120" cy="290" r="120" fill="#7dd3fc" fill-opacity="0.07" filter="url(#glow)"/>
 
-  <g transform="translate(70 95)">
-    <rect x="0" y="0" width="110" height="110" rx="22" fill="url(#green)" stroke="#0b0b0f" stroke-width="5"/>
-    <g transform="translate(55 55) scale(0.40) translate(-139 -87)" fill="#0b0b0f">
+  <g transform="translate(72 105)">
+    <rect x="0" y="0" width="112" height="112" rx="24" fill="url(#green)" stroke="#0b0b0f" stroke-width="5"/>
+    <g transform="translate(56 56) scale(0.40) translate(-139 -87)" fill="#0b0b0f">
       <path d="M204.443 116.854C193.075 141.7 168.049 158.997 138.924 158.997C90.2988 158.262 73.4029 117.029 73.3311 116.854H204.443Z"/>
       <path d="M138.924 15C178.732 15.0003 211.001 47.2522 211 87.0293C210.993 94.7072 209.756 102.334 207.332 109.62H70.835C69.9423 106.835 69.3467 104.312 69.3467 104.312H169.343C175.731 104.311 181.006 101.043 183.458 95.5635C186.122 89.6007 184.994 83.3758 181.076 77.9619C176.838 72.1086 169.728 63.8922 164.805 60.1699C155.733 53.3073 144.205 52.3 134.825 51.9873L132.133 51.8877C127.784 51.7062 126.956 51.6064 104.693 51.6064V51.6152C104.693 51.6152 85.856 51.6272 76.1846 51.6475C88.5599 29.7872 111.994 15 138.924 15Z"/>
       <path d="M177.241 91.1748C176.416 94.3667 173.877 96.9404 169.343 96.9404H67.6152C67.3529 95.0449 67.171 93.1222 67.0557 91.1748H177.241Z"/>
@@ -32,22 +32,22 @@
     </g>
   </g>
 
-  <text x="212" y="140" font-family="Arial Black, 'Arial Black', Arial, sans-serif" font-size="82" font-weight="900" letter-spacing="-2" fill="#ffffff">SideRail</text>
-  <rect x="216" y="164" width="470" height="38" rx="10" fill="url(#green)"/>
-  <text x="234" y="191" font-family="Arial Black, Arial, sans-serif" font-size="20" font-weight="900" letter-spacing="0.5" fill="#0b0b0f">XRAY-CORE VPN PANEL · ONE-CLICK ON RAILWAY</text>
+  <text x="216" y="150" font-size="86" font-weight="900" letter-spacing="-3" fill="#ffffff">SideRail</text>
+  <rect x="220" y="176" width="560" height="40" rx="10" fill="url(#green)"/>
+  <text x="240" y="204" font-size="21" font-weight="800" letter-spacing="0.4" fill="#0b0b0f">XRAY-CORE VPN PANEL &#183; ONE-CLICK ON RAILWAY</text>
 
-  <g font-family="Arial Black, Arial, sans-serif" font-size="17" font-weight="900">
-    <g transform="translate(214 216)">
-      <rect x="0" y="0" width="104" height="34" rx="9" fill="none" stroke="#a3e635" stroke-width="2.5"/>
-      <text x="52" y="23" text-anchor="middle" fill="#a3e635">VLESS</text>
+  <g font-size="18" font-weight="800">
+    <g transform="translate(220 232)">
+      <rect x="0" y="0" width="112" height="36" rx="9" fill="none" stroke="#a3e635" stroke-width="2.5"/>
+      <text x="56" y="24" text-anchor="middle" fill="#a3e635">VLESS</text>
     </g>
-    <g transform="translate(328 216)">
-      <rect x="0" y="0" width="104" height="34" rx="9" fill="none" stroke="#7dd3fc" stroke-width="2.5"/>
-      <text x="52" y="23" text-anchor="middle" fill="#7dd3fc">VMESS</text>
+    <g transform="translate(342 232)">
+      <rect x="0" y="0" width="112" height="36" rx="9" fill="none" stroke="#7dd3fc" stroke-width="2.5"/>
+      <text x="56" y="24" text-anchor="middle" fill="#7dd3fc">VMESS</text>
     </g>
-    <g transform="translate(442 216)">
-      <rect x="0" y="0" width="104" height="34" rx="9" fill="none" stroke="#f0abfc" stroke-width="2.5"/>
-      <text x="52" y="23" text-anchor="middle" fill="#f0abfc">TROJAN</text>
+    <g transform="translate(464 232)">
+      <rect x="0" y="0" width="112" height="36" rx="9" fill="none" stroke="#f0abfc" stroke-width="2.5"/>
+      <text x="56" y="24" text-anchor="middle" fill="#f0abfc">TROJAN</text>
     </g>
   </g>
 </svg>
