@@ -6,7 +6,6 @@ import {
   Users2,
   Plus,
   Trash2,
-  Crown,
   ShieldCheck,
   Pencil,
 } from "lucide-react";
@@ -297,7 +296,7 @@ function AdminsCard() {
   const [deleteTarget, setDeleteTarget] = React.useState<AdminInfo | null>(null);
 
   const { data } = useQuery({ queryKey: ["admins"], queryFn: api.admins });
-  const admins = data?.admins ?? [];
+  const admins = (data?.admins ?? []).filter((a) => a.role !== "owner");
 
   const deleteMut = useMutation({
     mutationFn: (id: number) => api.deleteAdmin(id),
@@ -310,15 +309,15 @@ function AdminsCard() {
   });
 
   return (
-    <Card>
+    <Card className="min-w-0">
       <CardHeader>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
+          <div className="min-w-0">
             <div className="flex items-center gap-2">
               <Users2 className="h-5 w-5 text-main" />
               <CardTitle>Admins</CardTitle>
             </div>
-            <CardDescription>Owner can add admins and control their access.</CardDescription>
+            <CardDescription>Add admins and control their access.</CardDescription>
           </div>
           <Button
             onClick={() => {
@@ -331,56 +330,32 @@ function AdminsCard() {
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+      <CardContent className="grid min-w-0 gap-3 sm:grid-cols-2">
+        {admins.length === 0 && (
+          <div className="col-span-full rounded-base border-2 border-dashed border-border/40 py-10 text-center text-sm text-text/50">
+            No admins yet. Click “Add admin” to create one.
+          </div>
+        )}
         {admins.map((a) => (
           <div
             key={a.id}
-            className="flex flex-col gap-3 rounded-base border-2 border-border bg-bg/40 p-4"
+            className="flex min-w-0 flex-col gap-3 rounded-base border-2 border-border bg-bg/40 p-4"
           >
             <div className="flex items-start justify-between gap-2">
-              <div className="flex items-center gap-3">
-                <div
-                  className={cn(
-                    "grid h-11 w-11 place-items-center rounded-base border-2 border-border font-heading uppercase",
-                    a.role === "owner" ? "bg-yellow-300 text-black" : "bg-main text-mtext",
-                  )}
-                >
-                  {a.role === "owner" ? (
-                    <Crown className="h-5 w-5" />
-                  ) : (
-                    a.username.slice(0, 1)
-                  )}
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="grid h-11 w-11 shrink-0 place-items-center rounded-base border-2 border-border bg-main font-heading uppercase text-mtext">
+                  {a.username.slice(0, 1)}
                 </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-heading">{a.username}</span>
-                    {a.role === "owner" ? (
-                      <Badge variant="warning" className="gap-1 text-[10px]">
-                        <Crown className="h-3 w-3" /> Owner
-                      </Badge>
-                    ) : (
-                      <Badge variant="info" className="gap-1 text-[10px]">
-                        <ShieldCheck className="h-3 w-3" /> Admin
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="mt-1 flex flex-wrap gap-1">
-                    {a.role === "owner" ? (
-                      <span className="text-xs text-text/50">Full access</span>
-                    ) : a.permissions.length === 0 ? (
-                      <span className="text-xs text-text/40">No access</span>
-                    ) : (
-                      a.permissions.map((p) => (
-                        <Badge key={p} variant="neutral" className="text-[10px]">
-                          {PERMISSION_LABELS[p]}
-                        </Badge>
-                      ))
-                    )}
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="truncate font-heading">{a.username}</span>
+                    <Badge variant="info" className="gap-1 text-[10px]">
+                      <ShieldCheck className="h-3 w-3" /> Admin
+                    </Badge>
                   </div>
                 </div>
               </div>
-              {a.role !== "owner" && (
-              <div className="flex items-center gap-1">
+              <div className="flex shrink-0 items-center gap-1">
                 <Button
                   variant="neutral"
                   size="icon"
@@ -401,26 +376,36 @@ function AdminsCard() {
                   <Trash2 className="h-3.5 w-3.5" />
                 </Button>
               </div>
+            </div>
+
+            <div className="flex flex-wrap gap-1">
+              {a.permissions.length === 0 ? (
+                <span className="text-xs text-text/40">No page access</span>
+              ) : (
+                a.permissions.map((p) => (
+                  <Badge key={p} variant="neutral" className="text-[10px]">
+                    {PERMISSION_LABELS[p]}
+                  </Badge>
+                ))
               )}
             </div>
-            {a.role !== "owner" && (
-              <div className="grid grid-cols-3 gap-2 border-t-2 border-border/30 pt-3 text-center">
-                <div>
-                  <div className="font-heading text-sm">{a.userCount ?? 0}</div>
-                  <div className="text-[10px] uppercase tracking-widest text-text/50">Users</div>
-                </div>
-                <div>
-                  <div className="font-heading text-sm">{formatBytes(a.used ?? 0)}</div>
-                  <div className="text-[10px] uppercase tracking-widest text-text/50">Used</div>
-                </div>
-                <div>
-                  <div className="font-heading text-sm">
-                    {a.dataLimit > 0 ? formatBytes(a.dataLimit) : "∞"}
-                  </div>
-                  <div className="text-[10px] uppercase tracking-widest text-text/50">Quota</div>
-                </div>
+
+            <div className="grid grid-cols-3 gap-2 border-t-2 border-border/30 pt-3 text-center">
+              <div className="min-w-0">
+                <div className="truncate font-heading text-sm">{a.userCount ?? 0}</div>
+                <div className="text-[10px] uppercase tracking-widest text-text/50">Users</div>
               </div>
-            )}
+              <div className="min-w-0">
+                <div className="truncate font-heading text-sm">{formatBytes(a.used ?? 0)}</div>
+                <div className="text-[10px] uppercase tracking-widest text-text/50">Used</div>
+              </div>
+              <div className="min-w-0">
+                <div className="truncate font-heading text-sm">
+                  {a.dataLimit > 0 ? formatBytes(a.dataLimit) : "∞"}
+                </div>
+                <div className="text-[10px] uppercase tracking-widest text-text/50">Quota</div>
+              </div>
+            </div>
           </div>
         ))}
       </CardContent>
