@@ -229,7 +229,8 @@ function AdminDialog({
               <Input
                 id="adminUsername"
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={(e) => setUsername(e.target.value.slice(0, 24))}
+                maxLength={24}
                 autoFocus
               />
             </div>

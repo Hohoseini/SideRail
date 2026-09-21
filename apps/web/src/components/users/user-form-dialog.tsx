@@ -185,7 +185,8 @@ export function UserFormDialog({
             <Input
               id="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value.slice(0, 32))}
+              maxLength={32}
               placeholder="icubaby/SideRail"
               autoFocus
             />

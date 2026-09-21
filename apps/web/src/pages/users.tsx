@@ -394,19 +394,27 @@ export default function UsersPage() {
         )}
       </div>
 
-      <div className="grid gap-3 lg:hidden">
+      <div className="grid min-w-0 gap-3 lg:hidden">
         {users.map((u) => (
           <Card key={u.id}>
             <CardContent className="space-y-3 p-4">
               <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="truncate font-heading text-lg">{u.email}</div>
                   {u.comment && <div className="truncate text-xs text-text/50">{u.comment}</div>}
+                  {isOwner && u.creator && (
+                    <div className="mt-1">
+                      <Badge variant="neutral" className="max-w-full gap-1 truncate text-[10px]">
+                        <UserCog2 className="h-3 w-3 shrink-0" />
+                        <span className="truncate">{u.creator}</span>
+                      </Badge>
+                    </div>
+                  )}
                   <div className="mt-1">
                     <OnlineDot online={u.online} />
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex shrink-0 items-center gap-2">
                   <Switch
                     checked={!!u.enabled}
                     onCheckedChange={(v) => toggleMut.mutate({ id: u.id, enabled: v })}
@@ -415,7 +423,7 @@ export default function UsersPage() {
                 </div>
               </div>
 
-              {inboundBadges(u)}
+              <div className="min-w-0">{inboundBadges(u)}</div>
               <TrafficBar user={u} />
 
               <div className="flex items-center justify-between border-t-2 border-border/30 pt-2 text-xs font-base text-text/60">

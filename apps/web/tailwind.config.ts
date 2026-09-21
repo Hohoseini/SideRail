@@ -2,6 +2,9 @@ import type { Config } from "tailwindcss";
 
 export default {
   darkMode: "class",
+  future: {
+    hoverOnlyWhenSupported: true,
+  },
   content: ["./index.html", "./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
