@@ -8,12 +8,14 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { RailLogo } from "@/components/rail-logo";
+import { useGitHubStars } from "@/components/github-button";
 import { GITHUB_URL, PANEL_VERSION } from "@/lib/brand";
 
-const STORAGE_KEY = "sr_welcome_seen_v1";
+const STORAGE_KEY = "sr_welcome_seen_v2";
 
 export function WelcomeDialog() {
   const [open, setOpen] = React.useState(false);
+  const stars = useGitHubStars();
 
   React.useEffect(() => {
     if (localStorage.getItem(STORAGE_KEY) !== "1") {
@@ -63,14 +65,13 @@ export function WelcomeDialog() {
             <Button variant="neutral" className="flex-1" onClick={close}>
               Maybe later
             </Button>
-            <Button
-              className="flex-1"
-              asChild
-              onClick={close}
-            >
+            <Button className="flex-1" asChild onClick={close}>
               <a href={GITHUB_URL} target="_blank" rel="noreferrer">
                 <Star className="h-4 w-4" fill="currentColor" />
                 Star on GitHub
+                <span className="flex items-center gap-1 rounded-[4px] border-2 border-border bg-bw px-1.5 text-mtext">
+                  {stars ?? 0}
+                </span>
               </a>
             </Button>
           </div>

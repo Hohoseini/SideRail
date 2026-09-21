@@ -179,7 +179,7 @@ export function UserFormDialog({
         <DialogHeader>
           <DialogTitle>{editing ? "Edit user" : "New user"}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={submit} className="space-y-5" noValidate>
+        <form onSubmit={submit} className="space-y-4" noValidate>
           <div className="space-y-2">
             <Label htmlFor="email">Name / email</Label>
             <Input
@@ -230,7 +230,7 @@ export function UserFormDialog({
                 </Button>
               </div>
             </div>
-            <div className="grid gap-2">
+            <div className="grid grid-cols-2 gap-1.5">
               {inbounds.map((ib) => {
                 const active = inboundIds.includes(ib.id);
                 return (
@@ -239,15 +239,15 @@ export function UserFormDialog({
                     type="button"
                     onClick={() => toggleInbound(ib.id)}
                     className={cn(
-                      "flex w-full items-center justify-between gap-2 rounded-base border-2 border-border px-3 py-2 text-left transition-all",
+                      "flex w-full flex-col gap-0.5 rounded-base border-2 border-border px-2.5 py-1.5 text-left transition-all",
                       active
                         ? "bg-main text-mtext neo-shadow"
                         : "bg-bw text-text hover:bg-main/10",
                       !ib.enabled && "opacity-50",
                     )}
                   >
-                    <span className="truncate font-heading text-sm">{ib.tag}</span>
-                    <span className="shrink-0 text-[10px] uppercase tracking-wide opacity-70">
+                    <span className="truncate font-heading text-xs">{ib.tag}</span>
+                    <span className="text-[9px] uppercase tracking-wide opacity-70">
                       {ib.protocol}/{ib.transport}
                     </span>
                   </button>
