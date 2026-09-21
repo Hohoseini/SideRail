@@ -236,6 +236,4 @@ npm start       # serve API + built frontend on :8080
 
 <a href="LICENSE"><img src=".github/badges/license.svg" alt="License" height="40" /></a>
 
-**© 2025 icubaby — All rights reserved.** Attribution and repository links must remain intact in every deployment. See [LICENSE](LICENSE) for the full terms.
-
 </div>
