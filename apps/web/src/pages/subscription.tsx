@@ -61,13 +61,20 @@ function useSubData(token: string | undefined) {
   });
 }
 
-function CopyButton({ value, label }: { value: string; label?: string }) {
+function CopyButton({ value, label, icon }: { value: string; label?: string; icon?: boolean }) {
   const [copied, setCopied] = React.useState(false);
   const copy = () => {
     void navigator.clipboard.writeText(value);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   };
+  if (icon) {
+    return (
+      <Button variant="neutral" size="icon" onClick={copy} className="h-9 w-9 shrink-0">
+        {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+      </Button>
+    );
+  }
   return (
     <Button variant="neutral" size="sm" onClick={copy} className="shrink-0">
       {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
@@ -296,7 +303,7 @@ export default function SubscriptionPage() {
                 className="animate-fade-in"
                 style={{ animationDelay: `${i * 40}ms` }}
               >
-                <CardContent className="flex flex-wrap items-center gap-3 p-4">
+                <CardContent className="flex items-center gap-3 p-3 sm:p-4">
                   <div
                     className="grid h-10 w-10 shrink-0 place-items-center rounded-base border-2 border-border font-heading text-black uppercase"
                     style={{ background: protocolColor[link.protocol] || "#a3e635" }}
@@ -304,21 +311,21 @@ export default function SubscriptionPage() {
                     {link.protocol.slice(0, 2)}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-heading">{link.tag}</span>
-                      <Badge variant="neutral" className="text-[10px] uppercase">
+                    <div className="flex items-center gap-2">
+                      <span className="truncate font-heading">{link.tag}</span>
+                      <Badge variant="neutral" className="shrink-0 text-[10px] uppercase">
                         {link.transport}
                       </Badge>
                     </div>
                     <div className="truncate font-mono text-[11px] text-text/50">{link.link}</div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <CopyButton value={link.link} />
+                  <div className="flex shrink-0 items-center gap-1.5">
+                    <CopyButton value={link.link} icon />
                     <Button
                       variant="neutral"
-                      size="sm"
+                      size="icon"
                       onClick={() => setQrConfig(link)}
-                      className="shrink-0"
+                      className="h-9 w-9 shrink-0"
                     >
                       <QrIcon className="h-4 w-4" />
                     </Button>
@@ -346,9 +353,6 @@ export default function SubscriptionPage() {
             <Github className="h-4 w-4" />
             icubaby/SideRail
           </a>
-          <span className="text-xs font-base text-text/40" dir="rtl">
-            ساخته شده توسط icubaby
-          </span>
         </footer>
       </div>
 

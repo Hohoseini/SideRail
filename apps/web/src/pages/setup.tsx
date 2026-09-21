@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
-import { Zap, ShieldCheck, ArrowRight, Rocket } from "lucide-react";
+import { ShieldCheck, ArrowRight, Rocket } from "lucide-react";
+import { RailLogo } from "@/components/rail-logo";
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
@@ -49,7 +50,7 @@ export default function SetupPage() {
         <div className="hidden flex-col justify-center gap-6 lg:flex">
           <div className="flex items-center gap-3">
             <div className="grid h-12 w-12 place-items-center rounded-base border-2 border-border bg-main text-mtext neo-shadow">
-              <Zap className="h-6 w-6" fill="currentColor" />
+              <RailLogo className="h-6 w-6" />
             </div>
             <div>
               <div className="font-heading text-3xl">SideRail</div>

@@ -90,22 +90,26 @@ export default function ActivityPage() {
                 };
                 const Icon = meta.icon;
                 return (
-                  <li key={e.id} className="flex items-center gap-4 px-5 py-3.5">
-                    <div className="grid h-10 w-10 shrink-0 place-items-center rounded-base border-2 border-border bg-bg">
-                      <Icon className="h-5 w-5 text-text/80" />
+                  <li key={e.id} className="flex items-start gap-3 px-4 py-3 sm:items-center sm:gap-4 sm:px-5 sm:py-3.5">
+                    <div className="grid h-9 w-9 shrink-0 place-items-center rounded-base border-2 border-border bg-bg sm:h-10 sm:w-10">
+                      <Icon className="h-4 w-4 text-text/80 sm:h-5 sm:w-5" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-heading">{meta.label}</span>
+                        <span className="font-heading text-sm sm:text-base">{meta.label}</span>
                         {e.detail && (
-                          <Badge variant={meta.color as never} className="text-[10px]">
+                          <Badge variant={meta.color as never} className="max-w-full truncate text-[10px]">
                             {e.detail}
                           </Badge>
                         )}
                       </div>
-                      <div className="text-xs font-base text-text/50">by {e.actor}</div>
+                      <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs font-base text-text/50">
+                        <span>by {e.actor}</span>
+                        <span className="hidden sm:inline">·</span>
+                        <span className="sm:hidden">{formatDate(e.ts)}</span>
+                      </div>
                     </div>
-                    <div className="whitespace-nowrap text-xs font-base text-text/50">
+                    <div className="hidden whitespace-nowrap text-xs font-base text-text/50 sm:block">
                       {formatDate(e.ts)}
                     </div>
                   </li>

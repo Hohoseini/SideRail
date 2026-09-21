@@ -122,14 +122,17 @@ export function AppLayout() {
               </Button>
               <Brand />
             </div>
-            <div className="hidden items-center gap-2 lg:flex">
-              <RailLogo className="h-4 w-4 text-text/60" />
-              <span className="text-sm font-base text-text/60" dir="rtl">
-                ساخته شده توسط icubaby
-              </span>
-            </div>
+            <a
+              href={GITHUB_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="hidden items-center gap-2 rounded-base border-2 border-border bg-bw px-3 py-1.5 transition-all hover:bg-main hover:text-mtext hover:neo-shadow lg:flex"
+            >
+              <Github className="h-4 w-4" />
+              <span className="text-sm font-heading">icubaby / SideRail</span>
+            </a>
             <div className="flex items-center gap-2">
-              <Button variant="neutral" size="icon" asChild title="GitHub">
+              <Button variant="neutral" size="icon" asChild title="GitHub" className="lg:hidden">
                 <a href={GITHUB_URL} target="_blank" rel="noreferrer">
                   <Github className="h-5 w-5" />
                 </a>

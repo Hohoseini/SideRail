@@ -28,21 +28,22 @@ const DialogContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
 >(({ className, children, ...props }, ref) => (
   <DialogPortal>
-    <DialogOverlay />
-    <DialogPrimitive.Content
-      ref={ref}
-      className={cn(
-        "fixed left-1/2 top-1/2 z-50 grid w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 border-2 border-border bg-bw p-6 neo-shadow rounded-base max-h-[92vh] overflow-y-auto data-[state=open]:animate-pop-in",
-        className,
-      )}
-      {...props}
-    >
-      {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-base border-2 border-border bg-bw p-1 opacity-80 transition-all hover:opacity-100 hover:bg-main focus:outline-none">
-        <X className="h-4 w-4" />
-        <span className="sr-only">Close</span>
-      </DialogPrimitive.Close>
-    </DialogPrimitive.Content>
+    <DialogOverlay className="grid place-items-center overflow-y-auto p-4">
+      <DialogPrimitive.Content
+        ref={ref}
+        className={cn(
+          "relative z-50 my-auto grid w-full max-w-lg gap-4 border-2 border-border bg-bw p-5 neo-shadow rounded-base data-[state=open]:animate-pop-in sm:p-6",
+          className,
+        )}
+        {...props}
+      >
+        {children}
+        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-base border-2 border-border bg-bw p-1 opacity-80 transition-all hover:opacity-100 hover:bg-main focus:outline-none">
+          <X className="h-4 w-4" />
+          <span className="sr-only">Close</span>
+        </DialogPrimitive.Close>
+      </DialogPrimitive.Content>
+    </DialogOverlay>
   </DialogPortal>
 ));
 DialogContent.displayName = DialogPrimitive.Content.displayName;

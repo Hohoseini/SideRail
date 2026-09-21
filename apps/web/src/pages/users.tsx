@@ -36,8 +36,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Progress } from "@/components/ui/progress";
 import { UserFormDialog } from "@/components/users/user-form-dialog";
+import { Infinity as InfinityIcon } from "lucide-react";
 import { formatBytes, relativeTime, durationSince, cn } from "@/lib/utils";
 import type { Inbound, User, UserFormValues, UserSummary } from "@/lib/types";
 
@@ -115,8 +122,6 @@ export default function UsersPage() {
   const [formOpen, setFormOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<User | null>(null);
   const [deleteTarget, setDeleteTarget] = React.useState<User | null>(null);
-  const [menuFor, setMenuFor] = React.useState<number | null>(null);
-  const menuRef = React.useRef<HTMLDivElement>(null);
 
   const { data } = useQuery<{ users: User[]; summary: UserSummary }>({
     queryKey: ["users"],
@@ -127,14 +132,6 @@ export default function UsersPage() {
     queryKey: ["inbounds"],
     queryFn: api.inbounds,
   });
-
-  React.useEffect(() => {
-    const onClick = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuFor(null);
-    };
-    document.addEventListener("mousedown", onClick);
-    return () => document.removeEventListener("mousedown", onClick);
-  }, []);
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["users"] });
 
@@ -202,20 +199,18 @@ export default function UsersPage() {
   const openEdit = (u: User) => {
     setEditing(u);
     setFormOpen(true);
-    setMenuFor(null);
   };
 
   const copySubLink = (u: User) => {
     const url = `${window.location.origin}/sub/${u.sub_token}`;
     void navigator.clipboard.writeText(url);
     toast.push("success", "Subscription link copied");
-    setMenuFor(null);
   };
 
   const inboundName = (id: number) => inbounds.find((i) => i.id === id)?.tag || `#${id}`;
 
   const rowActions = (u: User) => (
-    <div className="relative flex items-center gap-1" ref={menuFor === u.id ? menuRef : undefined}>
+    <div className="flex items-center gap-1">
       <Button
         variant="neutral"
         size="icon"
@@ -234,53 +229,35 @@ export default function UsersPage() {
       >
         <Link2 className="h-3.5 w-3.5" />
       </Button>
-      <Button
-        variant="neutral"
-        size="icon"
-        className="h-8 w-8"
-        onClick={() => setMenuFor(menuFor === u.id ? null : u.id)}
-        title="More"
-      >
-        <MoreVertical className="h-3.5 w-3.5" />
-      </Button>
-      {menuFor === u.id && (
-        <div className="absolute left-0 top-9 z-20 w-48 rounded-base border-2 border-border bg-bw p-1 neo-shadow animate-pop-in">
-          <MenuButton icon={Copy} label="Copy sub link" onClick={() => copySubLink(u)} />
-          <MenuButton
-            icon={Server}
-            label="Open sub page"
-            onClick={() => {
-              window.open(`/sub/${u.sub_token}`, "_blank");
-              setMenuFor(null);
-            }}
-          />
-          <MenuButton
-            icon={RotateCcw}
-            label="Reset traffic"
-            onClick={() => {
-              resetMut.mutate(u.id);
-              setMenuFor(null);
-            }}
-          />
-          <MenuButton
-            icon={RefreshCw}
-            label="Rotate sub token"
-            onClick={() => {
-              rotateMut.mutate(u.id);
-              setMenuFor(null);
-            }}
-          />
-          <MenuButton
-            icon={Trash2}
-            label="Delete"
-            danger
-            onClick={() => {
-              setDeleteTarget(u);
-              setMenuFor(null);
-            }}
-          />
-        </div>
-      )}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="neutral" size="icon" className="h-8 w-8" title="More">
+            <MoreVertical className="h-3.5 w-3.5" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={() => copySubLink(u)}>
+            <Copy className="h-4 w-4" />
+            Copy sub link
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => window.open(`/sub/${u.sub_token}`, "_blank")}>
+            <Server className="h-4 w-4" />
+            Open sub page
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => resetMut.mutate(u.id)}>
+            <RotateCcw className="h-4 w-4" />
+            Reset traffic
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => rotateMut.mutate(u.id)}>
+            <RefreshCw className="h-4 w-4" />
+            Rotate sub token
+          </DropdownMenuItem>
+          <DropdownMenuItem danger onClick={() => setDeleteTarget(u)}>
+            <Trash2 className="h-4 w-4" />
+            Delete
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 
@@ -372,15 +349,21 @@ export default function UsersPage() {
                         <TrafficBar user={u} />
                       </TableCell>
                       <TableCell className="text-sm font-base">
-                        {u.data_limit <= 0
-                          ? "Unlimited"
-                          : formatBytes(Math.max(0, u.data_limit - u.total))}
+                        {u.data_limit <= 0 ? (
+                          <InfinityIcon className="h-4 w-4 text-text/60" />
+                        ) : (
+                          formatBytes(Math.max(0, u.data_limit - u.total))
+                        )}
                         {u.expire_at && (
                           <div className="text-xs text-text/50">{relativeTime(u.expire_at)}</div>
                         )}
                       </TableCell>
                       <TableCell className="text-sm font-base">
-                        {durationSince(u.created_at)}
+                        {u.expire_at ? (
+                          durationSince(u.created_at)
+                        ) : (
+                          <InfinityIcon className="h-4 w-4 text-text/60" />
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -416,12 +399,22 @@ export default function UsersPage() {
               <TrafficBar user={u} />
 
               <div className="flex items-center justify-between border-t-2 border-border/30 pt-2 text-xs font-base text-text/60">
-                <span>
-                  {u.data_limit <= 0
-                    ? "Unlimited"
-                    : `${formatBytes(Math.max(0, u.data_limit - u.total))} left`}
+                <span className="flex items-center gap-1">
+                  {u.data_limit <= 0 ? (
+                    <>
+                      <InfinityIcon className="h-3.5 w-3.5" /> left
+                    </>
+                  ) : (
+                    `${formatBytes(Math.max(0, u.data_limit - u.total))} left`
+                  )}
                 </span>
-                <span>{u.expire_at ? relativeTime(u.expire_at) : "No expiry"}</span>
+                <span className="flex items-center gap-1">
+                  {u.expire_at ? (
+                    relativeTime(u.expire_at)
+                  ) : (
+                    <InfinityIcon className="h-3.5 w-3.5" />
+                  )}
+                </span>
                 <span>{durationSince(u.created_at)}</span>
               </div>
             </CardContent>
@@ -471,27 +464,4 @@ export default function UsersPage() {
   );
 }
 
-function MenuButton({
-  icon: Icon,
-  label,
-  onClick,
-  danger,
-}: {
-  icon: React.ElementType;
-  label: string;
-  onClick: () => void;
-  danger?: boolean;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "flex w-full items-center gap-2 rounded-[4px] px-2 py-2 text-left text-sm font-base transition-colors",
-        danger ? "text-red-400 hover:bg-red-400/10" : "hover:bg-main/15",
-      )}
-    >
-      <Icon className="h-4 w-4" />
-      {label}
-    </button>
-  );
-}
+
