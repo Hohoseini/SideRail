@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Heart, Star, ShieldAlert } from "lucide-react";
+import { Heart, Star, ShieldAlert, Github } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { RailLogo } from "@/components/rail-logo";
 import { useGitHubStars } from "@/components/github-button";
-import { GITHUB_URL, PANEL_VERSION } from "@/lib/brand";
+import { GITHUB_URL } from "@/lib/brand";
 
 const STORAGE_KEY = "sr_welcome_seen_v2";
 
@@ -39,45 +39,49 @@ export function WelcomeDialog() {
           <DialogTitle className="text-center text-2xl">Welcome to SideRail</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 text-center">
-          <p className="text-sm font-base text-text/70">
-            This panel is crafted with care by <span className="font-heading text-text">icubaby</span>{" "}
-            and shared with the community <span className="font-heading text-text">completely free</span>.
+        <div className="space-y-4">
+          <p className="text-center text-sm font-base text-text/70">
+            This panel is crafted with care by{" "}
+            <span className="font-heading text-text">icubaby</span> and shared{" "}
+            <span className="font-heading text-text">completely free</span>.
           </p>
 
-          <div className="flex items-start gap-3 rounded-base border-2 border-border bg-red-300/20 p-3 text-left">
+          <div className="flex items-start gap-3 rounded-base border-2 border-border bg-red-300/20 p-3">
             <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-red-400" />
             <p className="text-sm font-base text-text/80">
               Please <span className="font-heading">do not sell</span> this panel or its configs.
-              Keep it free and keep the attribution intact — that's all I ask.
+              Keep it free and keep the attribution intact.
             </p>
           </div>
 
-          <div className="flex items-start gap-3 rounded-base border-2 border-border bg-main/15 p-3 text-left">
+          <div className="flex items-start gap-3 rounded-base border-2 border-border bg-main/15 p-3">
             <Heart className="mt-0.5 h-5 w-5 shrink-0 text-main" fill="currentColor" />
             <p className="text-sm font-base text-text/80">
-              If SideRail makes your life easier, a <span className="font-heading">GitHub star</span>{" "}
-              means the world and keeps the project alive.
+              If you enjoy the project, a <span className="font-heading">star</span> would mean a
+              lot and keeps it alive.
             </p>
           </div>
 
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <Button variant="neutral" className="flex-1" onClick={close}>
-              Maybe later
-            </Button>
-            <Button className="flex-1" asChild onClick={close}>
-              <a href={GITHUB_URL} target="_blank" rel="noreferrer">
-                <Star className="h-4 w-4" fill="currentColor" />
-                Star on GitHub
-                <span className="flex items-center gap-1 rounded-[4px] border-2 border-border bg-bw px-1.5 text-mtext">
-                  {stars ?? 0}
-                </span>
-              </a>
-            </Button>
-          </div>
-          <div className="text-[10px] uppercase tracking-widest text-text/40">
-            SideRail v{PANEL_VERSION}
-          </div>
+          <a
+            href={GITHUB_URL}
+            target="_blank"
+            rel="noreferrer"
+            onClick={close}
+            className="flex items-center justify-between gap-2 rounded-base border-2 border-border bg-bw px-3 py-2.5 font-heading text-sm text-text transition-all hover:bg-main hover:text-mtext hover:neo-shadow"
+          >
+            <span className="flex items-center gap-2">
+              <Github className="h-5 w-5" />
+              Star on GitHub
+            </span>
+            <span className="flex items-center gap-1 rounded-[4px] border-2 border-border bg-main px-1.5 text-xs text-mtext">
+              <Star className="h-3 w-3" fill="currentColor" />
+              {stars ?? 0}
+            </span>
+          </a>
+
+          <Button variant="neutral" className="w-full" onClick={close}>
+            Maybe later
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
