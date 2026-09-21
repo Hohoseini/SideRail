@@ -349,8 +349,14 @@ export default function UsersPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="font-heading">{u.email}</div>
-                        {u.comment && <div className="text-xs text-text/50">{u.comment}</div>}
+                        <div className="max-w-[180px] truncate font-heading" title={u.email}>
+                          {u.email}
+                        </div>
+                        {u.comment && (
+                          <div className="max-w-[180px] truncate text-xs text-text/50">
+                            {u.comment}
+                          </div>
+                        )}
                         {isOwner && u.creator && (
                           <Badge variant="neutral" className="mt-1 gap-1 text-[10px]">
                             <UserCog2 className="h-3 w-3" />
@@ -400,7 +406,9 @@ export default function UsersPage() {
             <CardContent className="space-y-3 p-4">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0 flex-1">
-                  <div className="truncate font-heading text-lg">{u.email}</div>
+                  <div className="truncate font-heading text-lg" title={u.email}>
+                    {u.email}
+                  </div>
                   {u.comment && <div className="truncate text-xs text-text/50">{u.comment}</div>}
                   {isOwner && u.creator && (
                     <div className="mt-1">

@@ -349,7 +349,9 @@ function AdminsCard() {
                 </div>
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="truncate font-heading">{a.username}</span>
+                    <span className="max-w-[140px] truncate font-heading" title={a.username}>
+                      {a.username}
+                    </span>
                     <Badge variant="info" className="gap-1 text-[10px]">
                       <ShieldCheck className="h-3 w-3" /> Admin
                     </Badge>

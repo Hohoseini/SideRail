@@ -12,13 +12,20 @@
 <br/>
 <br/>
 
-<a href="LICENSE"><img src=".github/badges/license.svg" alt="License" height="40" /></a>
-<a href="https://github.com/XTLS/Xray-core"><img src=".github/badges/xray.svg" alt="Xray-core" height="40" /></a>
-<img src=".github/badges/protocols.svg" alt="Protocols" height="40" />
-<br/>
-<img src=".github/badges/transports.svg" alt="Transports" height="40" />
-<a href="https://www.typescriptlang.org"><img src=".github/badges/typescript.svg" alt="TypeScript" height="40" /></a>
-<a href="https://react.dev"><img src=".github/badges/react.svg" alt="React + Vite" height="40" /></a>
+<p>
+  <a href="LICENSE"><img src=".github/badges/license.svg" alt="License" height="38" /></a>
+  &nbsp;
+  <a href="https://github.com/XTLS/Xray-core"><img src=".github/badges/xray.svg" alt="Xray-core" height="38" /></a>
+  &nbsp;
+  <a href="https://www.typescriptlang.org"><img src=".github/badges/typescript.svg" alt="TypeScript" height="38" /></a>
+  &nbsp;
+  <a href="https://react.dev"><img src=".github/badges/react.svg" alt="React + Vite" height="38" /></a>
+</p>
+<p>
+  <img src=".github/badges/protocols.svg" alt="Protocols" height="38" />
+  &nbsp;
+  <img src=".github/badges/transports.svg" alt="Transports" height="38" />
+</p>
 
 <br/>
 <br/>
