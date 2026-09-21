@@ -146,7 +146,7 @@ export function AppLayout() {
               <Brand />
             </div>
             <div className="hidden items-center gap-2 lg:flex">
-              <GitHubButton />
+              <GitHubButton showStars={false} />
               <VersionBadge />
             </div>
             <div className="flex items-center gap-2">
