@@ -1,3 +1,13 @@
+/**
+ * SideRail - Xray-core VPN management panel
+ * Copyright (c) 2025 icubaby. All rights reserved.
+ * Official repository: https://github.com/icubaby/SideRail
+ *
+ * Licensed under the SideRail Proprietary License (see LICENSE).
+ * Unauthorized selling, white-labeling, or removal of attribution,
+ * branding, or the embedded authorship identifiers is prohibited.
+ * Watermark: sr-icubaby-2025-9f4c1a7e
+ */
 import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
