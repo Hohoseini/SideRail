@@ -183,20 +183,60 @@ npm start       # serve API + built frontend on :8080
 
 ## 💖 Support the Project
 
-**If you find SideRail useful, consider supporting its continued development.**
+<div align="center">
 
-| Network | Address |
-|:--|:--|
-| **Bitcoin (BTC)** | `bc1qx48j9lj989y5c9z8ewpgul2ed69mr50j97a0sk` |
-| **Ethereum (ETH)** | `0xF2ba522fD846F83D84131D433f56F885740cFc47` |
-| **Litecoin (LTC)** | `ltc1qh6y8ld27fdleuy3r7gykxxg38rkawl7adzc0dw` |
-| **Gram (TON)** | `UQBGN4jXPW44cWQ20EGWqX7sU6K4RlYbnolc3IHoT3UWtmvW` |
+**If SideRail is useful to you, a small donation keeps it moving forward.** 🚀
+
+</div>
+
+<br/>
+
+<table>
+  <tr>
+    <td align="center" width="25%">
+      <img src="https://img.shields.io/badge/Bitcoin-BTC-F7931A?style=for-the-badge&logo=bitcoin&logoColor=white&labelColor=0b0b0f" alt="Bitcoin" />
+    </td>
+    <td>
+
+`bc1qx48j9lj989y5c9z8ewpgul2ed69mr50j97a0sk`
+
+</td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="https://img.shields.io/badge/Ethereum-ETH-627EEA?style=for-the-badge&logo=ethereum&logoColor=white&labelColor=0b0b0f" alt="Ethereum" />
+    </td>
+    <td>
+
+`0xF2ba522fD846F83D84131D433f56F885740cFc47`
+
+</td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="https://img.shields.io/badge/Litecoin-LTC-A6A9AA?style=for-the-badge&logo=litecoin&logoColor=white&labelColor=0b0b0f" alt="Litecoin" />
+    </td>
+    <td>
+
+`ltc1qh6y8ld27fdleuy3r7gykxxg38rkawl7adzc0dw`
+
+</td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="https://img.shields.io/badge/TON-Gram-0098EA?style=for-the-badge&logo=ton&logoColor=white&labelColor=0b0b0f" alt="TON" />
+    </td>
+    <td>
+
+`UQBGN4jXPW44cWQ20EGWqX7sU6K4RlYbnolc3IHoT3UWtmvW`
+
+</td>
+  </tr>
+</table>
 
 <br/>
 
 <div align="center">
-
-**Made with 💚 by [icubaby](https://github.com/icubaby)**
 
 [![License](https://img.shields.io/badge/License-MIT-a3e635?style=for-the-badge&labelColor=0b0b0f)](LICENSE)
 
