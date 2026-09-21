@@ -1,21 +1,27 @@
-MIT License
+Copyright (c) 2025 icubaby. All rights reserved.
 
-Copyright (c) 2025 icubaby
+SideRail and its source code, design, and assets are the property of icubaby.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+You are permitted to:
+  - Fork this repository for personal, non-commercial self-hosting.
+  - Deploy your own instance for your own use.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+You are NOT permitted to:
+  - Sell, resell, or offer SideRail (or any derivative) as a paid product or service
+    without prior written permission from the author.
+  - Remove, hide, alter, or replace the "icubaby/SideRail" attribution, branding,
+    logo, or repository links present in the panel, subscription pages, or generated
+    configuration remarks.
+  - Claim authorship of SideRail or represent it as your own original work.
+  - Redistribute modified copies while presenting them as the official SideRail.
+
+All attribution to the original author (icubaby) and links to the official
+repository (https://github.com/icubaby/SideRail) must remain intact in every
+deployment and every derivative work.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

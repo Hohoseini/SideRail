@@ -6,19 +6,19 @@
 <br/>
 
 <a href="https://railway.com/new">
-  <img src="https://img.shields.io/badge/DEPLOY%20ON%20RAILWAY-a3e635?style=for-the-badge&labelColor=0b0b0f&color=a3e635" alt="Deploy on Railway" height="48" />
+  <img src=".github/deploy-button.svg" alt="Deploy on Railway" height="56" />
 </a>
 
 <br/>
 <br/>
 
-<img src="https://img.shields.io/badge/LICENSE-MIT-a3e635?style=for-the-badge&labelColor=0b0b0f" alt="License" />
-<img src="https://img.shields.io/badge/XRAY--CORE-v26.9.9-a3e635?style=for-the-badge&labelColor=0b0b0f" alt="Xray" />
-<img src="https://img.shields.io/badge/PROTOCOLS-VLESS%20·%20VMESS%20·%20TROJAN-a3e635?style=for-the-badge&labelColor=0b0b0f" alt="Protocols" />
+<a href="LICENSE"><img src=".github/badges/license.svg" alt="License" height="40" /></a>
+<a href="https://github.com/XTLS/Xray-core"><img src=".github/badges/xray.svg" alt="Xray-core" height="40" /></a>
+<img src=".github/badges/protocols.svg" alt="Protocols" height="40" />
 <br/>
-<img src="https://img.shields.io/badge/TRANSPORTS-WS%20·%20XHTTP%20·%20HTTPUPGRADE-a3e635?style=for-the-badge&labelColor=0b0b0f" alt="Transports" />
-<img src="https://img.shields.io/badge/TYPESCRIPT-a3e635?style=for-the-badge&labelColor=0b0b0f&logo=typescript&logoColor=a3e635" alt="TypeScript" />
-<img src="https://img.shields.io/badge/REACT%20+%20VITE-a3e635?style=for-the-badge&labelColor=0b0b0f&logo=react&logoColor=a3e635" alt="React" />
+<img src=".github/badges/transports.svg" alt="Transports" height="40" />
+<a href="https://www.typescriptlang.org"><img src=".github/badges/typescript.svg" alt="TypeScript" height="40" /></a>
+<a href="https://react.dev"><img src=".github/badges/react.svg" alt="React + Vite" height="40" /></a>
 
 <br/>
 <br/>
@@ -129,7 +129,7 @@ An Owner can add Admins with scoped page access and per-admin data quotas. Admin
 
 <br/>
 
-<img src=".github/sections/env.svg" width="440" alt="Environment variables" />
+<img src=".github/sections/env.svg" width="380" alt="Environment variables" />
 
 **All optional.**
 
@@ -171,15 +171,7 @@ apps/
 
 <br/>
 
-<img src=".github/sections/stack.svg" width="380" alt="Tech stack" />
-
-**Backend** — Node.js (Express) in **TypeScript**, using the built-in `node:sqlite` module with no native build step.
-
-**Frontend** — **React + Vite + TypeScript**, styled with **Tailwind CSS** following the [neobrutalism.dev](https://www.neobrutalism.dev) design system, with [Lucide](https://lucide.dev) icons, TanStack Query, Recharts and `qrcode`.
-
-<br/>
-
-<img src=".github/sections/dev.svg" width="440" alt="Local development" />
+<img src=".github/sections/dev.svg" width="380" alt="Local development" />
 
 **Requires Node.js ≥ 22.5 (Node 24 recommended).**
 
@@ -206,9 +198,9 @@ npm start       # serve API + built frontend on :8080
 <br/>
 <br/>
 
-<img src=".github/sections/support.svg" width="440" alt="Support the project" />
+<img src=".github/sections/support.svg" width="380" alt="Support the project" />
 
-**If SideRail is useful to you, a small donation keeps it moving forward.**
+**Built with countless late nights and a lot of coffee.** If SideRail powers your setup and saves you time, a small crypto tip goes straight into keeping it fast, secure and free for everyone.
 
 <table>
   <tr>
@@ -257,8 +249,8 @@ npm start       # serve API + built frontend on :8080
 
 <div align="center">
 
-<img src="https://img.shields.io/badge/LICENSE-MIT-a3e635?style=for-the-badge&labelColor=0b0b0f" alt="MIT License" />
+<a href="LICENSE"><img src=".github/badges/license.svg" alt="License" height="40" /></a>
 
-**Released under the MIT License.**
+**© 2025 icubaby — All rights reserved.** Attribution and repository links must remain intact in every deployment. See [LICENSE](LICENSE) for the full terms.
 
 </div>
