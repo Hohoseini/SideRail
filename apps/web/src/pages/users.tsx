@@ -465,10 +465,14 @@ export default function UsersPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 <Button variant="neutral" onClick={() => openEdit(u)} className="w-full">
                   <Pencil className="h-4 w-4" />
                   Edit
+                </Button>
+                <Button variant="neutral" onClick={() => copySubLink(u)} className="w-full">
+                  <Link2 className="h-4 w-4" />
+                  Copy
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>

@@ -159,6 +159,16 @@ export function AppLayout() {
               <VersionBadge />
             </div>
             <div className="flex items-center gap-2">
+              <a
+                href={GITHUB_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-1.5 rounded-base border-2 border-border bg-bw px-2 py-1.5 transition-all hover:bg-main hover:text-mtext lg:hidden"
+                title="GitHub"
+              >
+                <Github className="h-4 w-4" />
+                <StarCount />
+              </a>
               <div className="relative" ref={menuRef}>
                 <button
                   onClick={() => setMenuOpen((v) => !v)}
@@ -283,11 +293,10 @@ export function AppLayout() {
 
 function StarCount() {
   const stars = useGitHubStars();
-  if (stars === null) return null;
   return (
     <span className="flex items-center gap-1 rounded-[4px] border-2 border-border bg-main px-1.5 text-xs text-mtext">
       <Star className="h-3 w-3" fill="currentColor" />
-      {stars}
+      {stars ?? 0}
     </span>
   );
 }

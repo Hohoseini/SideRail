@@ -12,6 +12,7 @@ import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "./lib/auth";
 import { AppLayout } from "./components/layout/app-layout";
 import { Spinner } from "./components/spinner";
+import { RailLogo } from "./components/rail-logo";
 import SetupPage from "./pages/setup";
 import LoginPage from "./pages/login";
 import DashboardPage from "./pages/dashboard";
@@ -47,8 +48,17 @@ function RequirePerm({ perm, children }: { perm: string; children: React.ReactNo
 
 function FullscreenLoader() {
   return (
-    <div className="flex h-screen w-full items-center justify-center">
-      <Spinner className="h-10 w-10" />
+    <div className="flex h-screen w-full flex-col items-center justify-center gap-4">
+      <div className="grid h-16 w-16 animate-[pop-in_0.4s_ease-out] place-items-center rounded-base border-2 border-border bg-main text-mtext neo-shadow animate-float">
+        <RailLogo className="h-9 w-9" />
+      </div>
+      <div className="text-center">
+        <div className="font-heading text-2xl tracking-tight">SideRail</div>
+        <div className="mt-1 flex items-center justify-center gap-2 text-sm text-text/60">
+          <Spinner className="h-4 w-4" />
+          Loading…
+        </div>
+      </div>
     </div>
   );
 }
