@@ -230,7 +230,7 @@ export function UserFormDialog({
                 </Button>
               </div>
             </div>
-            <div className="grid gap-2.5 sm:grid-cols-2">
+            <div className="grid gap-2 sm:grid-cols-2">
               {inbounds.map((ib) => {
                 const active = inboundIds.includes(ib.id);
                 return (
@@ -239,16 +239,16 @@ export function UserFormDialog({
                     type="button"
                     onClick={() => toggleInbound(ib.id)}
                     className={cn(
-                      "flex w-full flex-col gap-1 rounded-base border-2 border-border px-4 py-3 text-left transition-all",
+                      "flex w-full items-center justify-between gap-2 rounded-base border-2 border-border px-3 py-2 text-left transition-all",
                       active
                         ? "bg-main text-mtext neo-shadow"
-                        : "bg-bw text-text hover:-translate-y-0.5 hover:bg-main/10",
+                        : "bg-bw text-text hover:bg-main/10",
                       !ib.enabled && "opacity-50",
                     )}
                   >
-                    <span className="font-heading text-base">{ib.tag}</span>
-                    <span className="text-xs uppercase tracking-wide opacity-70">
-                      {ib.protocol} / {ib.transport}
+                    <span className="truncate font-heading text-sm">{ib.tag}</span>
+                    <span className="shrink-0 text-[10px] uppercase tracking-wide opacity-70">
+                      {ib.protocol}/{ib.transport}
                     </span>
                   </button>
                 );
@@ -378,11 +378,16 @@ export function UserFormDialog({
             </div>
           )}
 
-          <DialogFooter>
-            <Button type="button" variant="neutral" onClick={() => onOpenChange(false)}>
+          <DialogFooter className="grid grid-cols-2 gap-2">
+            <Button
+              type="button"
+              variant="neutral"
+              onClick={() => onOpenChange(false)}
+              className="w-full"
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={saving}>
+            <Button type="submit" disabled={saving} className="w-full">
               {saving ? "Saving..." : editing ? "Save changes" : "Create user"}
             </Button>
           </DialogFooter>

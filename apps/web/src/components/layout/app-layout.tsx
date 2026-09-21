@@ -15,9 +15,10 @@ import {
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import { GitHubButton, useGitHubStars } from "@/components/github-button";
+import { VersionBadge } from "@/components/version-badge";
 import { WelcomeDialog } from "@/components/welcome-dialog";
 import { PANEL_VERSION } from "@/lib/brand";
-import { Star } from "lucide-react";
+import { Star, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RailLogo } from "@/components/rail-logo";
 import { AnimatedBackground } from "@/components/animated-background";
@@ -146,16 +147,9 @@ export function AppLayout() {
             </div>
             <div className="hidden items-center gap-2 lg:flex">
               <GitHubButton />
-              <span className="rounded-base border-2 border-border bg-bg/50 px-2 py-1 text-xs font-heading text-text/70">
-                v{PANEL_VERSION}
-              </span>
+              <VersionBadge />
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="neutral" size="icon" asChild title="GitHub" className="lg:hidden">
-                <a href={GITHUB_URL} target="_blank" rel="noreferrer">
-                  <Github className="h-5 w-5" />
-                </a>
-              </Button>
               <div className="relative" ref={menuRef}>
                 <button
                   onClick={() => setMenuOpen((v) => !v)}
@@ -189,10 +183,25 @@ export function AppLayout() {
                       href={GITHUB_URL}
                       target="_blank"
                       rel="noreferrer"
-                      className="mt-1 flex items-center gap-2 rounded-[4px] px-2 py-2 text-sm font-base transition-colors hover:bg-main/15"
+                      className="mt-1 flex items-center justify-between gap-2 rounded-[4px] px-2 py-2 text-sm font-base transition-colors hover:bg-main/15"
                     >
-                      <Github className="h-4 w-4" />
-                      GitHub
+                      <span className="flex items-center gap-2">
+                        <Github className="h-4 w-4" />
+                        GitHub
+                      </span>
+                      <StarCount />
+                    </a>
+                    <a
+                      href={`${GITHUB_URL}/releases`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center justify-between gap-2 rounded-[4px] px-2 py-2 text-sm font-base transition-colors hover:bg-main/15"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Tag className="h-4 w-4" />
+                        Version
+                      </span>
+                      <span className="text-xs font-heading text-text/60">v{PANEL_VERSION}</span>
                     </a>
                     <button
                       onClick={() => void logout()}

@@ -50,7 +50,7 @@ export default function InboundsPage() {
         </Badge>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2">
         {inbounds.map((ib) => (
           <Card key={ib.id} className="overflow-hidden transition-transform hover:-translate-y-0.5">
             <CardContent className="p-5">
@@ -85,9 +85,9 @@ export default function InboundsPage() {
                   <span className="ml-auto font-mono text-text/80">{ib.port}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Router className="h-3.5 w-3.5" />
-                  <span>path</span>
-                  <span className="ml-auto truncate font-mono text-text/80">{ib.path}</span>
+                  <Router className="h-3.5 w-3.5 shrink-0" />
+                  <span className="shrink-0">path</span>
+                  <span className="ml-auto min-w-0 truncate font-mono text-text/80">{ib.path}</span>
                 </div>
               </div>
             </CardContent>

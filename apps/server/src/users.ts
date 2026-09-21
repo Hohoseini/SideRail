@@ -65,7 +65,7 @@ export function seedDefaultClient(): void {
     dataLimit: 0,
     ipLimit: 0,
     expireDays: 0,
-    comment: "Default unlimited client",
+    comment: "",
     inboundIds: enabledInbounds,
     createdBy: owner?.id ?? null,
   });

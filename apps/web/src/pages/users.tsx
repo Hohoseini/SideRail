@@ -263,8 +263,8 @@ export default function UsersPage() {
     </div>
   );
 
-  const inboundBadges = (u: User) => (
-    <div className="flex flex-wrap gap-1">
+  const inboundBadges = (u: User, center = false) => (
+    <div className={cn("flex flex-wrap gap-1", center && "justify-center")}>
       {u.inbound_ids.length === 0 && <span className="text-xs text-text/40">none</span>}
       {u.inbound_ids.slice(0, 3).map((id) => (
         <Badge key={id} variant="neutral" className="text-[10px]">
@@ -286,7 +286,7 @@ export default function UsersPage() {
           <h1 className="font-heading text-3xl">Users</h1>
           <p className="text-sm font-base text-text/60">Manage clients and their subscriptions</p>
         </div>
-        <Button onClick={openNew}>
+        <Button onClick={openNew} className="w-full sm:w-auto">
           <UserPlus className="h-4 w-4" />
           New User
         </Button>
@@ -427,18 +427,20 @@ export default function UsersPage() {
               </div>
 
               {u.comment && (
-                <div className="truncate text-xs text-text/50" title={u.comment}>
+                <div className="truncate text-center text-xs text-text/50" title={u.comment}>
                   {u.comment}
                 </div>
               )}
               {isOwner && u.creator && (
-                <Badge variant="neutral" className="max-w-full gap-1 text-[10px]">
-                  <UserCog2 className="h-3 w-3 shrink-0" />
-                  <span className="truncate">by {u.creator}</span>
-                </Badge>
+                <div className="flex justify-center">
+                  <Badge variant="neutral" className="max-w-full gap-1 text-[10px]">
+                    <UserCog2 className="h-3 w-3 shrink-0" />
+                    <span className="truncate">by {u.creator}</span>
+                  </Badge>
+                </div>
               )}
 
-              <div className="min-w-0">{inboundBadges(u)}</div>
+              <div className="min-w-0">{inboundBadges(u, true)}</div>
               <TrafficBar user={u} />
 
               <div className="grid grid-cols-2 gap-2 border-t-2 border-border/30 pt-3 text-center">
@@ -460,7 +462,42 @@ export default function UsersPage() {
                 </div>
               </div>
 
-              <div className="flex justify-end">{rowActions(u)}</div>
+              <div className="grid grid-cols-2 gap-2">
+                <Button variant="neutral" onClick={() => openEdit(u)} className="w-full">
+                  <Pencil className="h-4 w-4" />
+                  Edit
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="neutral" className="w-full">
+                      <MoreVertical className="h-4 w-4" />
+                      More
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => copySubLink(u)}>
+                      <Copy className="h-4 w-4" />
+                      Copy sub link
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => window.open(`/sub/${u.sub_token}`, "_blank")}>
+                      <Server className="h-4 w-4" />
+                      Open sub page
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => resetMut.mutate(u.id)}>
+                      <RotateCcw className="h-4 w-4" />
+                      Reset traffic
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => rotateMut.mutate(u.id)}>
+                      <RefreshCw className="h-4 w-4" />
+                      Rotate sub token
+                    </DropdownMenuItem>
+                    <DropdownMenuItem danger onClick={() => setDeleteTarget(u)}>
+                      <Trash2 className="h-4 w-4" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </CardContent>
           </Card>
         ))}
