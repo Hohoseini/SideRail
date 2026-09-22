@@ -57,7 +57,15 @@ import { getBotConfig, saveBotConfig, testBot } from "./bot.js";
 export const api = Router();
 
 const trafficReset = z.enum(["never", "daily", "weekly", "monthly"]);
-const permissionEnum = z.enum(["dashboard", "users", "inbounds", "activity", "settings"]);
+const permissionEnum = z.enum([
+  "dashboard",
+  "users",
+  "inbounds",
+  "routing",
+  "activity",
+  "bot",
+  "settings",
+]);
 
 const userSchema = z.object({
   email: z.string().min(1),
@@ -446,15 +454,15 @@ api.get("/stats/traffic", requirePermission("dashboard"), (_req, res) => {
   res.json({ server: getServerTraffic(), inbounds: getInboundTraffic() });
 });
 
-api.get("/routing", requirePermission("inbounds"), (_req, res) => {
+api.get("/routing", requirePermission("routing"), (_req, res) => {
   res.json(listRoutingRules());
 });
 
-api.get("/routing/presets", requirePermission("inbounds"), (_req, res) => {
+api.get("/routing/presets", requirePermission("routing"), (_req, res) => {
   res.json({ domains: DOMAIN_PRESETS, ips: COUNTRY_IP_PRESETS });
 });
 
-api.post("/routing", requirePermission("inbounds"), async (req: AuthedRequest, res) => {
+api.post("/routing", requirePermission("routing"), async (req: AuthedRequest, res) => {
   const body = z
     .object({
       domain: z.string().min(1),
@@ -478,7 +486,7 @@ api.post("/routing", requirePermission("inbounds"), async (req: AuthedRequest, r
   res.json(rule);
 });
 
-api.put("/routing/:id", requirePermission("inbounds"), async (req: AuthedRequest, res) => {
+api.put("/routing/:id", requirePermission("routing"), async (req: AuthedRequest, res) => {
   const body = z.object({ inboundIds: z.array(z.number()) }).safeParse(req.body);
   if (!body.success) {
     res.status(400).json({ error: "invalid input" });
@@ -490,19 +498,19 @@ api.put("/routing/:id", requirePermission("inbounds"), async (req: AuthedRequest
   res.json({ ok: true });
 });
 
-api.delete("/routing/:id", requirePermission("inbounds"), async (req: AuthedRequest, res) => {
+api.delete("/routing/:id", requirePermission("routing"), async (req: AuthedRequest, res) => {
   deleteRoutingRule(Number(req.params.id));
   logActivity(req.admin!.username, "routing_delete", `#${req.params.id}`);
   restartXray();
   res.json({ ok: true });
 });
 
-api.get("/bot", requireOwner, (_req, res) => {
+api.get("/bot", requirePermission("bot"), (_req, res) => {
   const cfg = getBotConfig();
   res.json({ enabled: cfg.enabled, token: cfg.token, chatIds: cfg.chatIds, dailyBackup: cfg.dailyBackup });
 });
 
-api.put("/bot", requireOwner, (req: AuthedRequest, res) => {
+api.put("/bot", requirePermission("bot"), (req: AuthedRequest, res) => {
   const body = z
     .object({
       enabled: z.boolean().optional(),
@@ -520,7 +528,7 @@ api.put("/bot", requireOwner, (req: AuthedRequest, res) => {
   res.json({ ok: true });
 });
 
-api.post("/bot/test", requireOwner, async (req: AuthedRequest, res) => {
+api.post("/bot/test", requirePermission("bot"), async (req: AuthedRequest, res) => {
   const body = z
     .object({ token: z.string().min(1), chatIds: z.array(z.string()).min(1) })
     .safeParse(req.body);

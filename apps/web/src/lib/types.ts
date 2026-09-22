@@ -2,7 +2,14 @@ export type Protocol = "vless" | "vmess" | "trojan";
 export type Transport = "ws" | "xhttp" | "httpupgrade";
 export type TrafficReset = "never" | "daily" | "weekly" | "monthly";
 
-export type Permission = "dashboard" | "users" | "inbounds" | "activity" | "settings";
+export type Permission =
+  | "dashboard"
+  | "users"
+  | "inbounds"
+  | "routing"
+  | "activity"
+  | "bot"
+  | "settings";
 
 export interface AdminInfo {
   id: number;

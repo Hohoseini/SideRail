@@ -28,7 +28,9 @@ const PERM_ROUTE: Record<string, string> = {
   dashboard: "/",
   users: "/users",
   inbounds: "/inbounds",
+  routing: "/routing",
   activity: "/activity",
+  bot: "/bot",
   settings: "/settings",
 };
 
@@ -132,7 +134,7 @@ export default function App() {
         <Route
           path="/routing"
           element={
-            <RequirePerm perm="inbounds">
+            <RequirePerm perm="routing">
               <RoutingPage />
             </RequirePerm>
           }
@@ -140,7 +142,7 @@ export default function App() {
         <Route
           path="/bot"
           element={
-            <RequirePerm perm="settings">
+            <RequirePerm perm="bot">
               <BotPage />
             </RequirePerm>
           }

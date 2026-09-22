@@ -14,12 +14,21 @@ import type { Request, Response, NextFunction } from "express";
 import { db, getSetting, setSetting } from "./db.js";
 import { config } from "./config.js";
 
-export type Permission = "dashboard" | "users" | "inbounds" | "activity" | "settings";
+export type Permission =
+  | "dashboard"
+  | "users"
+  | "inbounds"
+  | "routing"
+  | "activity"
+  | "bot"
+  | "settings";
 export const ALL_PERMISSIONS: Permission[] = [
   "dashboard",
   "users",
   "inbounds",
+  "routing",
   "activity",
+  "bot",
   "settings",
 ];
 

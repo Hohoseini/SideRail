@@ -35,14 +35,16 @@ import {
 import { cn, formatBytes } from "@/lib/utils";
 import type { AdminInfo, Permission } from "@/lib/types";
 
-const PERMISSION_LABELS: Record<Permission, string> = {
-  dashboard: "Dashboard",
-  users: "Users",
-  inbounds: "Inbounds",
-  activity: "Activity Log",
-  settings: "Settings",
+const PERMISSION_KEYS: Record<Permission, "dashboard" | "users" | "inbounds" | "routing" | "activityLog" | "telegramBot" | "settings"> = {
+  dashboard: "dashboard",
+  users: "users",
+  inbounds: "inbounds",
+  routing: "routing",
+  activity: "activityLog",
+  bot: "telegramBot",
+  settings: "settings",
 };
-const ASSIGNABLE_PERMS: Permission[] = ["dashboard", "users", "inbounds", "activity"];
+const ASSIGNABLE_PERMS: Permission[] = ["dashboard", "users", "inbounds", "routing", "activity", "bot"];
 
 function CredentialsCard() {
   const toast = useToast();
@@ -264,7 +266,7 @@ function AdminDialog({
                       active ? "bg-main text-mtext neo-shadow" : "bg-bw hover:bg-main/10",
                     )}
                   >
-                    {PERMISSION_LABELS[p]}
+                    {t(PERMISSION_KEYS[p])}
                   </button>
                 );
               })}
@@ -390,7 +392,7 @@ function AdminsCard() {
               ) : (
                 a.permissions.map((p) => (
                   <Badge key={p} variant="neutral" className="text-[10px]">
-                    {PERMISSION_LABELS[p]}
+                    {t(PERMISSION_KEYS[p])}
                   </Badge>
                 ))
               )}

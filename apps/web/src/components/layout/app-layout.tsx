@@ -42,9 +42,9 @@ const nav: {
   { to: "/", labelKey: "dashboard", icon: LayoutDashboard, end: true, perm: "dashboard" },
   { to: "/users", labelKey: "users", icon: Users, end: false, perm: "users" },
   { to: "/inbounds", labelKey: "inbounds", icon: Router, end: false, perm: "inbounds" },
-  { to: "/routing", labelKey: "routing", icon: Ban, end: false, perm: "inbounds" },
+  { to: "/routing", labelKey: "routing", icon: Ban, end: false, perm: "routing" },
   { to: "/activity", labelKey: "activityLog", icon: ScrollText, end: false, perm: "activity" },
-  { to: "/bot", labelKey: "telegramBot", icon: Bot, end: false, perm: "settings", ownerOnly: true },
+  { to: "/bot", labelKey: "telegramBot", icon: Bot, end: false, perm: "bot" },
   { to: "/settings", labelKey: "settings", icon: Settings, end: false, perm: "settings" },
 ];
 
