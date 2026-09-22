@@ -1,6 +1,14 @@
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
+  Area,
+  AreaChart,
+  ResponsiveContainer,
+  Tooltip as RTooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import {
   Cpu,
   MemoryStick,
   HardDrive,
@@ -10,6 +18,8 @@ import {
   Activity,
   CircleCheck,
   CircleX,
+  ArrowDownUp,
+  Router as RouterIcon,
 } from "lucide-react";
 import { api, exportBackupUrl } from "@/lib/api";
 import { formatBytes, pct } from "@/lib/utils";
@@ -25,6 +35,17 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import type { SystemStats } from "@/lib/types";
+
+const protocolAccent: Record<string, string> = {
+  VLESS: "#a3e635",
+  VMess: "#7dd3fc",
+  Trojan: "#f0abfc",
+};
+
+function inboundColor(tag: string): string {
+  for (const [k, v] of Object.entries(protocolAccent)) if (tag.startsWith(k)) return v;
+  return "#a3e635";
+}
 
 function StatCard({
   icon: Icon,
@@ -78,7 +99,22 @@ export default function DashboardPage() {
   const fileRef = React.useRef<HTMLInputElement>(null);
   const [importing, setImporting] = React.useState(false);
 
+  const { data: traffic } = useQuery({
+    queryKey: ["traffic-stats"],
+    queryFn: api.trafficStats,
+    refetchInterval: 5000,
+  });
+
   const s = data;
+
+  const chart = React.useMemo(() => {
+    const rows = traffic?.server ?? [];
+    return rows.map((r) => ({
+      ts: r.ts,
+      down: Math.round(r.down / 30),
+      up: Math.round(r.up / 30),
+    }));
+  }, [traffic]);
 
   const onExport = () => {
     window.open(exportBackupUrl(), "_blank");
@@ -154,6 +190,105 @@ export default function DashboardPage() {
           progress={s?.storage.usage ?? 0}
           accent="#fda4af"
         />
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <ArrowDownUp className="h-5 w-5 text-main" />
+              <CardTitle>Live traffic</CardTitle>
+            </div>
+            <CardDescription>Server upload / download rate (per second)</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[180px] w-full">
+              {chart.length >= 2 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chart} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="dl" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#a3e635" stopOpacity={0.7} />
+                        <stop offset="100%" stopColor="#a3e635" stopOpacity={0.05} />
+                      </linearGradient>
+                      <linearGradient id="ul" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#7dd3fc" stopOpacity={0.7} />
+                        <stop offset="100%" stopColor="#7dd3fc" stopOpacity={0.05} />
+                      </linearGradient>
+                    </defs>
+                    <XAxis dataKey="ts" hide />
+                    <YAxis hide />
+                    <RTooltip
+                      formatter={(v: number, name) => [`${formatBytes(v)}/s`, name === "down" ? "Download" : "Upload"]}
+                      labelFormatter={(l: number) =>
+                        new Date(l).toLocaleTimeString(undefined, {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          second: "2-digit",
+                        })
+                      }
+                      contentStyle={{
+                        border: "2px solid #000",
+                        borderRadius: 8,
+                        background: "#fff",
+                        color: "#000",
+                        fontWeight: 600,
+                      }}
+                    />
+                    <Area type="monotone" dataKey="down" stroke="#000" strokeWidth={2} fill="url(#dl)" />
+                    <Area type="monotone" dataKey="up" stroke="#000" strokeWidth={2} fill="url(#ul)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex h-full items-center justify-center text-center text-xs font-base text-text/40">
+                  Collecting traffic data…
+                </div>
+              )}
+            </div>
+            <div className="mt-2 flex items-center justify-center gap-4 text-xs font-base">
+              <span className="flex items-center gap-1.5">
+                <span className="h-3 w-3 rounded-[3px] border-2 border-border bg-main" /> Download
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="h-3 w-3 rounded-[3px] border-2 border-border bg-sky-300" /> Upload
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <RouterIcon className="h-5 w-5 text-main" />
+              <CardTitle>Traffic per inbound</CardTitle>
+            </div>
+            <CardDescription>Total data used by each inbound</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {(traffic?.inbounds ?? []).length === 0 && (
+              <div className="py-8 text-center text-sm text-text/40">No traffic recorded yet.</div>
+            )}
+            {(traffic?.inbounds ?? []).map((ib) => (
+              <div
+                key={ib.inbound_tag}
+                className="flex items-center justify-between gap-3 rounded-base border-2 border-border bg-bg/40 p-3"
+              >
+                <div className="flex min-w-0 items-center gap-2">
+                  <span
+                    className="h-3 w-3 shrink-0 rounded-full border-2 border-border"
+                    style={{ background: inboundColor(ib.inbound_tag) }}
+                  />
+                  <span className="truncate font-heading text-sm">{ib.inbound_tag}</span>
+                </div>
+                <div className="flex shrink-0 items-center gap-3 text-xs font-base">
+                  <span className="text-lime-500">↓ {formatBytes(ib.down)}</span>
+                  <span className="text-sky-400">↑ {formatBytes(ib.up)}</span>
+                  <span className="font-heading text-text/80">{formatBytes(ib.up + ib.down)}</span>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
       </div>
 
       <Card>

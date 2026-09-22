@@ -101,6 +101,25 @@ export const api = {
     payload: { permissions?: string[]; dataLimit?: number; password?: string },
   ) => request(`/api/admins/${id}`, { method: "PUT", body: JSON.stringify(payload) }),
   deleteAdmin: (id: number) => request(`/api/admins/${id}`, { method: "DELETE" }),
+  trafficStats: () =>
+    request<{
+      server: { ts: number; up: number; down: number }[];
+      inbounds: { inbound_tag: string; up: number; down: number }[];
+    }>("/api/stats/traffic"),
+  routing: () => request<import("./types").RoutingRule[]>("/api/routing"),
+  addRouting: (domain: string, inboundIds: number[]) =>
+    request<import("./types").RoutingRule>("/api/routing", {
+      method: "POST",
+      body: JSON.stringify({ domain, inboundIds }),
+    }),
+  updateRouting: (id: number, inboundIds: number[]) =>
+    request(`/api/routing/${id}`, { method: "PUT", body: JSON.stringify({ inboundIds }) }),
+  deleteRouting: (id: number) => request(`/api/routing/${id}`, { method: "DELETE" }),
+  getBot: () => request<import("./types").BotConfig>("/api/bot"),
+  saveBot: (payload: Partial<import("./types").BotConfig>) =>
+    request("/api/bot", { method: "PUT", body: JSON.stringify(payload) }),
+  testBot: (token: string, chatIds: string[]) =>
+    request("/api/bot/test", { method: "POST", body: JSON.stringify({ token, chatIds }) }),
 };
 
 export function exportBackupUrl(): string {

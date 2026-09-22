@@ -13,6 +13,7 @@ import httpProxy from "http-proxy";
 import type { Server, IncomingMessage } from "node:http";
 import type { Socket } from "node:net";
 import { listEnabledInbounds } from "./inbounds.js";
+import { db } from "./db.js";
 import type { Inbound } from "./types.js";
 
 const xhttpProxy = httpProxy.createProxyServer({ ws: false, xfwd: true });
@@ -49,6 +50,44 @@ function matchInbound(url: string | undefined): Inbound | null {
   return null;
 }
 
+const ipLimitCache = new Map<string, { limited: boolean; ts: number }>();
+
+function ipAllowed(inbound: Inbound, ip: string): boolean {
+  if (!ip) return true;
+  const cacheKey = `${inbound.id}:${ip}`;
+  const cached = ipLimitCache.get(cacheKey);
+  const now = Date.now();
+  if (cached && now - cached.ts < 15_000) return !cached.limited;
+
+  const row = db
+    .prepare(
+      `SELECT u.id AS user_id, u.ip_limit AS ip_limit
+       FROM users u
+       JOIN user_inbounds ui ON ui.user_id = u.id
+       WHERE ui.inbound_id = ? AND u.enabled = 1 AND u.ip_limit > 0`,
+    )
+    .all(inbound.id) as { user_id: number; ip_limit: number }[];
+
+  if (row.length === 0) {
+    ipLimitCache.set(cacheKey, { limited: false, ts: now });
+    return true;
+  }
+
+  let limited = false;
+  for (const r of row) {
+    const active = db
+      .prepare("SELECT ip FROM client_ips WHERE user_id = ? AND last_seen > ?")
+      .all(r.user_id, now - 120_000) as { ip: string }[];
+    const known = active.some((a) => a.ip === ip);
+    if (!known && active.length >= r.ip_limit) {
+      limited = true;
+      break;
+    }
+  }
+  ipLimitCache.set(cacheKey, { limited, ts: now });
+  return !limited;
+}
+
 function pipeToXray(req: IncomingMessage, clientSocket: Socket, head: Buffer, inbound: Inbound) {
   const realIp = clientIp(req);
   const upstream = net.connect(inbound.port, "127.0.0.1", () => {
@@ -80,6 +119,10 @@ export function attachTunnel(server: Server): void {
       socket.destroy();
       return;
     }
+    if (!ipAllowed(inbound, clientIp(req))) {
+      socket.destroy();
+      return;
+    }
     pipeToXray(req, socket as Socket, head, inbound);
   });
 }
@@ -87,6 +130,11 @@ export function attachTunnel(server: Server): void {
 export function tryTunnelHttp(req: IncomingMessage, res: import("node:http").ServerResponse): boolean {
   const inbound = matchInbound(req.url);
   if (!inbound || inbound.transport !== "xhttp") return false;
+  if (!ipAllowed(inbound, clientIp(req))) {
+    res.statusCode = 403;
+    res.end();
+    return true;
+  }
   xhttpProxy.web(req, res, { target: `http://127.0.0.1:${inbound.port}` });
   return true;
 }

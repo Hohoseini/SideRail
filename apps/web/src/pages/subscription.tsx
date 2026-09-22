@@ -296,6 +296,15 @@ export default function SubscriptionPage() {
               QR
             </Button>
           </div>
+          <div className="grid grid-cols-3 gap-2">
+            <CopyButton value={subUrl} label="V2ray" className="w-full" />
+            <CopyButton value={`${subUrl}/clash`} label="Clash" className="w-full" />
+            <CopyButton value={`${subUrl}/singbox`} label="Sing-box" className="w-full" />
+          </div>
+          <p className="text-center text-[11px] font-base text-text/40">
+            Copy the link for your client: V2rayN / V2rayNG use base64, Clash Meta uses Clash,
+            sing-box uses Sing-box.
+          </p>
         </div>
 
         <div className="mt-8">

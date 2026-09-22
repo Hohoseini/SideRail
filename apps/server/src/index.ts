@@ -21,9 +21,10 @@ import { seedDefaultClient } from "./users.js";
 import { api } from "./routes.js";
 import { sub, setSubStaticRoot } from "./sub.js";
 import { attachTunnel, tryTunnelHttp } from "./tunnel.js";
-import { startXray, collectTraffic, collectClientIps } from "./xray.js";
+import { startXray, collectTraffic, collectClientIps, enforceIpLimits } from "./xray.js";
 import { applyTrafficReset } from "./users.js";
 import { rateLimit } from "./ratelimit.js";
+import { sendDailyBackup } from "./bot.js";
 import { SIDERAIL_SIGNATURE, watermark } from "./brand.js";
 
 console.log(SIDERAIL_SIGNATURE);
@@ -86,12 +87,20 @@ setInterval(() => {
   } catch {
     /* noop */
   }
+}, 30_000);
+
+setInterval(() => {
   try {
     collectClientIps();
   } catch {
     /* noop */
   }
-}, 30_000);
+  try {
+    enforceIpLimits();
+  } catch {
+    /* noop */
+  }
+}, 20_000);
 
 setInterval(() => {
   try {
@@ -100,6 +109,15 @@ setInterval(() => {
     /* noop */
   }
 }, 3_600_000);
+
+let lastBackupDay = new Date().getDate();
+setInterval(() => {
+  const now = new Date();
+  if (now.getHours() === 0 && now.getDate() !== lastBackupDay) {
+    lastBackupDay = now.getDate();
+    void sendDailyBackup();
+  }
+}, 60_000);
 
 process.on("SIGINT", () => process.exit(0));
 process.on("SIGTERM", () => process.exit(0));

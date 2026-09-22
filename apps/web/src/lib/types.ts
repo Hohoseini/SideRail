@@ -103,6 +103,20 @@ export interface SubLink {
   link: string;
 }
 
+export interface RoutingRule {
+  id: number;
+  domain: string;
+  inbound_ids: number[];
+  created_at: number;
+}
+
+export interface BotConfig {
+  enabled: boolean;
+  token: string;
+  chatIds: string[];
+  dailyBackup: boolean;
+}
+
 export interface SubData {
   expired: boolean;
   user: {

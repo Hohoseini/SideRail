@@ -18,6 +18,8 @@ import LoginPage from "./pages/login";
 import DashboardPage from "./pages/dashboard";
 import UsersPage from "./pages/users";
 import InboundsPage from "./pages/inbounds";
+import RoutingPage from "./pages/routing";
+import BotPage from "./pages/bot";
 import ActivityPage from "./pages/activity";
 import SettingsPage from "./pages/settings";
 import SubscriptionPage from "./pages/subscription";
@@ -124,6 +126,22 @@ export default function App() {
           element={
             <RequirePerm perm="inbounds">
               <InboundsPage />
+            </RequirePerm>
+          }
+        />
+        <Route
+          path="/routing"
+          element={
+            <RequirePerm perm="inbounds">
+              <RoutingPage />
+            </RequirePerm>
+          }
+        />
+        <Route
+          path="/bot"
+          element={
+            <RequirePerm perm="settings">
+              <BotPage />
             </RequirePerm>
           }
         />

@@ -13,16 +13,42 @@ export function QrCode({ value, size = 180, className }: QrCodeProps) {
 
   React.useEffect(() => {
     let active = true;
-    QRCode.toDataURL(value, {
-      width: size * 2,
-      margin: 1,
-      color: { dark: "#000000", light: "#ffffff" },
-      errorCorrectionLevel: "M",
-    })
-      .then((url) => {
-        if (active) setDataUrl(url);
-      })
-      .catch(() => setDataUrl(""));
+    const render = async () => {
+      try {
+        const canvas = document.createElement("canvas");
+        const scale = 2;
+        await QRCode.toCanvas(canvas, value, {
+          width: size * scale,
+          margin: 1,
+          color: { dark: "#000000", light: "#ffffff" },
+          errorCorrectionLevel: "H",
+        });
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          const c = canvas.width / 2;
+          const box = canvas.width * 0.22;
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(c - box / 2, c - box / 2, box, box);
+          ctx.fillStyle = "#a3e635";
+          const r = box * 0.16;
+          const x = c - box / 2 + box * 0.12;
+          const y = c - box / 2 + box * 0.12;
+          const w = box * 0.76;
+          ctx.beginPath();
+          ctx.roundRect(x, y, w, w, r);
+          ctx.fill();
+          ctx.fillStyle = "#0b0b0f";
+          ctx.font = `900 ${box * 0.42}px Arial, sans-serif`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText("SR", c, c + box * 0.02);
+        }
+        if (active) setDataUrl(canvas.toDataURL("image/png"));
+      } catch {
+        if (active) setDataUrl("");
+      }
+    };
+    void render();
     return () => {
       active = false;
     };

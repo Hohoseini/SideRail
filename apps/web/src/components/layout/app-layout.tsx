@@ -11,6 +11,8 @@ import {
   X,
   Github,
   Crown,
+  Ban,
+  Bot,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
@@ -27,11 +29,20 @@ const GITHUB_URL = "https://github.com/icubaby/SideRail";
 
 import type { Permission } from "@/lib/types";
 
-const nav: { to: string; label: string; icon: typeof LayoutDashboard; end: boolean; perm: Permission }[] = [
+const nav: {
+  to: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  end: boolean;
+  perm: Permission;
+  ownerOnly?: boolean;
+}[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true, perm: "dashboard" },
   { to: "/users", label: "Users", icon: Users, end: false, perm: "users" },
   { to: "/inbounds", label: "Inbounds", icon: Router, end: false, perm: "inbounds" },
+  { to: "/routing", label: "Routing", icon: Ban, end: false, perm: "inbounds" },
   { to: "/activity", label: "Activity Log", icon: ScrollText, end: false, perm: "activity" },
+  { to: "/bot", label: "Telegram Bot", icon: Bot, end: false, perm: "settings", ownerOnly: true },
   { to: "/settings", label: "Settings", icon: Settings, end: false, perm: "settings" },
 ];
 
@@ -52,14 +63,16 @@ function Brand() {
 function NavItems({
   onNavigate,
   can,
+  isOwner,
 }: {
   onNavigate?: () => void;
   can: (perm: Permission) => boolean;
+  isOwner: boolean;
 }) {
   return (
     <nav className="flex flex-col gap-2">
       {nav
-        .filter((item) => can(item.perm))
+        .filter((item) => can(item.perm) && (!item.ownerOnly || isOwner))
         .map((item) => (
         <NavLink
           key={item.to}
@@ -84,7 +97,7 @@ function NavItems({
 }
 
 export function AppLayout() {
-  const { username, logout, can, admin } = useAuth();
+  const { username, logout, can, admin, isOwner } = useAuth();
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [menuOpen, setMenuOpen] = React.useState(false);
   const location = useLocation();
@@ -112,7 +125,7 @@ export function AppLayout() {
             <Brand />
           </div>
           <div className="mt-6 flex-1">
-            <NavItems can={can} />
+            <NavItems can={can} isOwner={isOwner} />
           </div>
           <a
             href={GITHUB_URL}
@@ -255,7 +268,7 @@ export function AppLayout() {
               </Button>
             </div>
             <div className="mt-6">
-              <NavItems can={can} onNavigate={() => setMobileOpen(false)} />
+              <NavItems can={can} isOwner={isOwner} onNavigate={() => setMobileOpen(false)} />
             </div>
             <div className="absolute inset-x-4 bottom-4">
               <a

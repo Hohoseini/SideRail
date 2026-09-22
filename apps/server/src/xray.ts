@@ -169,18 +169,51 @@ function queryStats(): StatStub[] {
 export function collectTraffic(): void {
   const stats = queryStats();
   const now = Date.now();
+  let serverUp = 0;
+  let serverDown = 0;
   if (stats.length > 0) {
     const updateUp = db.prepare("UPDATE users SET up = up + ?, online_at = ? WHERE email = ?");
     const updateDown = db.prepare("UPDATE users SET down = down + ?, online_at = ? WHERE email = ?");
+    const inbUp = db.prepare(
+      "INSERT INTO inbound_traffic (inbound_tag, up, down) VALUES (?, ?, 0) ON CONFLICT(inbound_tag) DO UPDATE SET up = up + excluded.up",
+    );
+    const inbDown = db.prepare(
+      "INSERT INTO inbound_traffic (inbound_tag, up, down) VALUES (?, 0, ?) ON CONFLICT(inbound_tag) DO UPDATE SET down = down + excluded.down",
+    );
     for (const s of stats) {
-      const m = s.name.match(/^user>>>(.+)>>>traffic>>>(uplink|downlink)$/);
-      if (!m || s.value <= 0) continue;
-      const email = m[1];
-      if (m[2] === "uplink") updateUp.run(s.value, now, email);
-      else updateDown.run(s.value, now, email);
+      if (s.value <= 0) continue;
+      const um = s.name.match(/^user>>>(.+)>>>traffic>>>(uplink|downlink)$/);
+      if (um) {
+        const email = um[1];
+        if (um[2] === "uplink") updateUp.run(s.value, now, email);
+        else updateDown.run(s.value, now, email);
+        continue;
+      }
+      const im = s.name.match(/^inbound>>>(.+)>>>traffic>>>(uplink|downlink)$/);
+      if (im) {
+        const tag = im[1];
+        if (tag === "api") continue;
+        if (im[2] === "uplink") {
+          inbUp.run(tag, s.value);
+          serverUp += s.value;
+        } else {
+          inbDown.run(tag, s.value);
+          serverDown += s.value;
+        }
+      }
     }
   }
+  recordServerTraffic(now, serverUp, serverDown);
   recordUsageHistory(now);
+}
+
+function recordServerTraffic(now: number, up: number, down: number): void {
+  db.prepare("INSERT OR REPLACE INTO server_traffic (ts, up, down) VALUES (?, ?, ?)").run(
+    now,
+    up,
+    down,
+  );
+  db.prepare("DELETE FROM server_traffic WHERE ts < ?").run(now - 3_600_000);
 }
 
 function recordUsageHistory(now: number): void {
@@ -255,4 +288,35 @@ export function getClientIps(userId: number): { ip: string; last_seen: number }[
   return db
     .prepare("SELECT ip, last_seen FROM client_ips WHERE user_id = ? ORDER BY last_seen DESC")
     .all(userId) as { ip: string; last_seen: number }[];
+}
+
+export function enforceIpLimits(): void {
+  const now = Date.now();
+  const users = db
+    .prepare("SELECT id, ip_limit FROM users WHERE ip_limit > 0 AND enabled = 1")
+    .all() as { id: number; ip_limit: number }[];
+  for (const u of users) {
+    const ips = db
+      .prepare(
+        "SELECT ip, last_seen FROM client_ips WHERE user_id = ? AND last_seen > ? ORDER BY last_seen DESC",
+      )
+      .all(u.id, now - 120_000) as { ip: string; last_seen: number }[];
+    if (ips.length > u.ip_limit) {
+      const excess = ips.slice(u.ip_limit);
+      const del = db.prepare("DELETE FROM client_ips WHERE user_id = ? AND ip = ?");
+      for (const e of excess) del.run(u.id, e.ip);
+    }
+  }
+}
+
+export function getServerTraffic(): { ts: number; up: number; down: number }[] {
+  return db
+    .prepare("SELECT ts, up, down FROM server_traffic ORDER BY ts ASC")
+    .all() as { ts: number; up: number; down: number }[];
+}
+
+export function getInboundTraffic(): { inbound_tag: string; up: number; down: number }[] {
+  return db
+    .prepare("SELECT inbound_tag, up, down FROM inbound_traffic ORDER BY (up + down) DESC")
+    .all() as { inbound_tag: string; up: number; down: number }[];
 }

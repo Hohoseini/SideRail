@@ -41,10 +41,17 @@ import {
   getUser,
   summarize,
 } from "./users.js";
-import { getClientIps, restartXray } from "./xray.js";
+import { getClientIps, restartXray, getServerTraffic, getInboundTraffic } from "./xray.js";
 import { listActivity, logActivity, clearActivity } from "./activity.js";
 import { exportData, importData } from "./backup.js";
 import { loginRateLimit } from "./ratelimit.js";
+import {
+  listRoutingRules,
+  addRoutingRule,
+  updateRoutingRule,
+  deleteRoutingRule,
+} from "./routing.js";
+import { getBotConfig, saveBotConfig, testBot } from "./bot.js";
 
 export const api = Router();
 
@@ -426,6 +433,87 @@ api.post("/backup/import", requirePermission("dashboard"), async (req: AuthedReq
   } catch (e) {
     res.status(400).json({ error: (e as Error).message });
   }
+});
+
+api.get("/stats/traffic", requirePermission("dashboard"), (_req, res) => {
+  res.json({ server: getServerTraffic(), inbounds: getInboundTraffic() });
+});
+
+api.get("/routing", requirePermission("inbounds"), (_req, res) => {
+  res.json(listRoutingRules());
+});
+
+api.post("/routing", requirePermission("inbounds"), async (req: AuthedRequest, res) => {
+  const body = z
+    .object({ domain: z.string().min(1), inboundIds: z.array(z.number()).default([]) })
+    .safeParse(req.body);
+  if (!body.success) {
+    res.status(400).json({ error: "invalid input" });
+    return;
+  }
+  const rule = addRoutingRule(body.data.domain, body.data.inboundIds);
+  logActivity(req.admin!.username, "routing_add", body.data.domain);
+  await restartXray();
+  res.json(rule);
+});
+
+api.put("/routing/:id", requirePermission("inbounds"), async (req: AuthedRequest, res) => {
+  const body = z.object({ inboundIds: z.array(z.number()) }).safeParse(req.body);
+  if (!body.success) {
+    res.status(400).json({ error: "invalid input" });
+    return;
+  }
+  updateRoutingRule(Number(req.params.id), body.data.inboundIds);
+  logActivity(req.admin!.username, "routing_update", `#${req.params.id}`);
+  await restartXray();
+  res.json({ ok: true });
+});
+
+api.delete("/routing/:id", requirePermission("inbounds"), async (req: AuthedRequest, res) => {
+  deleteRoutingRule(Number(req.params.id));
+  logActivity(req.admin!.username, "routing_delete", `#${req.params.id}`);
+  await restartXray();
+  res.json({ ok: true });
+});
+
+api.get("/bot", requireOwner, (_req, res) => {
+  const cfg = getBotConfig();
+  res.json({ enabled: cfg.enabled, token: cfg.token, chatIds: cfg.chatIds, dailyBackup: cfg.dailyBackup });
+});
+
+api.put("/bot", requireOwner, (req: AuthedRequest, res) => {
+  const body = z
+    .object({
+      enabled: z.boolean().optional(),
+      token: z.string().optional(),
+      chatIds: z.array(z.string()).optional(),
+      dailyBackup: z.boolean().optional(),
+    })
+    .safeParse(req.body);
+  if (!body.success) {
+    res.status(400).json({ error: "invalid input" });
+    return;
+  }
+  saveBotConfig(body.data);
+  logActivity(req.admin!.username, "bot_update", "");
+  res.json({ ok: true });
+});
+
+api.post("/bot/test", requireOwner, async (req: AuthedRequest, res) => {
+  const body = z
+    .object({ token: z.string().min(1), chatIds: z.array(z.string()).min(1) })
+    .safeParse(req.body);
+  if (!body.success) {
+    res.status(400).json({ error: "token and at least one chat id are required" });
+    return;
+  }
+  const result = await testBot(body.data.token, body.data.chatIds);
+  if (!result.ok) {
+    res.status(400).json({ error: result.error });
+    return;
+  }
+  logActivity(req.admin!.username, "bot_test", "");
+  res.json({ ok: true });
 });
 
 void db;

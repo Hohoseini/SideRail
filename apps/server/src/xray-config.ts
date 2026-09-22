@@ -11,6 +11,7 @@
 import { config } from "./config.js";
 import { listEnabledInbounds } from "./inbounds.js";
 import { listUsers, isUserActive } from "./users.js";
+import { listRoutingRules } from "./routing.js";
 import type { Inbound, UserWithInbounds } from "./types.js";
 
 function streamSettings(inbound: Inbound) {
@@ -45,6 +46,34 @@ function protocolSettings(inbound: Inbound, users: UserWithInbounds[]) {
   return {
     clients: clients.map((c) => ({ password: c.password, email: c.email })),
   };
+}
+
+function buildRoutingRules(inbounds: Inbound[]) {
+  const rules: Record<string, unknown>[] = [
+    { type: "field", inboundTag: ["api"], outboundTag: "api" },
+  ];
+  const tagById = new Map(inbounds.map((i) => [i.id, i.tag]));
+  const routingRules = listRoutingRules();
+
+  for (const rule of routingRules) {
+    const domains = rule.domain
+      .split(/[\s,]+/)
+      .map((d) => d.trim())
+      .filter(Boolean);
+    if (domains.length === 0) continue;
+    const targetTags =
+      rule.inbound_ids.length === 0
+        ? inbounds.map((i) => i.tag)
+        : rule.inbound_ids.map((id) => tagById.get(id)).filter((t): t is string => !!t);
+    if (targetTags.length === 0) continue;
+    rules.push({
+      type: "field",
+      inboundTag: targetTags,
+      domain: domains,
+      outboundTag: "blocked",
+    });
+  }
+  return rules;
 }
 
 export function buildXrayConfig() {
@@ -90,7 +119,8 @@ export function buildXrayConfig() {
       { tag: "blocked", protocol: "blackhole", settings: {} },
     ],
     routing: {
-      rules: [{ type: "field", inboundTag: ["api"], outboundTag: "api" }],
+      domainStrategy: "AsIs",
+      rules: buildRoutingRules(inbounds),
     },
   };
 }

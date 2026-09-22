@@ -86,9 +86,29 @@ export function migrate(): void {
       PRIMARY KEY (user_id, ip)
     );
 
+    CREATE TABLE IF NOT EXISTS routing_rules (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      domain TEXT NOT NULL,
+      inbound_ids TEXT NOT NULL DEFAULT '[]',
+      created_at INTEGER NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS server_traffic (
+      ts INTEGER PRIMARY KEY,
+      up INTEGER NOT NULL,
+      down INTEGER NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS inbound_traffic (
+      inbound_tag TEXT PRIMARY KEY,
+      up INTEGER NOT NULL DEFAULT 0,
+      down INTEGER NOT NULL DEFAULT 0
+    );
+
     CREATE INDEX IF NOT EXISTS idx_activity_ts ON activity(ts DESC);
     CREATE INDEX IF NOT EXISTS idx_users_token ON users(sub_token);
     CREATE INDEX IF NOT EXISTS idx_usage_user_ts ON usage_history(user_id, ts);
+    CREATE INDEX IF NOT EXISTS idx_server_traffic_ts ON server_traffic(ts DESC);
   `);
   migrateColumns();
 }
