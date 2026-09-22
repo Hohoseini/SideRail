@@ -56,22 +56,24 @@ function buildRoutingRules(inbounds: Inbound[]) {
   const routingRules = listRoutingRules();
 
   for (const rule of routingRules) {
-    const domains = rule.domain
+    const values = rule.domain
       .split(/[\s,]+/)
       .map((d) => d.trim())
       .filter(Boolean);
-    if (domains.length === 0) continue;
+    if (values.length === 0) continue;
     const targetTags =
       rule.inbound_ids.length === 0
         ? inbounds.map((i) => i.tag)
         : rule.inbound_ids.map((id) => tagById.get(id)).filter((t): t is string => !!t);
     if (targetTags.length === 0) continue;
-    rules.push({
+    const base: Record<string, unknown> = {
       type: "field",
       inboundTag: targetTags,
-      domain: domains,
       outboundTag: "blocked",
-    });
+    };
+    if (rule.kind === "ip") base.ip = values;
+    else base.domain = values;
+    rules.push(base);
   }
   return rules;
 }

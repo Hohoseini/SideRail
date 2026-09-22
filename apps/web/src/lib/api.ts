@@ -107,10 +107,20 @@ export const api = {
       inbounds: { inbound_tag: string; up: number; down: number }[];
     }>("/api/stats/traffic"),
   routing: () => request<import("./types").RoutingRule[]>("/api/routing"),
-  addRouting: (domain: string, inboundIds: number[]) =>
+  routingPresets: () =>
+    request<{
+      domains: import("./types").RoutingPreset[];
+      ips: import("./types").RoutingPreset[];
+    }>("/api/routing/presets"),
+  addRouting: (
+    domain: string,
+    inboundIds: number[],
+    kind: "domain" | "ip" = "domain",
+    label?: string,
+  ) =>
     request<import("./types").RoutingRule>("/api/routing", {
       method: "POST",
-      body: JSON.stringify({ domain, inboundIds }),
+      body: JSON.stringify({ domain, inboundIds, kind, label }),
     }),
   updateRouting: (id: number, inboundIds: number[]) =>
     request(`/api/routing/${id}`, { method: "PUT", body: JSON.stringify({ inboundIds }) }),

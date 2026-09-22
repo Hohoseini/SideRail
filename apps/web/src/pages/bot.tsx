@@ -61,7 +61,7 @@ export default function BotPage() {
         </p>
       </div>
 
-      <Card className="max-w-2xl">
+      <Card className="mx-auto w-full max-w-3xl">
         <CardHeader>
           <div className="flex items-center gap-2">
             <Bot className="h-5 w-5 text-main" />
@@ -144,9 +144,9 @@ export default function BotPage() {
             <Switch checked={dailyBackup} onCheckedChange={setDailyBackup} />
           </div>
 
-          <div className="flex flex-col gap-2 sm:flex-row">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <Button
-              className="w-full sm:w-auto"
+              className="w-full"
               onClick={() => saveMut.mutate()}
               disabled={saveMut.isPending}
             >
@@ -155,7 +155,7 @@ export default function BotPage() {
             </Button>
             <Button
               variant="neutral"
-              className="w-full sm:w-auto"
+              className="w-full"
               onClick={() => testMut.mutate()}
               disabled={testMut.isPending || !token || cleanIds().length === 0}
             >

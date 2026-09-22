@@ -21,7 +21,7 @@ export interface SystemStats {
   swap: { usage: number; used: number; total: number };
   storage: { usage: number; free: number; total: number };
   uptime: number;
-  xray: { running: boolean; version: string };
+  xray: { running: boolean; version: string; uptime: number };
 }
 
 export interface Inbound {
@@ -107,7 +107,16 @@ export interface RoutingRule {
   id: number;
   domain: string;
   inbound_ids: number[];
+  kind: "domain" | "ip";
+  label: string;
   created_at: number;
+}
+
+export interface RoutingPreset {
+  id: string;
+  label: string;
+  kind: "domain" | "ip";
+  values: string[];
 }
 
 export interface BotConfig {

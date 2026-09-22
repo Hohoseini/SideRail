@@ -1,11 +1,11 @@
 import * as React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Ban, Plus, Trash2, Globe } from "lucide-react";
+import { Ban, Plus, Trash2, Globe, Network } from "lucide-react";
 import { api } from "@/lib/api";
 import { useToast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Combobox, type ComboItem } from "@/components/ui/combobox";
 import {
   Card,
   CardContent,
@@ -14,12 +14,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import type { Inbound, RoutingRule } from "@/lib/types";
+import type { Inbound, RoutingRule, RoutingPreset } from "@/lib/types";
 
 export default function RoutingPage() {
   const toast = useToast();
   const qc = useQueryClient();
-  const [domain, setDomain] = React.useState("");
+  const [kind, setKind] = React.useState<"domain" | "ip">("domain");
+  const [value, setValue] = React.useState("");
+  const [label, setLabel] = React.useState("");
   const [selected, setSelected] = React.useState<number[]>([]);
 
   const { data: rules = [] } = useQuery<RoutingRule[]>({
@@ -30,14 +32,19 @@ export default function RoutingPage() {
     queryKey: ["inbounds"],
     queryFn: api.inbounds,
   });
+  const { data: presets } = useQuery<{ domains: RoutingPreset[]; ips: RoutingPreset[] }>({
+    queryKey: ["routing-presets"],
+    queryFn: api.routingPresets,
+  });
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["routing"] });
 
   const addMut = useMutation({
-    mutationFn: () => api.addRouting(domain.trim(), selected),
+    mutationFn: () => api.addRouting(value.trim(), selected, kind, label || value.trim()),
     onSuccess: () => {
       toast.push("success", "Block rule added");
-      setDomain("");
+      setValue("");
+      setLabel("");
       setSelected([]);
       invalidate();
     },
@@ -53,10 +60,27 @@ export default function RoutingPage() {
     onError: (e: Error) => toast.push("error", e.message),
   });
 
+  const domainItems: ComboItem[] = React.useMemo(() => {
+    const items = (presets?.domains ?? []).map((p) => ({
+      value: p.values[0],
+      label: p.label,
+      group: "Presets",
+    }));
+    return items;
+  }, [presets]);
+
+  const ipItems: ComboItem[] = React.useMemo(() => {
+    return (presets?.ips ?? []).map((p) => ({
+      value: p.values[0],
+      label: p.label,
+      group: "Countries",
+    }));
+  }, [presets]);
+
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!domain.trim()) {
-      toast.push("error", "Enter a domain to block");
+    if (!value.trim()) {
+      toast.push("error", "Choose or type something to block");
       return;
     }
     addMut.mutate();
@@ -71,114 +95,160 @@ export default function RoutingPage() {
     <div className="space-y-6">
       <div>
         <h1 className="font-heading text-3xl">Routing</h1>
-        <p className="text-sm font-base text-text/60">Block domains on selected inbounds</p>
+        <p className="text-sm font-base text-text/60">Block domains and country IPs per inbound</p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Ban className="h-5 w-5 text-main" />
-            <CardTitle>Block a domain</CardTitle>
-          </div>
-          <CardDescription>
-            Traffic to these domains is dropped. Leave inbounds empty to block on all of them.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={submit} className="space-y-4" noValidate>
-            <div className="space-y-2">
-              <Input
-                value={domain}
-                onChange={(e) => setDomain(e.target.value)}
-                placeholder="example.com  (or  geosite:category-ads)"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    submit(e);
-                  }
-                }}
-              />
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] lg:items-start">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Ban className="h-5 w-5 text-main" />
+              <CardTitle>Add block rule</CardTitle>
             </div>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm font-heading text-text/70">
-                <Globe className="h-4 w-4" />
-                Apply to inbounds
-                <span className="text-xs text-text/40">(none = all)</span>
-              </div>
-              <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
-                {inbounds.map((ib) => {
-                  const active = selected.includes(ib.id);
-                  return (
-                    <button
-                      key={ib.id}
-                      type="button"
-                      onClick={() => toggle(ib.id)}
-                      className={cn(
-                        "rounded-base border-2 border-border px-2.5 py-1.5 text-left text-xs font-heading transition-all",
-                        active ? "bg-main text-mtext neo-shadow" : "bg-bw hover:bg-main/10",
-                      )}
-                    >
-                      {ib.tag}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-            <Button type="submit" className="w-full sm:w-auto" disabled={addMut.isPending}>
-              <Plus className="h-4 w-4" />
-              Add block rule
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Blocked domains</CardTitle>
-          <CardDescription>{rules.length} active rules</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {rules.length === 0 && (
-            <div className="rounded-base border-2 border-dashed border-border/40 py-10 text-center text-sm text-text/50">
-              No block rules yet.
-            </div>
-          )}
-          {rules.map((r) => (
-            <div
-              key={r.id}
-              className="flex items-center justify-between gap-3 rounded-base border-2 border-border bg-bg/40 p-3"
-            >
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <Ban className="h-4 w-4 shrink-0 text-red-400" />
-                  <span className="truncate font-heading">{r.domain}</span>
-                </div>
-                <div className="mt-1 flex flex-wrap gap-1">
-                  {r.inbound_ids.length === 0 ? (
-                    <Badge variant="info" className="text-[10px]">
-                      all inbounds
-                    </Badge>
-                  ) : (
-                    r.inbound_ids.map((id) => (
-                      <Badge key={id} variant="neutral" className="text-[10px]">
-                        {inboundName(id)}
-                      </Badge>
-                    ))
+            <CardDescription>Traffic matching the rule is dropped.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={submit} className="space-y-4" noValidate>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setKind("domain");
+                    setValue("");
+                  }}
+                  className={cn(
+                    "flex items-center justify-center gap-2 rounded-base border-2 border-border px-3 py-2 text-sm font-heading transition-all",
+                    kind === "domain" ? "bg-main text-mtext neo-shadow" : "bg-bw hover:bg-main/10",
                   )}
+                >
+                  <Globe className="h-4 w-4" />
+                  Block Domains
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setKind("ip");
+                    setValue("");
+                  }}
+                  className={cn(
+                    "flex items-center justify-center gap-2 rounded-base border-2 border-border px-3 py-2 text-sm font-heading transition-all",
+                    kind === "ip" ? "bg-main text-mtext neo-shadow" : "bg-bw hover:bg-main/10",
+                  )}
+                >
+                  <Network className="h-4 w-4" />
+                  Block IPs
+                </button>
+              </div>
+
+              <Combobox
+                items={kind === "domain" ? domainItems : ipItems}
+                value={value}
+                onChange={(v, item) => {
+                  setValue(v);
+                  setLabel(item?.label || "");
+                }}
+                placeholder={
+                  kind === "domain"
+                    ? "Pick a category or type a domain…"
+                    : "Pick a country or type geoip:xx…"
+                }
+              />
+
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm font-heading text-text/70">
+                  Apply to inbounds
+                  <span className="text-xs text-text/40">(none = all)</span>
+                </div>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {inbounds.map((ib) => {
+                    const active = selected.includes(ib.id);
+                    return (
+                      <button
+                        key={ib.id}
+                        type="button"
+                        onClick={() => toggle(ib.id)}
+                        className={cn(
+                          "rounded-base border-2 border-border px-2.5 py-1.5 text-left text-xs font-heading transition-all",
+                          active ? "bg-main text-mtext neo-shadow" : "bg-bw hover:bg-main/10",
+                        )}
+                      >
+                        {ib.tag}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
-              <Button
-                variant="danger"
-                size="icon"
-                className="h-8 w-8 shrink-0"
-                onClick={() => deleteMut.mutate(r.id)}
-              >
-                <Trash2 className="h-3.5 w-3.5" />
+
+              <Button type="submit" className="w-full" disabled={addMut.isPending}>
+                <Plus className="h-4 w-4" />
+                Add block rule
               </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Ban className="h-5 w-5 text-main" />
+              <CardTitle>Blocked rules</CardTitle>
             </div>
-          ))}
-        </CardContent>
-      </Card>
+            <CardDescription>{rules.length} active rules</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {rules.length === 0 && (
+              <div className="rounded-base border-2 border-dashed border-border/40 py-10 text-center text-sm text-text/50">
+                No block rules yet.
+              </div>
+            )}
+            {rules.map((r) => (
+              <div
+                key={r.id}
+                className="flex items-center justify-between gap-3 rounded-base border-2 border-border bg-bg/40 p-3"
+              >
+                <div className="flex min-w-0 items-center gap-3">
+                  <div
+                    className={cn(
+                      "grid h-9 w-9 shrink-0 place-items-center rounded-base border-2 border-border",
+                      r.kind === "ip" ? "bg-sky-300" : "bg-red-300",
+                    )}
+                  >
+                    {r.kind === "ip" ? (
+                      <Network className="h-4 w-4 text-black" />
+                    ) : (
+                      <Globe className="h-4 w-4 text-black" />
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="truncate font-heading">{r.label || r.domain}</div>
+                    <div className="mt-0.5 flex flex-wrap gap-1">
+                      {r.inbound_ids.length === 0 ? (
+                        <Badge variant="info" className="text-[10px]">
+                          all inbounds
+                        </Badge>
+                      ) : (
+                        r.inbound_ids.map((id) => (
+                          <Badge key={id} variant="neutral" className="text-[10px]">
+                            {inboundName(id)}
+                          </Badge>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <Button
+                  variant="danger"
+                  size="icon"
+                  className="h-8 w-8 shrink-0"
+                  onClick={() => deleteMut.mutate(r.id)}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

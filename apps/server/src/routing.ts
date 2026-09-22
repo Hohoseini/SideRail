@@ -4,6 +4,8 @@ export interface RoutingRule {
   id: number;
   domain: string;
   inbound_ids: number[];
+  kind: "domain" | "ip";
+  label: string;
   created_at: number;
 }
 
@@ -11,6 +13,8 @@ interface RoutingRow {
   id: number;
   domain: string;
   inbound_ids: string;
+  kind: string;
+  label: string;
   created_at: number;
 }
 
@@ -21,7 +25,14 @@ function decode(row: RoutingRow): RoutingRule {
   } catch {
     ids = [];
   }
-  return { id: row.id, domain: row.domain, inbound_ids: ids, created_at: row.created_at };
+  return {
+    id: row.id,
+    domain: row.domain,
+    inbound_ids: ids,
+    kind: row.kind === "ip" ? "ip" : "domain",
+    label: row.label || row.domain,
+    created_at: row.created_at,
+  };
 }
 
 export function listRoutingRules(): RoutingRule[] {
@@ -31,10 +42,17 @@ export function listRoutingRules(): RoutingRule[] {
   return rows.map(decode);
 }
 
-export function addRoutingRule(domain: string, inboundIds: number[]): RoutingRule {
+export function addRoutingRule(
+  domain: string,
+  inboundIds: number[],
+  kind: "domain" | "ip" = "domain",
+  label = "",
+): RoutingRule {
   const info = db
-    .prepare("INSERT INTO routing_rules (domain, inbound_ids, created_at) VALUES (?, ?, ?)")
-    .run(domain.trim(), JSON.stringify(inboundIds), Date.now());
+    .prepare(
+      "INSERT INTO routing_rules (domain, inbound_ids, kind, label, created_at) VALUES (?, ?, ?, ?, ?)",
+    )
+    .run(domain.trim(), JSON.stringify(inboundIds), kind, label || domain.trim(), Date.now());
   const row = db
     .prepare("SELECT * FROM routing_rules WHERE id = ?")
     .get(Number(info.lastInsertRowid)) as unknown as RoutingRow;
@@ -50,4 +68,10 @@ export function updateRoutingRule(id: number, inboundIds: number[]): void {
 
 export function deleteRoutingRule(id: number): void {
   db.prepare("DELETE FROM routing_rules WHERE id = ?").run(id);
+}
+
+export function seedDefaultRouting(): void {
+  const count = (db.prepare("SELECT COUNT(*) AS c FROM routing_rules").get() as { c: number }).c;
+  if (count > 0) return;
+  addRoutingRule("geosite:category-ads-all", [], "domain", "Ads (all)");
 }

@@ -13,8 +13,10 @@ import {
   Crown,
   Ban,
   Bot,
+  Languages,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { useI18n, LANGUAGES } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { GitHubButton, useGitHubStars } from "@/components/github-button";
 import { VersionBadge } from "@/components/version-badge";
@@ -98,6 +100,7 @@ function NavItems({
 
 export function AppLayout() {
   const { username, logout, can, admin, isOwner } = useAuth();
+  const { t, lang, setLang } = useI18n();
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [menuOpen, setMenuOpen] = React.useState(false);
   const location = useLocation();
@@ -231,16 +234,36 @@ export function AppLayout() {
                     >
                       <span className="flex items-center gap-2">
                         <Tag className="h-4 w-4" />
-                        Version
+                        {t("version")}
                       </span>
                       <span className="text-xs font-heading text-text/60">v{PANEL_VERSION}</span>
                     </a>
+                    <div className="border-t-2 border-border/30 px-2 pb-1 pt-2">
+                      <div className="mb-1 flex items-center gap-2 text-[10px] uppercase tracking-widest text-text/40">
+                        <Languages className="h-3.5 w-3.5" />
+                        {t("language")}
+                      </div>
+                      <div className="grid grid-cols-3 gap-1">
+                        {LANGUAGES.map((l) => (
+                          <button
+                            key={l.code}
+                            onClick={() => setLang(l.code)}
+                            className={cn(
+                              "rounded-[4px] border-2 border-border px-1 py-1 text-xs font-heading transition-colors",
+                              lang === l.code ? "bg-main text-mtext" : "hover:bg-main/15",
+                            )}
+                          >
+                            {l.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                     <button
                       onClick={() => void logout()}
-                      className="flex w-full items-center gap-2 rounded-[4px] px-2 py-2 text-left text-sm font-base text-red-400 transition-colors hover:bg-red-400/10"
+                      className="mt-1 flex w-full items-center gap-2 rounded-[4px] px-2 py-2 text-left text-sm font-base text-red-400 transition-colors hover:bg-red-400/10"
                     >
                       <LogOut className="h-4 w-4" />
-                      Sign out
+                      {t("signOut")}
                     </button>
                   </div>
                 )}

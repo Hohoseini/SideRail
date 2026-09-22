@@ -20,9 +20,11 @@ import {
   CircleX,
   ArrowDownUp,
   Router as RouterIcon,
+  Clock,
+  Server,
 } from "lucide-react";
 import { api, exportBackupUrl } from "@/lib/api";
-import { formatBytes, pct } from "@/lib/utils";
+import { formatBytes, pct, formatUptime } from "@/lib/utils";
 import { useToast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
 import {
@@ -116,6 +118,23 @@ export default function DashboardPage() {
     }));
   }, [traffic]);
 
+  const speed = React.useMemo(() => {
+    if (chart.length === 0) return { up: 0, down: 0, peak: 0, avgUp: 0, avgDown: 0 };
+    const last = chart[chart.length - 1];
+    const peak = Math.max(...chart.map((c) => Math.max(c.up, c.down)));
+    const avgUp = chart.reduce((s, c) => s + c.up, 0) / chart.length;
+    const avgDown = chart.reduce((s, c) => s + c.down, 0) / chart.length;
+    return { up: last.up, down: last.down, peak, avgUp, avgDown };
+  }, [chart]);
+
+  const totals = React.useMemo(() => {
+    const rows = traffic?.inbounds ?? [];
+    return rows.reduce(
+      (acc, r) => ({ up: acc.up + r.up, down: acc.down + r.down }),
+      { up: 0, down: 0 },
+    );
+  }, [traffic]);
+
   const onExport = () => {
     window.open(exportBackupUrl(), "_blank");
     toast.push("success", "Backup export started");
@@ -197,12 +216,28 @@ export default function DashboardPage() {
           <CardHeader>
             <div className="flex items-center gap-2">
               <ArrowDownUp className="h-5 w-5 text-main" />
-              <CardTitle>Live traffic</CardTitle>
+              <CardTitle>Overall Speed</CardTitle>
             </div>
-            <CardDescription>Server upload / download rate (per second)</CardDescription>
+            <CardDescription>
+              Live upload / download · peak {formatBytes(speed.peak)}/s
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[180px] w-full">
+            <div className="mb-3 grid grid-cols-2 gap-3">
+              <div className="rounded-base border-2 border-border bg-bg/40 p-3 text-center">
+                <div className="text-[10px] uppercase tracking-widest text-text/50">Upload</div>
+                <div className="font-heading text-lg text-sky-400">
+                  {formatBytes(speed.up)}/s
+                </div>
+              </div>
+              <div className="rounded-base border-2 border-border bg-bg/40 p-3 text-center">
+                <div className="text-[10px] uppercase tracking-widest text-text/50">Download</div>
+                <div className="font-heading text-lg text-lime-500">
+                  {formatBytes(speed.down)}/s
+                </div>
+              </div>
+            </div>
+            <div className="h-[160px] w-full">
               {chart.length >= 2 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={chart} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
@@ -219,7 +254,10 @@ export default function DashboardPage() {
                     <XAxis dataKey="ts" hide />
                     <YAxis hide />
                     <RTooltip
-                      formatter={(v: number, name) => [`${formatBytes(v)}/s`, name === "down" ? "Download" : "Upload"]}
+                      formatter={(v: number, name) => [
+                        `${formatBytes(v)}/s`,
+                        name === "down" ? "Download" : "Upload",
+                      ]}
                       labelFormatter={(l: number) =>
                         new Date(l).toLocaleTimeString(undefined, {
                           hour: "2-digit",
@@ -245,13 +283,9 @@ export default function DashboardPage() {
                 </div>
               )}
             </div>
-            <div className="mt-2 flex items-center justify-center gap-4 text-xs font-base">
-              <span className="flex items-center gap-1.5">
-                <span className="h-3 w-3 rounded-[3px] border-2 border-border bg-main" /> Download
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="h-3 w-3 rounded-[3px] border-2 border-border bg-sky-300" /> Upload
-              </span>
+            <div className="mt-3 flex items-center justify-between border-t-2 border-border/30 pt-3 text-xs font-base text-text/60">
+              <span>Total sent: <span className="font-heading text-sky-400">{formatBytes(totals.up)}</span></span>
+              <span>Total received: <span className="font-heading text-lime-500">{formatBytes(totals.down)}</span></span>
             </div>
           </CardContent>
         </Card>
@@ -287,6 +321,31 @@ export default function DashboardPage() {
                 </div>
               </div>
             ))}
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Card>
+          <CardContent className="flex items-center gap-4 p-5">
+            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-base border-2 border-border bg-main">
+              <Clock className="h-6 w-6 text-black" />
+            </div>
+            <div>
+              <div className="text-[10px] uppercase tracking-widest text-text/50">Xray uptime</div>
+              <div className="font-heading text-2xl">{formatUptime(s?.xray.uptime ?? 0)}</div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-center gap-4 p-5">
+            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-base border-2 border-border bg-sky-300">
+              <Server className="h-6 w-6 text-black" />
+            </div>
+            <div>
+              <div className="text-[10px] uppercase tracking-widest text-text/50">System uptime</div>
+              <div className="font-heading text-2xl">{formatUptime(s?.uptime ?? 0)}</div>
+            </div>
           </CardContent>
         </Card>
       </div>

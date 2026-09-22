@@ -99,6 +99,12 @@ function writeConfig(): string {
   return file;
 }
 
+let xrayStartedAt = 0;
+
+export function xrayUptime(): number {
+  return running && xrayStartedAt ? Math.floor((Date.now() - xrayStartedAt) / 1000) : 0;
+}
+
 export async function startXray(): Promise<void> {
   const ok = await ensureBinary();
   if (!ok) {
@@ -113,6 +119,7 @@ export async function startXray(): Promise<void> {
   });
   proc = child;
   running = true;
+  xrayStartedAt = Date.now();
   child.on("exit", () => {
     if (proc === child) {
       proc = null;
@@ -133,8 +140,14 @@ export function stopXray(): void {
   running = false;
 }
 
-export async function restartXray(): Promise<void> {
-  await startXray();
+let restartTimer: NodeJS.Timeout | null = null;
+
+export function restartXray(): void {
+  if (restartTimer) clearTimeout(restartTimer);
+  restartTimer = setTimeout(() => {
+    restartTimer = null;
+    void startXray();
+  }, 800);
 }
 
 export function isRunning(): boolean {

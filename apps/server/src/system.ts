@@ -2,7 +2,7 @@ import os from "node:os";
 import fs from "node:fs";
 import { execSync } from "node:child_process";
 import { config } from "./config.js";
-import { isRunning, xrayVersion } from "./xray.js";
+import { isRunning, xrayVersion, xrayUptime } from "./xray.js";
 import type { SystemStats } from "./types.js";
 
 function round(n: number): number {
@@ -155,6 +155,6 @@ export function getSystemStats(): SystemStats {
     swap: swapUsage(),
     storage: storageUsage(),
     uptime: os.uptime(),
-    xray: { running: isRunning(), version: xrayVersion() },
+    xray: { running: isRunning(), version: xrayVersion(), uptime: xrayUptime() },
   };
 }

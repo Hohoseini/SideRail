@@ -51,6 +51,7 @@ import {
   updateRoutingRule,
   deleteRoutingRule,
 } from "./routing.js";
+import { DOMAIN_PRESETS, COUNTRY_IP_PRESETS } from "./routing-presets.js";
 import { getBotConfig, saveBotConfig, testBot } from "./bot.js";
 
 export const api = Router();
@@ -154,7 +155,7 @@ api.patch("/inbounds/:id", requirePermission("inbounds"), async (req: AuthedRequ
   }
   setInboundEnabled(id, body.data.enabled);
   logActivity(req.admin!.username, "inbound_toggle", `#${id} -> ${body.data.enabled}`);
-  await restartXray();
+  restartXray();
   res.json({ ok: true });
 });
 
@@ -218,7 +219,7 @@ api.post("/users", requirePermission("users"), async (req: AuthedRequest, res) =
   try {
     const user = createUser({ ...body.data, createdBy: req.admin!.id });
     logActivity(req.admin!.username, "user_create", user.email);
-    await restartXray();
+    restartXray();
     res.json(user);
   } catch (e) {
     res.status(400).json({ error: (e as Error).message });
@@ -241,7 +242,7 @@ api.put("/users/:id", requirePermission("users"), async (req: AuthedRequest, res
     return;
   }
   logActivity(req.admin!.username, "user_update", user.email);
-  await restartXray();
+  restartXray();
   res.json(user);
 });
 
@@ -253,7 +254,7 @@ api.delete("/users/:id", requirePermission("users"), async (req: AuthedRequest, 
   const user = getUser(Number(req.params.id));
   deleteUser(Number(req.params.id));
   logActivity(req.admin!.username, "user_delete", user?.email || String(req.params.id));
-  await restartXray();
+  restartXray();
   res.json({ ok: true });
 });
 
@@ -269,7 +270,7 @@ api.post("/users/:id/toggle", requirePermission("users"), async (req: AuthedRequ
   }
   setUserEnabled(Number(req.params.id), body.data.enabled);
   logActivity(req.admin!.username, "user_toggle", `#${req.params.id} -> ${body.data.enabled}`);
-  await restartXray();
+  restartXray();
   res.json({ ok: true });
 });
 
@@ -428,7 +429,7 @@ api.post("/backup/import", requirePermission("dashboard"), async (req: AuthedReq
       "backup_import",
       `${result.users} users, ${result.inbounds} inbounds`,
     );
-    await restartXray();
+    restartXray();
     res.json({ ok: true, ...result });
   } catch (e) {
     res.status(400).json({ error: (e as Error).message });
@@ -443,17 +444,31 @@ api.get("/routing", requirePermission("inbounds"), (_req, res) => {
   res.json(listRoutingRules());
 });
 
+api.get("/routing/presets", requirePermission("inbounds"), (_req, res) => {
+  res.json({ domains: DOMAIN_PRESETS, ips: COUNTRY_IP_PRESETS });
+});
+
 api.post("/routing", requirePermission("inbounds"), async (req: AuthedRequest, res) => {
   const body = z
-    .object({ domain: z.string().min(1), inboundIds: z.array(z.number()).default([]) })
+    .object({
+      domain: z.string().min(1),
+      inboundIds: z.array(z.number()).default([]),
+      kind: z.enum(["domain", "ip"]).default("domain"),
+      label: z.string().optional(),
+    })
     .safeParse(req.body);
   if (!body.success) {
     res.status(400).json({ error: "invalid input" });
     return;
   }
-  const rule = addRoutingRule(body.data.domain, body.data.inboundIds);
-  logActivity(req.admin!.username, "routing_add", body.data.domain);
-  await restartXray();
+  const rule = addRoutingRule(
+    body.data.domain,
+    body.data.inboundIds,
+    body.data.kind,
+    body.data.label || "",
+  );
+  logActivity(req.admin!.username, "routing_add", body.data.label || body.data.domain);
+  restartXray();
   res.json(rule);
 });
 
@@ -465,14 +480,14 @@ api.put("/routing/:id", requirePermission("inbounds"), async (req: AuthedRequest
   }
   updateRoutingRule(Number(req.params.id), body.data.inboundIds);
   logActivity(req.admin!.username, "routing_update", `#${req.params.id}`);
-  await restartXray();
+  restartXray();
   res.json({ ok: true });
 });
 
 api.delete("/routing/:id", requirePermission("inbounds"), async (req: AuthedRequest, res) => {
   deleteRoutingRule(Number(req.params.id));
   logActivity(req.admin!.username, "routing_delete", `#${req.params.id}`);
-  await restartXray();
+  restartXray();
   res.json({ ok: true });
 });
 

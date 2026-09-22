@@ -90,6 +90,8 @@ export function migrate(): void {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       domain TEXT NOT NULL,
       inbound_ids TEXT NOT NULL DEFAULT '[]',
+      kind TEXT NOT NULL DEFAULT 'domain',
+      label TEXT NOT NULL DEFAULT '',
       created_at INTEGER NOT NULL
     );
 
@@ -127,6 +129,13 @@ function migrateColumns(): void {
   if (!userCols.map((c) => c.name).includes("created_by")) {
     db.exec("ALTER TABLE users ADD COLUMN created_by INTEGER");
   }
+
+  const routingCols = db.prepare("PRAGMA table_info(routing_rules)").all() as { name: string }[];
+  const rNames = routingCols.map((c) => c.name);
+  if (!rNames.includes("kind"))
+    db.exec("ALTER TABLE routing_rules ADD COLUMN kind TEXT NOT NULL DEFAULT 'domain'");
+  if (!rNames.includes("label"))
+    db.exec("ALTER TABLE routing_rules ADD COLUMN label TEXT NOT NULL DEFAULT ''");
 
   const ownerCount = (
     db.prepare("SELECT COUNT(*) AS c FROM admins WHERE role = 'owner'").get() as { c: number }

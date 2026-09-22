@@ -153,8 +153,8 @@ export async function testBot(
   if (!token || chatIds.length === 0) return { ok: false, error: "token and chat id required" };
   const message =
     "<b>✅ SideRail bot connected</b>\n\n" +
-    "The bot is working correctly and ready to send notifications.\n\n" +
-    "<i>SideRail — powered by icubaby</i>";
+    '🔗 <a href="https://github.com/icubaby/SideRail">github.com/icubaby/SideRail</a>\n\n' +
+    "⭐️ If you enjoy the project, please give it a star — it means a lot!";
   let anyOk = false;
   let lastError = "";
   for (const chatId of chatIds) {

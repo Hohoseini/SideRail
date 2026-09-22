@@ -60,7 +60,7 @@ export interface SystemStats {
   swap: { usage: number; used: number; total: number };
   storage: { usage: number; free: number; total: number };
   uptime: number;
-  xray: { running: boolean; version: string };
+  xray: { running: boolean; version: string; uptime: number };
 }
 
 export interface UserStatsSummary {

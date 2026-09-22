@@ -18,6 +18,7 @@ import { config } from "./config.js";
 import { migrate } from "./db.js";
 import { seedInbounds } from "./inbounds.js";
 import { seedDefaultClient } from "./users.js";
+import { seedDefaultRouting } from "./routing.js";
 import { api } from "./routes.js";
 import { sub, setSubStaticRoot } from "./sub.js";
 import { attachTunnel, tryTunnelHttp } from "./tunnel.js";
@@ -32,6 +33,7 @@ console.log(SIDERAIL_SIGNATURE);
 migrate();
 seedInbounds();
 seedDefaultClient();
+seedDefaultRouting();
 
 const app = express();
 app.disable("x-powered-by");
