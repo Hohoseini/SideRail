@@ -14,10 +14,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n";
 import type { Inbound, RoutingRule, RoutingPreset } from "@/lib/types";
 
 export default function RoutingPage() {
   const toast = useToast();
+  const { t } = useI18n();
   const qc = useQueryClient();
   const [values, setValues] = React.useState<string[]>([]);
   const [selected, setSelected] = React.useState<number[]>([]);
@@ -45,7 +47,7 @@ export default function RoutingPage() {
       }
     },
     onSuccess: () => {
-      toast.push("success", "Block rules added");
+      toast.push("success", t("blockRulesAdded"));
       setValues([]);
       setSelected([]);
       invalidate();
@@ -56,7 +58,7 @@ export default function RoutingPage() {
   const deleteMut = useMutation({
     mutationFn: (id: number) => api.deleteRouting(id),
     onSuccess: () => {
-      toast.push("success", "Rule removed");
+      toast.push("success", t("ruleRemoved"));
       invalidate();
     },
     onError: (e: Error) => toast.push("error", e.message),
@@ -75,11 +77,11 @@ export default function RoutingPage() {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (values.length === 0) {
-      toast.push("error", "Choose or type at least one domain to block");
+      toast.push("error", t("chooseDomain"));
       return;
     }
     if (selected.length === 0) {
-      toast.push("error", "Select at least one inbound to apply the rule");
+      toast.push("error", t("chooseInbound"));
       return;
     }
     addMut.mutate();
@@ -96,8 +98,8 @@ export default function RoutingPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-heading text-3xl">Routing</h1>
-        <p className="text-sm font-base text-text/60">Block domains on selected inbounds</p>
+        <h1 className="font-heading text-3xl">{t("routing")}</h1>
+        <p className="text-sm font-base text-text/60">{t("routingDesc")}</p>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:items-start">
@@ -105,9 +107,9 @@ export default function RoutingPage() {
           <CardHeader>
             <div className="flex items-center gap-2">
               <Ban className="h-5 w-5 text-main" />
-              <CardTitle>Block domains</CardTitle>
+              <CardTitle>{t("blockDomains")}</CardTitle>
             </div>
-            <CardDescription>Pick presets, or type your own and press Enter.</CardDescription>
+            <CardDescription>{t("blockDomainsHint")}</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={submit} className="space-y-4" noValidate>
@@ -116,18 +118,18 @@ export default function RoutingPage() {
                 selected={values}
                 onChange={setValues}
                 labels={labelsRef.current}
-                placeholder="e.g. example.com or pick a preset…"
+                placeholder={t("domainPlaceholder")}
               />
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <div className="text-sm font-heading text-text/70">Apply to inbounds</div>
+                  <div className="text-sm font-heading text-text/70">{t("applyToInbounds")}</div>
                   <button
                     type="button"
                     onClick={selectAll}
                     className="text-xs font-heading text-text/60 underline-offset-2 hover:underline"
                   >
-                    {selected.length === inbounds.length ? "Clear all" : "Select all"}
+                    {selected.length === inbounds.length ? t("clearAll") : t("selectAll")}
                   </button>
                 </div>
                 <div className="grid grid-cols-2 gap-1.5">
@@ -151,8 +153,7 @@ export default function RoutingPage() {
               </div>
 
               <Button type="submit" className="w-full" disabled={addMut.isPending}>
-                <Plus className="h-4 w-4" />
-                Add block rule
+                <Plus className="h-4 w-4" />{t("addBlockRule")}
               </Button>
             </form>
           </CardContent>
@@ -162,14 +163,14 @@ export default function RoutingPage() {
           <CardHeader>
             <div className="flex items-center gap-2">
               <Ban className="h-5 w-5 text-main" />
-              <CardTitle>Blocked domains</CardTitle>
+              <CardTitle>{t("blockedDomains")}</CardTitle>
             </div>
-            <CardDescription>{rules.length} active rules</CardDescription>
+            <CardDescription>{rules.length} {t("activeRules")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
             {rules.length === 0 && (
               <div className="rounded-base border-2 border-dashed border-border/40 py-10 text-center text-sm text-text/50">
-                No block rules yet.
+                {t("noBlockRules")}
               </div>
             )}
             {rules.map((r) => (

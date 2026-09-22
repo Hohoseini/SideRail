@@ -46,6 +46,7 @@ import { Progress } from "@/components/ui/progress";
 import { UserFormDialog } from "@/components/users/user-form-dialog";
 import { Infinity as InfinityIcon, UserCog as UserCog2 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { useI18n } from "@/lib/i18n";
 import { formatBytes, relativeTime, durationSince, cn } from "@/lib/utils";
 import type { Inbound, User, UserFormValues, UserSummary } from "@/lib/types";
 
@@ -112,14 +113,20 @@ function OnlineDot({ online }: { online: boolean }) {
           online ? "animate-pulse bg-lime-400" : "bg-zinc-500",
         )}
       />
-      <span className="text-xs font-base text-text/60">{online ? "Online" : "Offline"}</span>
+      <span className="text-xs font-base text-text/60">{online ? onlineLabel : offlineLabel}</span>
     </span>
   );
 }
 
+let onlineLabel = "Online";
+let offlineLabel = "Offline";
+
 export default function UsersPage() {
   const toast = useToast();
   const qc = useQueryClient();
+  const { t } = useI18n();
+  onlineLabel = t("online");
+  offlineLabel = t("offline");
   const { isOwner } = useAuth();
   const [formOpen, setFormOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<User | null>(null);
@@ -140,7 +147,7 @@ export default function UsersPage() {
   const createMut = useMutation({
     mutationFn: (v: UserFormValues) => api.createUser(v),
     onSuccess: () => {
-      toast.push("success", "User created");
+      toast.push("success", t("userCreated"));
       setFormOpen(false);
       invalidate();
     },
@@ -150,7 +157,7 @@ export default function UsersPage() {
   const updateMut = useMutation({
     mutationFn: ({ id, v }: { id: number; v: UserFormValues }) => api.updateUser(id, v),
     onSuccess: () => {
-      toast.push("success", "User updated");
+      toast.push("success", t("userUpdated"));
       setFormOpen(false);
       setEditing(null);
       invalidate();
@@ -167,7 +174,7 @@ export default function UsersPage() {
   const deleteMut = useMutation({
     mutationFn: (id: number) => api.deleteUser(id),
     onSuccess: () => {
-      toast.push("success", "User deleted");
+      toast.push("success", t("userDeleted"));
       setDeleteTarget(null);
       invalidate();
     },
@@ -177,7 +184,7 @@ export default function UsersPage() {
   const resetMut = useMutation({
     mutationFn: (id: number) => api.resetTraffic(id),
     onSuccess: () => {
-      toast.push("success", "Traffic reset");
+      toast.push("success", t("trafficReset"));
       invalidate();
     },
   });
@@ -185,7 +192,7 @@ export default function UsersPage() {
   const rotateMut = useMutation({
     mutationFn: (id: number) => api.rotateToken(id),
     onSuccess: () => {
-      toast.push("success", "Subscription token rotated");
+      toast.push("success", t("tokenRotated"));
       invalidate();
     },
   });
@@ -206,7 +213,7 @@ export default function UsersPage() {
   const copySubLink = (u: User) => {
     const url = `${window.location.origin}/sub/${u.sub_token}`;
     void navigator.clipboard.writeText(url);
-    toast.push("success", "Subscription link copied");
+    toast.push("success", t("subLinkCopied"));
   };
 
   const inboundName = (id: number) => inbounds.find((i) => i.id === id)?.tag || `#${id}`;
@@ -218,7 +225,7 @@ export default function UsersPage() {
         size="icon"
         className="h-8 w-8"
         onClick={() => openEdit(u)}
-        title="Edit"
+        title={t("edit")}
       >
         <Pencil className="h-3.5 w-3.5" />
       </Button>
@@ -227,36 +234,31 @@ export default function UsersPage() {
         size="icon"
         className="h-8 w-8"
         onClick={() => copySubLink(u)}
-        title="Copy sub link"
+        title={t("copySubLink")}
       >
         <Link2 className="h-3.5 w-3.5" />
       </Button>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="neutral" size="icon" className="h-8 w-8" title="More">
+          <Button variant="neutral" size="icon" className="h-8 w-8" title={t("more")}>
             <MoreVertical className="h-3.5 w-3.5" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={() => copySubLink(u)}>
-            <Copy className="h-4 w-4" />
-            Copy sub link
+            <Copy className="h-4 w-4" />{t("copySubLink")}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => window.open(`/sub/${u.sub_token}`, "_blank")}>
-            <Server className="h-4 w-4" />
-            Open sub page
+            <Server className="h-4 w-4" />{t("openSubPage")}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => resetMut.mutate(u.id)}>
-            <RotateCcw className="h-4 w-4" />
-            Reset traffic
+            <RotateCcw className="h-4 w-4" />{t("resetTraffic")}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => rotateMut.mutate(u.id)}>
-            <RefreshCw className="h-4 w-4" />
-            Rotate sub token
+            <RefreshCw className="h-4 w-4" />{t("rotateSubToken")}
           </DropdownMenuItem>
           <DropdownMenuItem danger onClick={() => setDeleteTarget(u)}>
-            <Trash2 className="h-4 w-4" />
-            Delete
+            <Trash2 className="h-4 w-4" />{t("delete")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -286,22 +288,21 @@ export default function UsersPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-heading text-3xl">Users</h1>
-          <p className="text-sm font-base text-text/60">Manage clients and their subscriptions</p>
+          <h1 className="font-heading text-3xl">{t("users")}</h1>
+          <p className="text-sm font-base text-text/60">{t("manageClients")}</p>
         </div>
         <Button onClick={openNew} className="w-full sm:w-auto">
-          <UserPlus className="h-4 w-4" />
-          New User
+          <UserPlus className="h-4 w-4" />{t("newUser")}
         </Button>
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
-        <SummaryCard icon={Users2} label="Clients" value={summary.clients} accent="#a3e635" />
-        <SummaryCard icon={Wifi} label="Online" value={summary.online} accent="#7dd3fc" />
-        <SummaryCard icon={ShieldCheck} label="Active" value={summary.active} accent="#86efac" />
+        <SummaryCard icon={Users2} label={t("clients")} value={summary.clients} accent="#a3e635" />
+        <SummaryCard icon={Wifi} label={t("online")} value={summary.online} accent="#7dd3fc" />
+        <SummaryCard icon={ShieldCheck} label={t("active")} value={summary.active} accent="#86efac" />
         <SummaryCard
           icon={BatteryWarning}
-          label="Depleting"
+          label={t("depleting")}
           value={summary.depleting}
           accent="#fda4af"
         />
@@ -322,14 +323,14 @@ export default function UsersPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-center">Actions</TableHead>
-                    <TableHead className="text-center">Enabled</TableHead>
-                    <TableHead className="text-center">Status</TableHead>
-                    <TableHead className="text-center">Client</TableHead>
-                    <TableHead className="text-center">Inbounds</TableHead>
-                    <TableHead className="min-w-[180px] text-center">Traffic</TableHead>
-                    <TableHead className="text-center">Remaining</TableHead>
-                    <TableHead className="text-center">Duration</TableHead>
+                    <TableHead className="text-center">{t("actions")}</TableHead>
+                    <TableHead className="text-center">{t("enabled")}</TableHead>
+                    <TableHead className="text-center">{t("status")}</TableHead>
+                    <TableHead className="text-center">{t("client")}</TableHead>
+                    <TableHead className="text-center">{t("inbounds")}</TableHead>
+                    <TableHead className="min-w-[180px] text-center">{t("traffic")}</TableHead>
+                    <TableHead className="text-center">{t("remaining")}</TableHead>
+                    <TableHead className="text-center">{t("duration")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -438,7 +439,7 @@ export default function UsersPage() {
                 <div className="flex justify-center">
                   <Badge variant="neutral" className="max-w-full gap-1 text-[10px]">
                     <UserCog2 className="h-3 w-3 shrink-0" />
-                    <span className="truncate">by {u.creator}</span>
+                    <span className="truncate">{t("by")} {u.creator}</span>
                   </Badge>
                 </div>
               )}
@@ -455,52 +456,44 @@ export default function UsersPage() {
                       formatBytes(Math.max(0, u.data_limit - u.total))
                     )}
                   </div>
-                  <div className="text-[10px] uppercase tracking-widest text-text/50">Remaining</div>
+                  <div className="text-[10px] uppercase tracking-widest text-text/50">{t("remaining")}</div>
                 </div>
                 <div className="rounded-base border-2 border-border bg-bg/40 py-2">
                   <div className="flex items-center justify-center gap-1 font-heading text-sm">
                     {u.expire_at ? relativeTime(u.expire_at) : <InfinityIcon className="h-4 w-4" />}
                   </div>
-                  <div className="text-[10px] uppercase tracking-widest text-text/50">Expires</div>
+                  <div className="text-[10px] uppercase tracking-widest text-text/50">{t("expires")}</div>
                 </div>
               </div>
 
               <div className="grid grid-cols-3 gap-2">
                 <Button variant="neutral" onClick={() => openEdit(u)} className="w-full">
-                  <Pencil className="h-4 w-4" />
-                  Edit
+                  <Pencil className="h-4 w-4" />{t("edit")}
                 </Button>
                 <Button variant="neutral" onClick={() => copySubLink(u)} className="w-full">
-                  <Link2 className="h-4 w-4" />
-                  Copy
+                  <Link2 className="h-4 w-4" />{t("copy")}
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="neutral" className="w-full">
-                      <MoreVertical className="h-4 w-4" />
-                      More
+                      <MoreVertical className="h-4 w-4" />{t("more")}
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={() => copySubLink(u)}>
-                      <Copy className="h-4 w-4" />
-                      Copy sub link
+                      <Copy className="h-4 w-4" />{t("copySubLink")}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => window.open(`/sub/${u.sub_token}`, "_blank")}>
-                      <Server className="h-4 w-4" />
-                      Open sub page
+                      <Server className="h-4 w-4" />{t("openSubPage")}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => resetMut.mutate(u.id)}>
-                      <RotateCcw className="h-4 w-4" />
-                      Reset traffic
+                      <RotateCcw className="h-4 w-4" />{t("resetTraffic")}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => rotateMut.mutate(u.id)}>
-                      <RefreshCw className="h-4 w-4" />
-                      Rotate sub token
+                      <RefreshCw className="h-4 w-4" />{t("rotateSubToken")}
                     </DropdownMenuItem>
                     <DropdownMenuItem danger onClick={() => setDeleteTarget(u)}>
-                      <Trash2 className="h-4 w-4" />
-                      Delete
+                      <Trash2 className="h-4 w-4" />{t("delete")}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -527,23 +520,21 @@ export default function UsersPage() {
       <Dialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Delete user</DialogTitle>
+            <DialogTitle>{t("deleteUser")}</DialogTitle>
           </DialogHeader>
           <p className="text-sm font-base text-text/70">
-            Are you sure you want to delete{" "}
-            <span className="font-heading text-text">{deleteTarget?.email}</span>? This cannot be
-            undone.
+            {t("deleteUserConfirm")}{" "}
+            <span className="font-heading text-text">{deleteTarget?.email}</span>? {t("cannotUndo")}
           </p>
           <DialogFooter>
             <Button variant="neutral" onClick={() => setDeleteTarget(null)}>
-              Cancel
+              {t("cancel")}
             </Button>
             <Button
               variant="danger"
               onClick={() => deleteTarget && deleteMut.mutate(deleteTarget.id)}
             >
-              <Trash2 className="h-4 w-4" />
-              Delete
+              <Trash2 className="h-4 w-4" />{t("delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

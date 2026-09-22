@@ -15,6 +15,7 @@ import {
 import { api, exportBackupUrl } from "@/lib/api";
 import { formatBytes, pct, formatUptime } from "@/lib/utils";
 import { useToast } from "@/components/ui/toast";
+import { useI18n } from "@/lib/i18n";
 import {
   Card,
   CardContent,
@@ -70,6 +71,7 @@ function StatCard({
 
 export default function DashboardPage() {
   const toast = useToast();
+  const { t } = useI18n();
   const { data } = useQuery<SystemStats>({
     queryKey: ["system"],
     queryFn: api.system,
@@ -82,7 +84,7 @@ export default function DashboardPage() {
 
   const onExport = () => {
     window.open(exportBackupUrl(), "_blank");
-    toast.push("success", "Backup export started");
+    toast.push("success", t("backupExportStarted"));
   };
 
   const onImportClick = () => fileRef.current?.click();
@@ -95,9 +97,9 @@ export default function DashboardPage() {
       const text = await file.text();
       const json = JSON.parse(text);
       await api.importBackup(json);
-      toast.push("success", "Backup imported successfully");
+      toast.push("success", t("backupImported"));
     } catch (err) {
-      toast.push("error", (err as Error).message || "Invalid backup file");
+      toast.push("error", (err as Error).message || t("invalidBackup"));
     } finally {
       setImporting(false);
       if (fileRef.current) fileRef.current.value = "";
@@ -108,13 +110,13 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-heading text-3xl">Dashboard</h1>
-          <p className="text-sm font-base text-text/60">Live system metrics and maintenance</p>
+          <h1 className="font-heading text-3xl">{t("dashboard")}</h1>
+          <p className="text-sm font-base text-text/60">{t("liveMetrics")}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="neutral" className="gap-1">
             <Clock className="h-3.5 w-3.5" />
-            Uptime {formatUptime(s?.uptime ?? 0)}
+            {t("uptime")} {formatUptime(s?.uptime ?? 0)}
           </Badge>
           <Badge variant={s?.xray.running ? "success" : "danger"} className="gap-1">
             {s?.xray.running ? (
@@ -122,7 +124,7 @@ export default function DashboardPage() {
             ) : (
               <CircleX className="h-3.5 w-3.5" />
             )}
-            Xray {s?.xray.version} · {s?.xray.running ? "running" : "stopped"}
+            Xray {s?.xray.version} · {s?.xray.running ? t("running") : t("stopped")}
           </Badge>
         </div>
       </div>
@@ -130,15 +132,15 @@ export default function DashboardPage() {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           icon={Cpu}
-          label="CPU"
+          label={t("cpu")}
           value={pct(s?.cpu.usage ?? 0)}
-          sub={`${s?.cpu.cores ?? 0} cores · avg ${pct(s?.cpu.avg ?? 0)}`}
+          sub={`${s?.cpu.cores ?? 0} ${t("cores")} · ${t("avg")} ${pct(s?.cpu.avg ?? 0)}`}
           progress={s?.cpu.usage ?? 0}
           accent="#a3e635"
         />
         <StatCard
           icon={MemoryStick}
-          label="RAM"
+          label={t("ram")}
           value={pct(s?.ram.usage ?? 0)}
           sub={`${formatBytes(s?.ram.used ?? 0)} / ${formatBytes(s?.ram.total ?? 0)}`}
           progress={s?.ram.usage ?? 0}
@@ -146,7 +148,7 @@ export default function DashboardPage() {
         />
         <StatCard
           icon={Layers}
-          label="Swap"
+          label={t("swap")}
           value={pct(s?.swap.usage ?? 0)}
           sub={`${formatBytes(s?.swap.used ?? 0)} / ${formatBytes(s?.swap.total ?? 0)}`}
           progress={s?.swap.usage ?? 0}
@@ -154,9 +156,9 @@ export default function DashboardPage() {
         />
         <StatCard
           icon={HardDrive}
-          label="Storage"
+          label={t("storage")}
           value={pct(s?.storage.usage ?? 0)}
-          sub={`free ${formatBytes(s?.storage.free ?? 0)}`}
+          sub={`${t("free")} ${formatBytes(s?.storage.free ?? 0)}`}
           progress={s?.storage.usage ?? 0}
           accent="#fda4af"
         />
@@ -166,9 +168,9 @@ export default function DashboardPage() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <Activity className="h-5 w-5 text-main" />
-            <CardTitle>Backup &amp; Restore</CardTitle>
+            <CardTitle>{t("backupRestore")}</CardTitle>
           </div>
-          <CardDescription>Export or import users and inbounds.</CardDescription>
+          <CardDescription>{t("backupDesc")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -180,8 +182,8 @@ export default function DashboardPage() {
                 <Download className="h-5 w-5 text-black" />
               </div>
               <div>
-                <div className="font-heading">Export backup</div>
-                <div className="text-xs text-text/60">Download a full JSON snapshot</div>
+                <div className="font-heading">{t("exportBackup")}</div>
+                <div className="text-xs text-text/60">{t("exportBackupDesc")}</div>
               </div>
             </button>
             <button
@@ -193,8 +195,8 @@ export default function DashboardPage() {
                 <Upload className="h-5 w-5 text-black" />
               </div>
               <div>
-                <div className="font-heading">{importing ? "Importing…" : "Import backup"}</div>
-                <div className="text-xs text-text/60">Restore from a JSON file</div>
+                <div className="font-heading">{importing ? t("importing") : t("importBackup")}</div>
+                <div className="text-xs text-text/60">{t("importBackupDesc")}</div>
               </div>
             </button>
             <input
@@ -205,9 +207,7 @@ export default function DashboardPage() {
               onChange={onFile}
             />
           </div>
-          <p className="mt-3 text-xs font-base text-text/50">
-            Importing replaces all existing users and inbounds. Xray restarts automatically.
-          </p>
+          <p className="mt-3 text-xs font-base text-text/50">{t("importWarning")}</p>
         </CardContent>
       </Card>
     </div>

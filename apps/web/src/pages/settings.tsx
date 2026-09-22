@@ -12,6 +12,7 @@ import {
 import { api } from "@/lib/api";
 import { useToast } from "@/components/ui/toast";
 import { useAuth } from "@/lib/auth";
+import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -45,6 +46,7 @@ const ASSIGNABLE_PERMS: Permission[] = ["dashboard", "users", "inbounds", "activ
 
 function CredentialsCard() {
   const toast = useToast();
+  const { t } = useI18n();
   const { username, refresh } = useAuth();
   const [newUsername, setNewUsername] = React.useState(username || "");
   const [newPassword, setNewPassword] = React.useState("");
@@ -58,7 +60,7 @@ function CredentialsCard() {
         newPassword: newPassword || undefined,
       }),
     onSuccess: async () => {
-      toast.push("success", "Credentials updated");
+      toast.push("success", t("credentialsUpdated"));
       setCurrentPassword("");
       setNewPassword("");
       await refresh();
@@ -69,15 +71,15 @@ function CredentialsCard() {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (newUsername.trim().length < 3) {
-      toast.push("error", "Username must be at least 3 characters");
+      toast.push("error", t("usernameMin"));
       return;
     }
     if (newPassword && newPassword.length < 6) {
-      toast.push("error", "New password must be at least 6 characters");
+      toast.push("error", t("passwordMin"));
       return;
     }
     if (!currentPassword) {
-      toast.push("error", "Enter your current password");
+      toast.push("error", t("enterCurrent"));
       return;
     }
     credMut.mutate();
@@ -88,14 +90,14 @@ function CredentialsCard() {
       <CardHeader>
         <div className="flex items-center gap-2">
           <KeyRound className="h-5 w-5 text-main" />
-          <CardTitle>Change credentials</CardTitle>
+          <CardTitle>{t("changeCredentials")}</CardTitle>
         </div>
-        <CardDescription>Update your username or password.</CardDescription>
+        <CardDescription>{t("changeCredentialsDesc")}</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={submit} className="space-y-4" noValidate>
           <div className="space-y-2">
-            <Label htmlFor="newUsername">Username</Label>
+            <Label htmlFor="newUsername">{t("username")}</Label>
             <Input
               id="newUsername"
               value={newUsername}
@@ -103,18 +105,18 @@ function CredentialsCard() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="newPassword">New password</Label>
+            <Label htmlFor="newPassword">{t("newPassword")}</Label>
             <Input
               id="newPassword"
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="Leave blank to keep current"
+              placeholder={t("leaveBlank")}
               autoComplete="new-password"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="currentPassword">Current password</Label>
+            <Label htmlFor="currentPassword">{t("currentPassword")}</Label>
             <Input
               id="currentPassword"
               type="password"
@@ -125,7 +127,7 @@ function CredentialsCard() {
           </div>
           <Button type="submit" disabled={credMut.isPending} className="w-full sm:w-auto">
             <Save className="h-4 w-4" />
-            {credMut.isPending ? "Saving..." : "Save changes"}
+            {credMut.isPending ? t("saving") : t("saveChanges")}
           </Button>
         </form>
       </CardContent>
@@ -143,6 +145,7 @@ function AdminDialog({
   editing: AdminInfo | null;
 }) {
   const toast = useToast();
+  const { t } = useI18n();
   const qc = useQueryClient();
   const [username, setUsername] = React.useState("");
   const [password, setPassword] = React.useState("");
@@ -167,7 +170,7 @@ function AdminDialog({
   const createMut = useMutation({
     mutationFn: () => api.createAdmin({ username, password, permissions, dataLimit }),
     onSuccess: () => {
-      toast.push("success", "Admin created");
+      toast.push("success", t("adminCreated"));
       qc.invalidateQueries({ queryKey: ["admins"] });
       onOpenChange(false);
     },
@@ -184,7 +187,7 @@ function AdminDialog({
         password: password || undefined,
       }),
     onSuccess: () => {
-      toast.push("success", "Admin updated");
+      toast.push("success", t("adminUpdated"));
       qc.invalidateQueries({ queryKey: ["admins"] });
       onOpenChange(false);
     },
@@ -197,19 +200,19 @@ function AdminDialog({
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editing && username.trim().length < 3) {
-      toast.push("error", "Username must be at least 3 characters");
+      toast.push("error", t("usernameMin"));
       return;
     }
     if (!editing && password.length < 6) {
-      toast.push("error", "Password must be at least 6 characters");
+      toast.push("error", t("passwordMin"));
       return;
     }
     if (editing && password && password.length < 6) {
-      toast.push("error", "Password must be at least 6 characters");
+      toast.push("error", t("passwordMin"));
       return;
     }
     if (permissions.length === 0) {
-      toast.push("error", "Select at least one page the admin can access");
+      toast.push("error", t("selectPage"));
       return;
     }
     if (editing) updateMut.mutate();
@@ -220,7 +223,7 @@ function AdminDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>{editing ? `Edit ${editing.username}` : "Add admin"}</DialogTitle>
+          <DialogTitle>{editing ? `${t("edit")} ${editing.username}` : t("addAdmin")}</DialogTitle>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4" noValidate>
           {!editing && (
@@ -236,7 +239,7 @@ function AdminDialog({
             </div>
           )}
           <div className="space-y-2">
-            <Label htmlFor="adminPassword">{editing ? "New password (optional)" : "Password"}</Label>
+            <Label htmlFor="adminPassword">{editing ? t("passwordOptional") : t("password")}</Label>
             <Input
               id="adminPassword"
               type="password"
@@ -247,7 +250,7 @@ function AdminDialog({
             />
           </div>
           <div className="space-y-2">
-            <Label>Page access</Label>
+            <Label>{t("pageAccess")}</Label>
             <div className="grid grid-cols-2 gap-2">
               {ASSIGNABLE_PERMS.map((p) => {
                 const active = permissions.includes(p);
@@ -267,20 +270,19 @@ function AdminDialog({
               })}
             </div>
             <p className="text-[11px] text-text/50">
-              Admins cannot access Settings or manage other admins.
+              {t("adminNoSettings")}
             </p>
           </div>
           <div className="space-y-2">
-            <Label>Data quota</Label>
+            <Label>{t("dataQuota")}</Label>
             <NumberInput value={dataLimit} onChange={setDataLimit} step={1} suffix="GB" />
-            <p className="text-[11px] text-text/50">0 = unlimited</p>
+            <p className="text-[11px] text-text/50">{t("unlimitedHint")}</p>
           </div>
           <DialogFooter>
-            <Button type="button" variant="neutral" onClick={() => onOpenChange(false)}>
-              Cancel
+            <Button type="button" variant="neutral" onClick={() => onOpenChange(false)}>{t("cancel")}
             </Button>
             <Button type="submit" disabled={createMut.isPending || updateMut.isPending}>
-              {editing ? "Save" : "Create admin"}
+              {editing ? t("save") : t("addAdmin")}
             </Button>
           </DialogFooter>
         </form>
@@ -291,6 +293,7 @@ function AdminDialog({
 
 function AdminsCard() {
   const toast = useToast();
+  const { t } = useI18n();
   const qc = useQueryClient();
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<AdminInfo | null>(null);
@@ -302,7 +305,7 @@ function AdminsCard() {
   const deleteMut = useMutation({
     mutationFn: (id: number) => api.deleteAdmin(id),
     onSuccess: () => {
-      toast.push("success", "Admin removed");
+      toast.push("success", t("adminRemoved"));
       setDeleteTarget(null);
       qc.invalidateQueries({ queryKey: ["admins"] });
     },
@@ -316,9 +319,9 @@ function AdminsCard() {
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <Users2 className="h-5 w-5 text-main" />
-              <CardTitle>Admins</CardTitle>
+              <CardTitle>{t("admins")}</CardTitle>
             </div>
-            <CardDescription>Add admins and control their access.</CardDescription>
+            <CardDescription>{t("adminsDesc")}</CardDescription>
           </div>
           <Button
             className="w-full sm:w-auto"
@@ -327,8 +330,7 @@ function AdminsCard() {
               setDialogOpen(true);
             }}
           >
-            <Plus className="h-4 w-4" />
-            Add admin
+            <Plus className="h-4 w-4" />{t("addAdmin")}
           </Button>
         </div>
       </CardHeader>
@@ -354,7 +356,7 @@ function AdminsCard() {
                       {a.username}
                     </span>
                     <Badge variant="info" className="gap-1 text-[10px]">
-                      <ShieldCheck className="h-3 w-3" /> Admin
+                      <ShieldCheck className="h-3 w-3" /> {t("admin")}
                     </Badge>
                   </div>
                 </div>
@@ -384,7 +386,7 @@ function AdminsCard() {
 
             <div className="flex flex-wrap gap-1">
               {a.permissions.length === 0 ? (
-                <span className="text-xs text-text/40">No page access</span>
+                <span className="text-xs text-text/40">{t("adminNoSettings")}</span>
               ) : (
                 a.permissions.map((p) => (
                   <Badge key={p} variant="neutral" className="text-[10px]">
@@ -397,17 +399,17 @@ function AdminsCard() {
             <div className="grid grid-cols-3 gap-2 border-t-2 border-border/30 pt-3 text-center">
               <div className="min-w-0">
                 <div className="truncate font-heading text-sm">{a.userCount ?? 0}</div>
-                <div className="text-[10px] uppercase tracking-widest text-text/50">Users</div>
+                <div className="text-[10px] uppercase tracking-widest text-text/50">{t("adminUsers")}</div>
               </div>
               <div className="min-w-0">
                 <div className="truncate font-heading text-sm">{formatBytes(a.used ?? 0)}</div>
-                <div className="text-[10px] uppercase tracking-widest text-text/50">Used</div>
+                <div className="text-[10px] uppercase tracking-widest text-text/50">{t("used")}</div>
               </div>
               <div className="min-w-0">
                 <div className="truncate font-heading text-sm">
                   {a.dataLimit > 0 ? formatBytes(a.dataLimit) : "∞"}
                 </div>
-                <div className="text-[10px] uppercase tracking-widest text-text/50">Quota</div>
+                <div className="text-[10px] uppercase tracking-widest text-text/50">{t("quota")}</div>
               </div>
             </div>
           </div>
@@ -419,22 +421,19 @@ function AdminsCard() {
       <Dialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Remove admin</DialogTitle>
+            <DialogTitle>{t("removeAdmin")}</DialogTitle>
           </DialogHeader>
           <p className="text-sm font-base text-text/70">
-            Remove <span className="font-heading text-text">{deleteTarget?.username}</span>?
+            {t("removeAdminConfirm")} <span className="font-heading text-text">{deleteTarget?.username}</span>?
           </p>
           <DialogFooter>
-            <Button variant="neutral" onClick={() => setDeleteTarget(null)}>
-              Cancel
+            <Button variant="neutral" onClick={() => setDeleteTarget(null)}>{t("cancel")}
             </Button>
             <Button
               variant="danger"
               onClick={() => deleteTarget && deleteMut.mutate(deleteTarget.id)}
             >
-              <Trash2 className="h-4 w-4" />
-              Remove
-            </Button>
+              <Trash2 className="h-4 w-4" />{t("remove")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -444,12 +443,13 @@ function AdminsCard() {
 
 export default function SettingsPage() {
   const { isOwner } = useAuth();
+  const { t } = useI18n();
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-heading text-3xl">Settings</h1>
-        <p className="text-sm font-base text-text/60">Manage your account and admins</p>
+        <h1 className="font-heading text-3xl">{t("settings")}</h1>
+        <p className="text-sm font-base text-text/60">{t("manageAccount")}</p>
       </div>
 
       {isOwner ? (

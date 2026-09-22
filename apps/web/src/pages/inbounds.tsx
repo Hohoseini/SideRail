@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Router, Waypoints, Network, Lock } from "lucide-react";
 import { api } from "@/lib/api";
 import { useToast } from "@/components/ui/toast";
+import { useI18n } from "@/lib/i18n";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
@@ -15,6 +16,7 @@ const protocolAccent: Record<string, string> = {
 
 export default function InboundsPage() {
   const toast = useToast();
+  const { t } = useI18n();
   const qc = useQueryClient();
 
   const { data: inbounds = [] } = useQuery<Inbound[]>({
@@ -28,7 +30,7 @@ export default function InboundsPage() {
       api.toggleInbound(id, enabled),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["inbounds"] });
-      toast.push("success", "Inbound updated");
+      toast.push("success", t("inboundUpdated"));
     },
     onError: (e: Error) => toast.push("error", e.message),
   });
@@ -39,14 +41,12 @@ export default function InboundsPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-heading text-3xl">Inbounds</h1>
-          <p className="text-sm font-base text-text/60">
-            Enable or disable the default HTTP-based inbounds
-          </p>
+          <h1 className="font-heading text-3xl">{t("inbounds")}</h1>
+          <p className="text-sm font-base text-text/60">{t("inboundsDesc")}</p>
         </div>
         <Badge variant="info" className="gap-1">
           <Waypoints className="h-3.5 w-3.5" />
-          {enabledCount} / {inbounds.length} enabled
+          {enabledCount} / {inbounds.length} {t("enabledCount")}
         </Badge>
       </div>
 
@@ -83,12 +83,12 @@ export default function InboundsPage() {
               <div className="mt-3 space-y-1 border-t-2 border-border/30 pt-2 text-[11px] font-base text-text/60">
                 <div className="flex items-center gap-2">
                   <Network className="h-3 w-3 shrink-0" />
-                  <span className="shrink-0">port</span>
+                  <span className="shrink-0">{t("port")}</span>
                   <span className="ml-auto font-mono text-text/80">{ib.port}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Router className="h-3 w-3 shrink-0" />
-                  <span className="shrink-0">path</span>
+                  <span className="shrink-0">{t("path")}</span>
                   <span className="ml-auto min-w-0 truncate font-mono text-text/80">{ib.path}</span>
                 </div>
               </div>

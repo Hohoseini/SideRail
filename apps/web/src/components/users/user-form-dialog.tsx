@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { api } from "@/lib/api";
 import { useToast } from "@/components/ui/toast";
+import { useI18n } from "@/lib/i18n";
 import { cn, relativeTime } from "@/lib/utils";
 import type { Inbound, TrafficReset, User, UserFormValues } from "@/lib/types";
 
@@ -46,6 +47,7 @@ function randomToken(len: number): string {
 }
 
 function ConnectedIps({ userId }: { userId: number }) {
+  const { t } = useI18n();
   const { data: ips = [] } = useQuery({
     queryKey: ["client-ips", userId],
     queryFn: () => api.clientIps(userId),
@@ -55,14 +57,14 @@ function ConnectedIps({ userId }: { userId: number }) {
     <div className="space-y-2">
       <div className="flex items-center gap-2">
         <Globe className="h-4 w-4 text-main" />
-        <Label>Connected IPs</Label>
+        <Label>{t("connectedIps")}</Label>
         <Badge variant="info" className="text-[10px]">
-          {ips.length} active
+          {ips.length} {t("activeCount")}
         </Badge>
       </div>
       {ips.length === 0 ? (
         <p className="rounded-base border-2 border-dashed border-border/40 px-3 py-2 text-xs text-text/50">
-          No active connections in the last 5 minutes.
+          {t("noConnections")}
         </p>
       ) : (
         <div className="flex flex-wrap gap-2">
@@ -89,6 +91,7 @@ export function UserFormDialog({
   onSubmit,
 }: UserFormDialogProps) {
   const toast = useToast();
+  const { t } = useI18n();
   const [email, setEmail] = React.useState("");
   const [uuid, setUuid] = React.useState("");
   const [password, setPassword] = React.useState("");
@@ -146,11 +149,11 @@ export function UserFormDialog({
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) {
-      toast.push("error", "Enter a name for this user");
+      toast.push("error", t("enterName"));
       return;
     }
     if (inboundIds.length === 0) {
-      toast.push("error", "Attach at least one inbound");
+      toast.push("error", t("attachInbound"));
       return;
     }
     setSaving(true);
@@ -177,11 +180,11 @@ export function UserFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{editing ? "Edit user" : "New user"}</DialogTitle>
+          <DialogTitle>{editing ? t("editUser") : t("newUser")}</DialogTitle>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4" noValidate>
           <div className="space-y-2">
-            <Label htmlFor="email">Name / email</Label>
+            <Label htmlFor="email">{t("nameEmail")}</Label>
             <Input
               id="email"
               value={email}
@@ -194,20 +197,20 @@ export function UserFormDialog({
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label>Data limit</Label>
+              <Label>{t("dataLimit")}</Label>
               <NumberInput value={dataLimit} onChange={setDataLimit} step={1} suffix="GB" />
-              <p className="text-[11px] text-text/50">0 = unlimited</p>
+              <p className="text-[11px] text-text/50">{t("unlimitedHint")}</p>
             </div>
             <div className="space-y-2">
-              <Label>Expire in</Label>
-              <NumberInput value={expireDays} onChange={setExpireDays} step={1} suffix="days" />
-              <p className="text-[11px] text-text/50">0 = never</p>
+              <Label>{t("expireIn")}</Label>
+              <NumberInput value={expireDays} onChange={setExpireDays} step={1} suffix={t("days")} />
+              <p className="text-[11px] text-text/50">{t("neverHint")}</p>
             </div>
           </div>
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label>Attached inbounds</Label>
+              <Label>{t("attachedInbounds")}</Label>
               <div className="flex gap-1.5">
                 <Button
                   type="button"
@@ -216,7 +219,7 @@ export function UserFormDialog({
                   className="h-7 px-2 text-xs"
                   onClick={() => setInboundIds(inbounds.map((i) => i.id))}
                 >
-                  Select all
+                  {t("selectAll")}
                 </Button>
                 <Button
                   type="button"
@@ -226,7 +229,7 @@ export function UserFormDialog({
                   onClick={() => setInboundIds([])}
                   disabled={inboundIds.length === 0}
                 >
-                  Clear all
+                  {t("clearAll")}
                 </Button>
               </div>
             </div>
@@ -255,7 +258,7 @@ export function UserFormDialog({
               })}
             </div>
             {allSelected && (
-              <p className="text-[11px] text-text/50">All inbounds attached.</p>
+              <p className="text-[11px] text-text/50">{t("allInboundsAttached")}</p>
             )}
           </div>
 
@@ -270,9 +273,7 @@ export function UserFormDialog({
             )}
           >
             <span className="flex items-center gap-2">
-              <Settings2 className="h-4 w-4" />
-              Advanced options
-            </span>
+              <Settings2 className="h-4 w-4" />{t("advancedOptions")}</span>
             <ChevronDown
               className={cn("h-4 w-4 transition-transform", showAdvanced && "rotate-180")}
             />
@@ -297,7 +298,7 @@ export function UserFormDialog({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password (Trojan)</Label>
+                <Label htmlFor="password">{t("passwordTrojan")}</Label>
                 <div className="flex gap-2">
                   <Input
                     id="password"
@@ -318,7 +319,7 @@ export function UserFormDialog({
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label>Fingerprint (uTLS)</Label>
+                  <Label>{t("fingerprint")}</Label>
                   <Select value={fingerprint} onValueChange={setFingerprint}>
                     <SelectTrigger>
                       <SelectValue />
@@ -333,7 +334,7 @@ export function UserFormDialog({
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>ALPN</Label>
+                  <Label>{t("alpn")}</Label>
                   <Select value={alpn} onValueChange={setAlpn}>
                     <SelectTrigger>
                       <SelectValue />
@@ -348,9 +349,9 @@ export function UserFormDialog({
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>IP limit</Label>
+                  <Label>{t("ipLimit")}</Label>
                   <NumberInput value={ipLimit} onChange={setIpLimit} step={1} />
-                  <p className="text-[11px] text-text/50">0 = unlimited devices</p>
+                  <p className="text-[11px] text-text/50">{t("ipLimitHint")}</p>
                 </div>
                 <div className="space-y-2">
                   <Label>Traffic reset</Label>
@@ -371,7 +372,7 @@ export function UserFormDialog({
                   </Select>
                 </div>
                 <div className="space-y-2 sm:col-span-2">
-                  <Label htmlFor="comment">Comment</Label>
+                  <Label htmlFor="comment">{t("comment")}</Label>
                   <Input id="comment" value={comment} onChange={(e) => setComment(e.target.value)} />
                 </div>
               </div>
@@ -385,10 +386,10 @@ export function UserFormDialog({
               onClick={() => onOpenChange(false)}
               className="w-full"
             >
-              Cancel
+              {t("cancel")}
             </Button>
             <Button type="submit" disabled={saving} className="w-full">
-              {saving ? "Saving..." : editing ? "Save changes" : "Create user"}
+              {saving ? t("saving") : editing ? t("saveChanges") : t("createUser")}
             </Button>
           </DialogFooter>
         </form>

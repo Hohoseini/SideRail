@@ -27,6 +27,7 @@ import { QrCode } from "@/components/qr-code";
 import { RailLogo } from "@/components/rail-logo";
 import { AnimatedBackground } from "@/components/animated-background";
 import { GitHubButton } from "@/components/github-button";
+import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -102,6 +103,7 @@ function buildChart(history: { ts: number; total: number }[]) {
 
 export default function SubscriptionPage() {
   const { token } = useParams<{ token: string }>();
+  const { t } = useI18n();
   const { data, isLoading, isError } = useSubData(token);
   const [qrConfig, setQrConfig] = React.useState<SubLink | null>(null);
   const [subQrOpen, setSubQrOpen] = React.useState(false);
@@ -113,7 +115,7 @@ export default function SubscriptionPage() {
       <div className="grid min-h-screen place-items-center bg-bg">
         <div className="flex flex-col items-center gap-3">
           <RailLogo className="h-10 w-10 animate-pulse text-main" />
-          <p className="font-heading text-text/60">Loading subscription…</p>
+          <p className="font-heading text-text/60">{t("loadingSub")}</p>
         </div>
       </div>
     );
@@ -121,15 +123,15 @@ export default function SubscriptionPage() {
 
   if (isError || !data) {
     return (
-      <ErrorState title="Subscription not found" desc="This link is invalid or has been removed." />
+      <ErrorState title={t("subNotFound")} desc={t("subNotFoundDesc")} />
     );
   }
 
   if ("expired" in data && data.expired) {
     return (
       <ErrorState
-        title="Subscription expired"
-        desc="This subscription link is no longer valid. Contact your provider."
+        title={t("subExpired")}
+        desc={t("subExpiredDesc")}
       />
     );
   }
@@ -158,11 +160,11 @@ export default function SubscriptionPage() {
           <div className="flex flex-wrap items-center gap-2">
             {user.online ? (
               <Badge variant="success" className="gap-1">
-                <Wifi className="h-3.5 w-3.5" /> Online
+                <Wifi className="h-3.5 w-3.5" /> {t("online")}
               </Badge>
             ) : (
               <Badge variant="neutral" className="gap-1">
-                <WifiOff className="h-3.5 w-3.5" /> Offline
+                <WifiOff className="h-3.5 w-3.5" /> {t("offline")}
               </Badge>
             )}
             <Badge variant={user.active ? "success" : "danger"} className="gap-1">
@@ -171,7 +173,7 @@ export default function SubscriptionPage() {
               ) : (
                 <CircleAlert className="h-3.5 w-3.5" />
               )}
-              {user.active ? "Active" : "Inactive"}
+              {user.active ? t("active") : t("inactive")}
             </Badge>
           </div>
         </header>
@@ -180,9 +182,7 @@ export default function SubscriptionPage() {
           <CardContent className="space-y-5 p-5 sm:p-6">
             <div>
               <div className="flex items-baseline justify-between gap-2">
-                <span className="text-xs font-heading uppercase tracking-widest text-text/60">
-                  Data used
-                </span>
+                <span className="text-xs font-heading uppercase tracking-widest text-text/60">{t("dataUsed")}</span>
                 <span className="font-heading text-sm">
                   {user.dataLimit > 0
                     ? `${formatBytes(user.total)} / ${formatBytes(user.dataLimit)}`
@@ -197,41 +197,39 @@ export default function SubscriptionPage() {
                 }
               />
               <div className="mt-1 text-xs font-base text-text/50">
-                {user.dataLimit > 0 ? `${formatBytes(remaining)} remaining` : "Unlimited plan"}
+                {user.dataLimit > 0 ? `${formatBytes(remaining)} ${t("remainingLabel")}` : t("unlimitedPlan")}
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               <MiniStat
                 icon={Download}
-                label="Download"
+                label={t("download")}
                 value={formatBytes(user.down)}
                 accent="#a3e635"
               />
               <MiniStat
                 icon={Upload}
-                label="Upload"
+                label={t("upload")}
                 value={formatBytes(user.up)}
                 accent="#7dd3fc"
               />
               <MiniStat
                 icon={CalendarClock}
-                label="Expires"
-                value={user.expireAt ? relativeTime(user.expireAt) : "Never"}
+                label={t("expires")}
+                value={user.expireAt ? relativeTime(user.expireAt) : t("never")}
                 accent="#fda4af"
               />
               <MiniStat
                 icon={Gauge}
-                label="Configs"
+                label={t("configs")}
                 value={String(links.length)}
                 accent="#f0abfc"
               />
             </div>
 
             <div>
-              <span className="mb-2 block text-xs font-heading uppercase tracking-widest text-text/60">
-                Usage trend
-              </span>
+              <span className="mb-2 block text-xs font-heading uppercase tracking-widest text-text/60">{t("usageTrend")}</span>
               <div className="h-[160px] w-full rounded-base border-2 border-border bg-bg/40 p-2">
                 {chart.length >= 2 ? (
                   <ResponsiveContainer width="100%" height="100%">
@@ -271,13 +269,13 @@ export default function SubscriptionPage() {
                   </ResponsiveContainer>
                 ) : (
                   <div className="flex h-full items-center justify-center text-center text-xs font-base text-text/40">
-                    Not enough data yet. Usage appears here as you consume traffic.
+                    {t("notEnoughData")}
                   </div>
                 )}
               </div>
               {user.expireAt && (
                 <div className="mt-2 text-center text-xs font-base text-text/50">
-                  Valid until {formatDate(user.expireAt)}
+                  {t("validUntil")} {formatDate(user.expireAt)}
                 </div>
               )}
             </div>
@@ -290,7 +288,7 @@ export default function SubscriptionPage() {
             <span className="truncate font-mono text-xs text-text/80">{subUrl}</span>
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <CopyButton value={subUrl} label="Copy sub" className="w-full" />
+            <CopyButton value={subUrl} label={t("copySub")} className="w-full" />
             <Button variant="default" onClick={() => setSubQrOpen(true)} className="w-full">
               <QrIcon className="h-4 w-4" />
               QR
@@ -301,14 +299,11 @@ export default function SubscriptionPage() {
             <CopyButton value={`${subUrl}/clash`} label="Clash" className="w-full" />
             <CopyButton value={`${subUrl}/singbox`} label="Sing-box" className="w-full" />
           </div>
-          <p className="text-center text-[11px] font-base text-text/40">
-            Copy the link for your client: V2rayN / V2rayNG use base64, Clash Meta uses Clash,
-            sing-box uses Sing-box.
-          </p>
+          <p className="text-center text-[11px] font-base text-text/40">{t("copyHint")}</p>
         </div>
 
         <div className="mt-8">
-          <h2 className="mb-3 font-heading text-lg">Configurations</h2>
+          <h2 className="mb-3 font-heading text-lg">{t("configurations")}</h2>
           <div className="grid gap-3">
             {links.map((link, i) => (
               <Card
@@ -346,7 +341,7 @@ export default function SubscriptionPage() {
             {links.length === 0 && (
               <Card>
                 <CardContent className="py-10 text-center text-text/50">
-                  No active configurations attached to this subscription.
+                  {t("noConfigs")}
                 </CardContent>
               </Card>
             )}
@@ -368,7 +363,7 @@ export default function SubscriptionPage() {
             <p className="break-all text-center font-mono text-[11px] text-text/50">
               {qrConfig?.link}
             </p>
-            {qrConfig && <CopyButton value={qrConfig.link} label="Copy config" />}
+            {qrConfig && <CopyButton value={qrConfig.link} label={t("copyConfig")} />}
           </div>
         </DialogContent>
       </Dialog>
@@ -376,14 +371,14 @@ export default function SubscriptionPage() {
       <Dialog open={subQrOpen} onOpenChange={setSubQrOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle className="text-center">Subscription QR</DialogTitle>
+            <DialogTitle className="text-center">{t("subscriptionQr")}</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col items-center gap-4">
             <QrCode value={subUrl} size={220} />
             <p className="text-center text-sm font-base text-text/60">
-              Scan to import the full subscription into your client.
+              {t("scanImport")}
             </p>
-            <CopyButton value={subUrl} label="Copy sub link" />
+            <CopyButton value={subUrl} label={t("copySub")} />
           </div>
         </DialogContent>
       </Dialog>

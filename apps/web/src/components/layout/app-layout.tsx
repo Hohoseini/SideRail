@@ -33,19 +33,19 @@ import type { Permission } from "@/lib/types";
 
 const nav: {
   to: string;
-  label: string;
+  labelKey: "dashboard" | "users" | "inbounds" | "routing" | "activityLog" | "telegramBot" | "settings";
   icon: typeof LayoutDashboard;
   end: boolean;
   perm: Permission;
   ownerOnly?: boolean;
 }[] = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true, perm: "dashboard" },
-  { to: "/users", label: "Users", icon: Users, end: false, perm: "users" },
-  { to: "/inbounds", label: "Inbounds", icon: Router, end: false, perm: "inbounds" },
-  { to: "/routing", label: "Routing", icon: Ban, end: false, perm: "inbounds" },
-  { to: "/activity", label: "Activity Log", icon: ScrollText, end: false, perm: "activity" },
-  { to: "/bot", label: "Telegram Bot", icon: Bot, end: false, perm: "settings", ownerOnly: true },
-  { to: "/settings", label: "Settings", icon: Settings, end: false, perm: "settings" },
+  { to: "/", labelKey: "dashboard", icon: LayoutDashboard, end: true, perm: "dashboard" },
+  { to: "/users", labelKey: "users", icon: Users, end: false, perm: "users" },
+  { to: "/inbounds", labelKey: "inbounds", icon: Router, end: false, perm: "inbounds" },
+  { to: "/routing", labelKey: "routing", icon: Ban, end: false, perm: "inbounds" },
+  { to: "/activity", labelKey: "activityLog", icon: ScrollText, end: false, perm: "activity" },
+  { to: "/bot", labelKey: "telegramBot", icon: Bot, end: false, perm: "settings", ownerOnly: true },
+  { to: "/settings", labelKey: "settings", icon: Settings, end: false, perm: "settings" },
 ];
 
 function Brand() {
@@ -66,10 +66,12 @@ function NavItems({
   onNavigate,
   can,
   isOwner,
+  t,
 }: {
   onNavigate?: () => void;
   can: (perm: Permission) => boolean;
   isOwner: boolean;
+  t: (k: never) => string;
 }) {
   return (
     <nav className="flex flex-col gap-2">
@@ -91,7 +93,7 @@ function NavItems({
           }
         >
           <item.icon className="h-5 w-5 transition-transform group-hover:scale-110" />
-          {item.label}
+          {t(item.labelKey as never)}
         </NavLink>
         ))}
     </nav>
@@ -128,7 +130,7 @@ export function AppLayout() {
             <Brand />
           </div>
           <div className="mt-6 flex-1">
-            <NavItems can={can} isOwner={isOwner} />
+            <NavItems can={can} isOwner={isOwner} t={t as never} />
           </div>
           <a
             href={GITHUB_URL}
@@ -137,9 +139,7 @@ export function AppLayout() {
             className="mb-2 flex items-center justify-between gap-2 rounded-base border-2 border-border bg-bg/50 px-3 py-2.5 font-heading text-sm text-text/80 transition-all hover:bg-main hover:text-mtext hover:neo-shadow"
           >
             <span className="flex items-center gap-2">
-              <Github className="h-5 w-5" />
-              GitHub
-            </span>
+              <Github className="h-5 w-5" />GitHub</span>
             <StarCount />
           </a>
           <a
@@ -149,9 +149,7 @@ export function AppLayout() {
             className="mb-3 flex items-center justify-between gap-2 rounded-base border-2 border-border bg-bg/50 px-3 py-2.5 font-heading text-sm text-text/80 transition-all hover:bg-main hover:text-mtext hover:neo-shadow"
           >
             <span className="flex items-center gap-2">
-              <Tag className="h-5 w-5" />
-              Version
-            </span>
+              <Tag className="h-5 w-5" />{t("version")}</span>
             <span className="text-xs text-text/60">v{PANEL_VERSION}</span>
           </a>
           <SidebarFooter username={username} role={admin?.role} onLogout={logout} />
@@ -211,7 +209,7 @@ export function AppLayout() {
                     <div className="border-b-2 border-border/30 px-2 pb-2">
                       <div className="truncate text-sm font-heading">{username || "admin"}</div>
                       <div className="text-[10px] uppercase tracking-widest text-text/50">
-                        {admin?.role === "owner" ? "Owner" : "Admin"}
+                        {admin?.role === "owner" ? t("owner") : t("admin")}
                       </div>
                     </div>
                     <a
@@ -233,9 +231,7 @@ export function AppLayout() {
                       className="flex items-center justify-between gap-2 rounded-[4px] px-2 py-2 text-sm font-base transition-colors hover:bg-main/15"
                     >
                       <span className="flex items-center gap-2">
-                        <Tag className="h-4 w-4" />
-                        {t("version")}
-                      </span>
+                        <Tag className="h-4 w-4" />{t("version")}</span>
                       <span className="text-xs font-heading text-text/60">v{PANEL_VERSION}</span>
                     </a>
                     <div className="border-t-2 border-border/30 px-2 pb-1 pt-2">
@@ -262,8 +258,7 @@ export function AppLayout() {
                       onClick={() => void logout()}
                       className="mt-1 flex w-full items-center gap-2 rounded-[4px] px-2 py-2 text-left text-sm font-base text-red-400 transition-colors hover:bg-red-400/10"
                     >
-                      <LogOut className="h-4 w-4" />
-                      {t("signOut")}
+                      <LogOut className="h-4 w-4" />{t("signOut")}
                     </button>
                   </div>
                 )}
@@ -291,7 +286,7 @@ export function AppLayout() {
               </Button>
             </div>
             <div className="mt-6">
-              <NavItems can={can} isOwner={isOwner} onNavigate={() => setMobileOpen(false)} />
+              <NavItems can={can} isOwner={isOwner} t={t as never} onNavigate={() => setMobileOpen(false)} />
             </div>
             <div className="absolute inset-x-4 bottom-4">
               <a
@@ -301,9 +296,7 @@ export function AppLayout() {
                 className="mb-2 flex items-center justify-between gap-2 rounded-base border-2 border-border bg-bg/50 px-3 py-2.5 font-heading text-sm text-text/80 transition-all hover:bg-main hover:text-mtext"
               >
                 <span className="flex items-center gap-2">
-                  <Github className="h-5 w-5" />
-                  GitHub
-                </span>
+                  <Github className="h-5 w-5" />GitHub</span>
                 <StarCount />
               </a>
               <a
@@ -313,9 +306,7 @@ export function AppLayout() {
                 className="mb-3 flex items-center justify-between gap-2 rounded-base border-2 border-border bg-bg/50 px-3 py-2.5 font-heading text-sm text-text/80 transition-all hover:bg-main hover:text-mtext"
               >
                 <span className="flex items-center gap-2">
-                  <Tag className="h-5 w-5" />
-                  Version
-                </span>
+                  <Tag className="h-5 w-5" />{t("version")}</span>
                 <span className="text-xs text-text/60">v{PANEL_VERSION}</span>
               </a>
               <SidebarFooter username={username} role={admin?.role} onLogout={logout} />
@@ -346,6 +337,7 @@ function SidebarFooter({
   role: "owner" | "admin" | undefined;
   onLogout: () => Promise<void>;
 }) {
+  const { t } = useI18n();
   return (
     <div className="rounded-base border-2 border-border bg-bg/50 p-3">
       <div className="mb-2 flex items-center gap-2">
@@ -360,13 +352,13 @@ function SidebarFooter({
         <div className="min-w-0">
           <div className="truncate text-sm font-heading">{username || "admin"}</div>
           <div className="text-[10px] uppercase tracking-widest text-text/50">
-            {role === "owner" ? "Owner" : "Admin"}
+            {role === "owner" ? t("owner") : t("admin")}
           </div>
         </div>
       </div>
       <Button variant="neutral" size="sm" className="w-full" onClick={() => void onLogout()}>
         <LogOut className="h-4 w-4" />
-        Sign out
+        {t("signOut")}
       </Button>
     </div>
   );

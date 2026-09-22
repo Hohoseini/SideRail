@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bot, Send, Save, Plus, Trash2, ShieldCheck } from "lucide-react";
 import { api } from "@/lib/api";
 import { useToast } from "@/components/ui/toast";
+import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,6 +19,7 @@ import type { BotConfig } from "@/lib/types";
 
 export default function BotPage() {
   const toast = useToast();
+  const { t } = useI18n();
   const qc = useQueryClient();
 
   const { data } = useQuery<BotConfig>({ queryKey: ["bot"], queryFn: api.getBot });
@@ -40,7 +42,7 @@ export default function BotPage() {
   const saveMut = useMutation({
     mutationFn: () => api.saveBot({ enabled, token, chatIds: cleanIds(), dailyBackup }),
     onSuccess: () => {
-      toast.push("success", "Bot settings saved");
+      toast.push("success", t("botSaved"));
       qc.invalidateQueries({ queryKey: ["bot"] });
     },
     onError: (e: Error) => toast.push("error", e.message),
@@ -55,9 +57,9 @@ export default function BotPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-heading text-3xl">Telegram Bot</h1>
+        <h1 className="font-heading text-3xl">{t("telegramBot")}</h1>
         <p className="text-sm font-base text-text/60">
-          Notifications and automatic daily backups to Telegram
+          {t("botDesc")}
         </p>
       </div>
 
@@ -65,24 +67,23 @@ export default function BotPage() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <Bot className="h-5 w-5 text-main" />
-            <CardTitle>Bot configuration</CardTitle>
+            <CardTitle>{t("botConfig")}</CardTitle>
           </div>
           <CardDescription>
-            Create a bot with @BotFather, paste the token, and add the chat IDs that should receive
-            messages.
+            {t("botConfigDesc")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="flex items-center justify-between rounded-base border-2 border-border bg-bg/40 p-3">
             <div className="flex items-center gap-2">
               <ShieldCheck className="h-4 w-4 text-main" />
-              <span className="font-heading text-sm">Enable bot</span>
+              <span className="font-heading text-sm">{t("enableBot")}</span>
             </div>
             <Switch checked={enabled} onCheckedChange={setEnabled} />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="token">Bot token</Label>
+            <Label htmlFor="token">{t("botToken")}</Label>
             <Input
               id="token"
               value={token}
@@ -94,7 +95,7 @@ export default function BotPage() {
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label>Chat IDs</Label>
+              <Label>{t("chatIds")}</Label>
               <Button
                 type="button"
                 variant="neutral"
@@ -102,8 +103,7 @@ export default function BotPage() {
                 className="h-7 px-2 text-xs"
                 onClick={() => setChatIds((p) => [...p, ""])}
               >
-                <Plus className="h-3.5 w-3.5" />
-                Add
+                <Plus className="h-3.5 w-3.5" />{t("add")}
               </Button>
             </div>
             <div className="space-y-2">
@@ -130,15 +130,15 @@ export default function BotPage() {
               ))}
             </div>
             <p className="text-[11px] text-text/50">
-              Send a message to your bot, then get your ID from @userinfobot.
+              {t("chatIdHint")}
             </p>
           </div>
 
           <div className="flex items-center justify-between rounded-base border-2 border-border bg-bg/40 p-3">
             <div>
-              <div className="font-heading text-sm">Daily backup at midnight</div>
+              <div className="font-heading text-sm">{t("dailyBackup")}</div>
               <div className="text-[11px] text-text/50">
-                Sends a full backup file to Telegram every day at 00:00.
+                {t("dailyBackupDesc")}
               </div>
             </div>
             <Switch checked={dailyBackup} onCheckedChange={setDailyBackup} />
@@ -150,8 +150,7 @@ export default function BotPage() {
               onClick={() => saveMut.mutate()}
               disabled={saveMut.isPending}
             >
-              <Save className="h-4 w-4" />
-              Save
+              <Save className="h-4 w-4" />{t("save")}
             </Button>
             <Button
               variant="neutral"
@@ -160,7 +159,7 @@ export default function BotPage() {
               disabled={testMut.isPending || !token || cleanIds().length === 0}
             >
               <Send className="h-4 w-4" />
-              {testMut.isPending ? "Sending..." : "Send test message"}
+              {testMut.isPending ? t("sending") : t("sendTest")}
             </Button>
           </div>
         </CardContent>
