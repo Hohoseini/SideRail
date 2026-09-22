@@ -13,7 +13,7 @@ import { nanoid } from "nanoid";
 import { db } from "./db.js";
 import type { TrafficReset, UserRecord, UserWithInbounds } from "./types.js";
 
-const ONLINE_WINDOW_MS = 120_000;
+const ONLINE_WINDOW_MS = 60_000;
 
 export interface CreateUserInput {
   email: string;

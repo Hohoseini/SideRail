@@ -10,13 +10,11 @@ import {
   Activity,
   CircleCheck,
   CircleX,
-  Router as RouterIcon,
   Clock,
 } from "lucide-react";
 import { api, exportBackupUrl } from "@/lib/api";
 import { formatBytes, pct, formatUptime } from "@/lib/utils";
 import { useToast } from "@/components/ui/toast";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -27,17 +25,6 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import type { SystemStats } from "@/lib/types";
-
-const protocolAccent: Record<string, string> = {
-  VLESS: "#a3e635",
-  VMess: "#7dd3fc",
-  Trojan: "#f0abfc",
-};
-
-function inboundColor(tag: string): string {
-  for (const [k, v] of Object.entries(protocolAccent)) if (tag.startsWith(k)) return v;
-  return "#a3e635";
-}
 
 function StatCard({
   icon: Icon,
@@ -90,12 +77,6 @@ export default function DashboardPage() {
   });
   const fileRef = React.useRef<HTMLInputElement>(null);
   const [importing, setImporting] = React.useState(false);
-
-  const { data: traffic } = useQuery({
-    queryKey: ["traffic-stats"],
-    queryFn: api.trafficStats,
-    refetchInterval: 5000,
-  });
 
   const s = data;
 
@@ -184,78 +165,38 @@ export default function DashboardPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <RouterIcon className="h-5 w-5 text-main" />
-            <CardTitle>Traffic per inbound</CardTitle>
-          </div>
-          <CardDescription>Total data used by each inbound</CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-3 sm:grid-cols-2">
-          {(traffic?.inbounds ?? []).length === 0 && (
-            <div className="col-span-full py-8 text-center text-sm text-text/40">
-              No traffic recorded yet.
-            </div>
-          )}
-          {(traffic?.inbounds ?? []).map((ib) => {
-            const total = ib.up + ib.down;
-            const maxTotal = Math.max(
-              ...(traffic?.inbounds ?? []).map((x) => x.up + x.down),
-              1,
-            );
-            const pctBar = Math.min(100, (total / maxTotal) * 100);
-            return (
-              <div
-                key={ib.inbound_tag}
-                className="rounded-base border-2 border-border bg-bg/40 p-4"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex min-w-0 items-center gap-2">
-                    <span
-                      className="h-3.5 w-3.5 shrink-0 rounded-full border-2 border-border"
-                      style={{ background: inboundColor(ib.inbound_tag) }}
-                    />
-                    <span className="truncate font-heading text-sm">{ib.inbound_tag}</span>
-                  </div>
-                  <span className="shrink-0 font-heading text-sm">{formatBytes(total)}</span>
-                </div>
-                <div className="mt-3 h-2 w-full overflow-hidden rounded-full border-2 border-border bg-bw">
-                  <div
-                    className="h-full rounded-full"
-                    style={{ width: `${pctBar}%`, background: inboundColor(ib.inbound_tag) }}
-                  />
-                </div>
-                <div className="mt-2 flex items-center justify-between text-xs font-base">
-                  <span className="text-lime-500">↓ {formatBytes(ib.down)}</span>
-                  <span className="text-sky-400">↑ {formatBytes(ib.up)}</span>
-                </div>
-              </div>
-            );
-          })}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
             <Activity className="h-5 w-5 text-main" />
             <CardTitle>Backup &amp; Restore</CardTitle>
           </div>
           <CardDescription>Export or import users and inbounds.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 gap-3">
-            <Button onClick={onExport} className="w-full">
-              <Download className="h-4 w-4" />
-              Export
-            </Button>
-            <Button
-              variant="neutral"
+          <div className="grid gap-3 sm:grid-cols-2">
+            <button
+              onClick={onExport}
+              className="group flex items-center gap-3 rounded-base border-2 border-border bg-main/10 p-4 text-left transition-all hover:-translate-y-0.5 hover:bg-main/20"
+            >
+              <div className="grid h-11 w-11 shrink-0 place-items-center rounded-base border-2 border-border bg-main">
+                <Download className="h-5 w-5 text-black" />
+              </div>
+              <div>
+                <div className="font-heading">Export backup</div>
+                <div className="text-xs text-text/60">Download a full JSON snapshot</div>
+              </div>
+            </button>
+            <button
               onClick={onImportClick}
               disabled={importing}
-              className="w-full"
+              className="group flex items-center gap-3 rounded-base border-2 border-border bg-sky-300/10 p-4 text-left transition-all hover:-translate-y-0.5 hover:bg-sky-300/20 disabled:opacity-50"
             >
-              <Upload className="h-4 w-4" />
-              {importing ? "Importing..." : "Import"}
-            </Button>
+              <div className="grid h-11 w-11 shrink-0 place-items-center rounded-base border-2 border-border bg-sky-300">
+                <Upload className="h-5 w-5 text-black" />
+              </div>
+              <div>
+                <div className="font-heading">{importing ? "Importing…" : "Import backup"}</div>
+                <div className="text-xs text-text/60">Restore from a JSON file</div>
+              </div>
+            </button>
             <input
               ref={fileRef}
               type="file"

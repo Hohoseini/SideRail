@@ -97,6 +97,9 @@ setInterval(() => {
   } catch {
     /* noop */
   }
+}, 5_000);
+
+setInterval(() => {
   try {
     enforceIpLimits();
   } catch {

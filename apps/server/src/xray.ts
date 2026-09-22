@@ -271,12 +271,15 @@ export function collectClientIps(): void {
   const upsert = db.prepare(
     "INSERT INTO client_ips (user_id, ip, last_seen) VALUES (?, ?, ?) ON CONFLICT(user_id, ip) DO UPDATE SET last_seen = excluded.last_seen",
   );
+  const markOnline = db.prepare("UPDATE users SET online_at = ? WHERE id = ?");
   for (const line of chunk.split("\n")) {
     const ipMatch = line.match(/from (?:tcp:|udp:)?\[?([0-9a-fA-F:.]+)\]?:(\d+)/);
     const emailMatch = line.match(/email:\s*(\S+)/);
-    if (!ipMatch || !emailMatch) continue;
+    if (!emailMatch) continue;
     const uid = emailToId.get(emailMatch[1]);
     if (!uid) continue;
+    markOnline.run(now, uid);
+    if (!ipMatch) continue;
     let ip = ipMatch[1];
     if (ip === "127.0.0.1" || ip === "::1") {
       const port = Number(ipMatch[2]);
