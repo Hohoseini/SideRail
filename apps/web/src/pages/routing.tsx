@@ -5,7 +5,7 @@ import { api } from "@/lib/api";
 import { useToast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Combobox, type ComboItem } from "@/components/ui/combobox";
+import { MultiCombobox, type ComboItem } from "@/components/ui/combobox";
 import {
   Card,
   CardContent,
@@ -20,9 +20,9 @@ export default function RoutingPage() {
   const toast = useToast();
   const qc = useQueryClient();
   const [kind, setKind] = React.useState<"domain" | "ip">("domain");
-  const [value, setValue] = React.useState("");
-  const [label, setLabel] = React.useState("");
+  const [values, setValues] = React.useState<string[]>([]);
   const [selected, setSelected] = React.useState<number[]>([]);
+  const labelsRef = React.useRef<Record<string, string>>({});
 
   const { data: rules = [] } = useQuery<RoutingRule[]>({
     queryKey: ["routing"],
@@ -40,11 +40,14 @@ export default function RoutingPage() {
   const invalidate = () => qc.invalidateQueries({ queryKey: ["routing"] });
 
   const addMut = useMutation({
-    mutationFn: () => api.addRouting(value.trim(), selected, kind, label || value.trim()),
+    mutationFn: async () => {
+      for (const v of values) {
+        await api.addRouting(v, selected, kind, labelsRef.current[v] || v);
+      }
+    },
     onSuccess: () => {
-      toast.push("success", "Block rule added");
-      setValue("");
-      setLabel("");
+      toast.push("success", "Block rules added");
+      setValues([]);
       setSelected([]);
       invalidate();
     },
@@ -60,27 +63,30 @@ export default function RoutingPage() {
     onError: (e: Error) => toast.push("error", e.message),
   });
 
-  const domainItems: ComboItem[] = React.useMemo(() => {
-    const items = (presets?.domains ?? []).map((p) => ({
-      value: p.values[0],
-      label: p.label,
-      group: "Presets",
-    }));
-    return items;
-  }, [presets]);
+  const domainItems: ComboItem[] = React.useMemo(
+    () =>
+      (presets?.domains ?? []).map((p) => ({
+        value: p.values[0],
+        label: p.label,
+        group: "Presets",
+      })),
+    [presets],
+  );
 
-  const ipItems: ComboItem[] = React.useMemo(() => {
-    return (presets?.ips ?? []).map((p) => ({
-      value: p.values[0],
-      label: p.label,
-      group: "Countries",
-    }));
-  }, [presets]);
+  const ipItems: ComboItem[] = React.useMemo(
+    () =>
+      (presets?.ips ?? []).map((p) => ({
+        value: p.values[0],
+        label: p.label,
+        group: "Countries",
+      })),
+    [presets],
+  );
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!value.trim()) {
-      toast.push("error", "Choose or type something to block");
+    if (values.length === 0) {
+      toast.push("error", "Choose or type at least one item to block");
       return;
     }
     addMut.mutate();
@@ -98,14 +104,14 @@ export default function RoutingPage() {
         <p className="text-sm font-base text-text/60">Block domains and country IPs per inbound</p>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] lg:items-start">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:items-start">
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
               <Ban className="h-5 w-5 text-main" />
               <CardTitle>Add block rule</CardTitle>
             </div>
-            <CardDescription>Traffic matching the rule is dropped.</CardDescription>
+            <CardDescription>Pick presets, or type your own and press Enter.</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={submit} className="space-y-4" noValidate>
@@ -114,7 +120,7 @@ export default function RoutingPage() {
                   type="button"
                   onClick={() => {
                     setKind("domain");
-                    setValue("");
+                    setValues([]);
                   }}
                   className={cn(
                     "flex items-center justify-center gap-2 rounded-base border-2 border-border px-3 py-2 text-sm font-heading transition-all",
@@ -128,7 +134,7 @@ export default function RoutingPage() {
                   type="button"
                   onClick={() => {
                     setKind("ip");
-                    setValue("");
+                    setValues([]);
                   }}
                   className={cn(
                     "flex items-center justify-center gap-2 rounded-base border-2 border-border px-3 py-2 text-sm font-heading transition-all",
@@ -140,25 +146,18 @@ export default function RoutingPage() {
                 </button>
               </div>
 
-              <Combobox
+              <MultiCombobox
                 items={kind === "domain" ? domainItems : ipItems}
-                value={value}
-                onChange={(v, item) => {
-                  setValue(v);
-                  setLabel(item?.label || "");
-                }}
+                selected={values}
+                onChange={setValues}
+                labels={labelsRef.current}
                 placeholder={
-                  kind === "domain"
-                    ? "Pick a category or type a domain…"
-                    : "Pick a country or type geoip:xx…"
+                  kind === "domain" ? "e.g. example.com or a preset…" : "e.g. geoip:cn or a country…"
                 }
               />
 
               <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm font-heading text-text/70">
-                  Apply to inbounds
-                  <span className="text-xs text-text/40">(none = all)</span>
-                </div>
+                <div className="text-sm font-heading text-text/70">Apply to inbounds</div>
                 <div className="grid grid-cols-2 gap-1.5">
                   {inbounds.map((ib) => {
                     const active = selected.includes(ib.id);
@@ -177,6 +176,9 @@ export default function RoutingPage() {
                     );
                   })}
                 </div>
+                <p className="text-[11px] text-text/50">
+                  Nothing selected = the rule applies to every inbound.
+                </p>
               </div>
 
               <Button type="submit" className="w-full" disabled={addMut.isPending}>
@@ -222,16 +224,12 @@ export default function RoutingPage() {
                   <div className="min-w-0">
                     <div className="truncate font-heading">{r.label || r.domain}</div>
                     <div className="mt-0.5 flex flex-wrap gap-1">
-                      {r.inbound_ids.length === 0 ? (
-                        <Badge variant="info" className="text-[10px]">
-                          all inbounds
-                        </Badge>
-                      ) : (
-                        r.inbound_ids.map((id) => (
+                      {(r.inbound_ids.length === 0 ? inbounds.map((i) => i.id) : r.inbound_ids).map(
+                        (id) => (
                           <Badge key={id} variant="neutral" className="text-[10px]">
                             {inboundName(id)}
                           </Badge>
-                        ))
+                        ),
                       )}
                     </div>
                   </div>

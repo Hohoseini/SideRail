@@ -27,19 +27,29 @@ export const COUNTRY_IP_PRESETS: RoutingPreset[] = [
 ];
 
 export const DOMAIN_PRESETS: RoutingPreset[] = [
-  { id: "geosite:category-ads-all", label: "Ads (all)", kind: "domain", values: ["geosite:category-ads-all"] },
-  { id: "geosite:category-porn", label: "Adult +18", kind: "domain", values: ["geosite:category-porn"] },
+  { id: "geosite:category-ads-all", label: "Ads & Trackers (all)", kind: "domain", values: ["geosite:category-ads-all"] },
+  { id: "geosite:category-porn", label: "Adult / +18", kind: "domain", values: ["geosite:category-porn"] },
   { id: "geosite:category-games", label: "Games", kind: "domain", values: ["geosite:category-games"] },
   { id: "geosite:category-social-media", label: "Social media", kind: "domain", values: ["geosite:category-social-media"] },
-  { id: "geosite:speedtest", label: "Speedtest", kind: "domain", values: ["geosite:speedtest"] },
-  { id: "geosite:bittorrent", label: "BitTorrent / Torrent", kind: "domain", values: ["geosite:bittorrent"] },
-  { id: "geosite:tiktok", label: "TikTok", kind: "domain", values: ["geosite:tiktok"] },
-  { id: "geosite:facebook", label: "Facebook", kind: "domain", values: ["geosite:facebook"] },
-  { id: "geosite:instagram", label: "Instagram", kind: "domain", values: ["geosite:instagram"] },
+  { id: "geosite:speedtest", label: "Speed tests", kind: "domain", values: ["geosite:speedtest"] },
+  { id: "geosite:bittorrent", label: "Torrent / BitTorrent", kind: "domain", values: ["geosite:bittorrent"] },
   { id: "geosite:google", label: "Google", kind: "domain", values: ["geosite:google"] },
   { id: "geosite:youtube", label: "YouTube", kind: "domain", values: ["geosite:youtube"] },
+  { id: "geosite:facebook", label: "Facebook", kind: "domain", values: ["geosite:facebook"] },
+  { id: "geosite:instagram", label: "Instagram", kind: "domain", values: ["geosite:instagram"] },
+  { id: "geosite:twitter", label: "X / Twitter", kind: "domain", values: ["geosite:twitter"] },
+  { id: "geosite:tiktok", label: "TikTok", kind: "domain", values: ["geosite:tiktok"] },
+  { id: "geosite:telegram", label: "Telegram", kind: "domain", values: ["geosite:telegram"] },
+  { id: "geosite:whatsapp", label: "WhatsApp", kind: "domain", values: ["geosite:whatsapp"] },
   { id: "geosite:netflix", label: "Netflix", kind: "domain", values: ["geosite:netflix"] },
+  { id: "geosite:disney", label: "Disney+", kind: "domain", values: ["geosite:disney"] },
+  { id: "geosite:spotify", label: "Spotify", kind: "domain", values: ["geosite:spotify"] },
   { id: "geosite:openai", label: "OpenAI / ChatGPT", kind: "domain", values: ["geosite:openai"] },
+  { id: "geosite:twitch", label: "Twitch", kind: "domain", values: ["geosite:twitch"] },
+  { id: "geosite:reddit", label: "Reddit", kind: "domain", values: ["geosite:reddit"] },
+  { id: "geosite:amazon", label: "Amazon", kind: "domain", values: ["geosite:amazon"] },
+  { id: "geosite:apple", label: "Apple", kind: "domain", values: ["geosite:apple"] },
+  { id: "geosite:microsoft", label: "Microsoft", kind: "domain", values: ["geosite:microsoft"] },
 ];
 
 export const ALL_PRESETS = [...DOMAIN_PRESETS, ...COUNTRY_IP_PRESETS];

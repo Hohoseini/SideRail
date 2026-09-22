@@ -1,6 +1,6 @@
 import * as React from "react";
 
-export type Lang = "en" | "ru" | "fa";
+export type Lang = "en" | "ru" | "zh";
 
 type Dict = Record<string, string>;
 
@@ -61,39 +61,39 @@ const ru: Dict = {
 };
 
 const fa: Dict = {
-  dashboard: "داشبورد",
-  users: "کاربران",
-  inbounds: "این‌باندها",
-  routing: "مسیریابی",
-  activityLog: "گزارش فعالیت",
-  telegramBot: "ربات تلگرام",
-  settings: "تنظیمات",
-  signOut: "خروج",
-  version: "نسخه",
-  owner: "مالک",
-  admin: "ادمین",
-  overallSpeed: "سرعت کلی",
-  trafficPerInbound: "ترافیک هر این‌باند",
-  upload: "آپلود",
-  download: "دانلود",
-  xrayUptime: "مدت فعالیت Xray",
-  systemUptime: "مدت فعالیت سیستم",
-  backupRestore: "پشتیبان‌گیری و بازیابی",
-  export: "خروجی",
-  import: "ورودی",
-  newUser: "کاربر جدید",
-  online: "آنلاین",
-  offline: "آفلاین",
-  active: "فعال",
-  language: "زبان",
+  dashboard: "仪表盘",
+  users: "用户",
+  inbounds: "入站",
+  routing: "路由",
+  activityLog: "活动日志",
+  telegramBot: "Telegram 机器人",
+  settings: "设置",
+  signOut: "退出登录",
+  version: "版本",
+  owner: "所有者",
+  admin: "管理员",
+  overallSpeed: "总体速度",
+  trafficPerInbound: "各入站流量",
+  upload: "上传",
+  download: "下载",
+  xrayUptime: "Xray 运行时间",
+  systemUptime: "系统运行时间",
+  backupRestore: "备份与恢复",
+  export: "导出",
+  import: "导入",
+  newUser: "新建用户",
+  online: "在线",
+  offline: "离线",
+  active: "有效",
+  language: "语言",
 };
 
-const dicts: Record<Lang, Dict> = { en, ru, fa };
+const dicts: Record<Lang, Dict> = { en, ru, zh: fa };
 
 export const LANGUAGES: { code: Lang; label: string }[] = [
   { code: "en", label: "English" },
   { code: "ru", label: "Русский" },
-  { code: "fa", label: "فارسی" },
+  { code: "zh", label: "中文" },
 ];
 
 interface I18nState {
@@ -118,11 +118,11 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   const setLang = React.useCallback((l: Lang) => {
     localStorage.setItem("sr_lang", l);
     setLangState(l);
-    document.documentElement.dir = l === "fa" ? "rtl" : "ltr";
+    document.documentElement.dir = "ltr";
   }, []);
 
   React.useEffect(() => {
-    document.documentElement.dir = lang === "fa" ? "rtl" : "ltr";
+    document.documentElement.dir = "ltr";
   }, [lang]);
 
   const t = React.useCallback(

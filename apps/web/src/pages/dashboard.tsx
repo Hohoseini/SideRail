@@ -1,14 +1,6 @@
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
-  Area,
-  AreaChart,
-  ResponsiveContainer,
-  Tooltip as RTooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
-import {
   Cpu,
   MemoryStick,
   HardDrive,
@@ -18,10 +10,8 @@ import {
   Activity,
   CircleCheck,
   CircleX,
-  ArrowDownUp,
   Router as RouterIcon,
   Clock,
-  Server,
 } from "lucide-react";
 import { api, exportBackupUrl } from "@/lib/api";
 import { formatBytes, pct, formatUptime } from "@/lib/utils";
@@ -109,32 +99,6 @@ export default function DashboardPage() {
 
   const s = data;
 
-  const chart = React.useMemo(() => {
-    const rows = traffic?.server ?? [];
-    return rows.map((r) => ({
-      ts: r.ts,
-      down: Math.round(r.down / 30),
-      up: Math.round(r.up / 30),
-    }));
-  }, [traffic]);
-
-  const speed = React.useMemo(() => {
-    if (chart.length === 0) return { up: 0, down: 0, peak: 0, avgUp: 0, avgDown: 0 };
-    const last = chart[chart.length - 1];
-    const peak = Math.max(...chart.map((c) => Math.max(c.up, c.down)));
-    const avgUp = chart.reduce((s, c) => s + c.up, 0) / chart.length;
-    const avgDown = chart.reduce((s, c) => s + c.down, 0) / chart.length;
-    return { up: last.up, down: last.down, peak, avgUp, avgDown };
-  }, [chart]);
-
-  const totals = React.useMemo(() => {
-    const rows = traffic?.inbounds ?? [];
-    return rows.reduce(
-      (acc, r) => ({ up: acc.up + r.up, down: acc.down + r.down }),
-      { up: 0, down: 0 },
-    );
-  }, [traffic]);
-
   const onExport = () => {
     window.open(exportBackupUrl(), "_blank");
     toast.push("success", "Backup export started");
@@ -166,14 +130,20 @@ export default function DashboardPage() {
           <h1 className="font-heading text-3xl">Dashboard</h1>
           <p className="text-sm font-base text-text/60">Live system metrics and maintenance</p>
         </div>
-        <Badge variant={s?.xray.running ? "success" : "danger"} className="gap-1">
-          {s?.xray.running ? (
-            <CircleCheck className="h-3.5 w-3.5" />
-          ) : (
-            <CircleX className="h-3.5 w-3.5" />
-          )}
-          Xray {s?.xray.version} · {s?.xray.running ? "running" : "stopped"}
-        </Badge>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="neutral" className="gap-1">
+            <Clock className="h-3.5 w-3.5" />
+            Uptime {formatUptime(s?.uptime ?? 0)}
+          </Badge>
+          <Badge variant={s?.xray.running ? "success" : "danger"} className="gap-1">
+            {s?.xray.running ? (
+              <CircleCheck className="h-3.5 w-3.5" />
+            ) : (
+              <CircleX className="h-3.5 w-3.5" />
+            )}
+            Xray {s?.xray.version} · {s?.xray.running ? "running" : "stopped"}
+          </Badge>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -211,144 +181,57 @@ export default function DashboardPage() {
         />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <ArrowDownUp className="h-5 w-5 text-main" />
-              <CardTitle>Overall Speed</CardTitle>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <RouterIcon className="h-5 w-5 text-main" />
+            <CardTitle>Traffic per inbound</CardTitle>
+          </div>
+          <CardDescription>Total data used by each inbound</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-3 sm:grid-cols-2">
+          {(traffic?.inbounds ?? []).length === 0 && (
+            <div className="col-span-full py-8 text-center text-sm text-text/40">
+              No traffic recorded yet.
             </div>
-            <CardDescription>
-              Live upload / download · peak {formatBytes(speed.peak)}/s
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="mb-3 grid grid-cols-2 gap-3">
-              <div className="rounded-base border-2 border-border bg-bg/40 p-3 text-center">
-                <div className="text-[10px] uppercase tracking-widest text-text/50">Upload</div>
-                <div className="font-heading text-lg text-sky-400">
-                  {formatBytes(speed.up)}/s
-                </div>
-              </div>
-              <div className="rounded-base border-2 border-border bg-bg/40 p-3 text-center">
-                <div className="text-[10px] uppercase tracking-widest text-text/50">Download</div>
-                <div className="font-heading text-lg text-lime-500">
-                  {formatBytes(speed.down)}/s
-                </div>
-              </div>
-            </div>
-            <div className="h-[160px] w-full">
-              {chart.length >= 2 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={chart} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="dl" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#a3e635" stopOpacity={0.7} />
-                        <stop offset="100%" stopColor="#a3e635" stopOpacity={0.05} />
-                      </linearGradient>
-                      <linearGradient id="ul" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#7dd3fc" stopOpacity={0.7} />
-                        <stop offset="100%" stopColor="#7dd3fc" stopOpacity={0.05} />
-                      </linearGradient>
-                    </defs>
-                    <XAxis dataKey="ts" hide />
-                    <YAxis hide />
-                    <RTooltip
-                      formatter={(v: number, name) => [
-                        `${formatBytes(v)}/s`,
-                        name === "down" ? "Download" : "Upload",
-                      ]}
-                      labelFormatter={(l: number) =>
-                        new Date(l).toLocaleTimeString(undefined, {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          second: "2-digit",
-                        })
-                      }
-                      contentStyle={{
-                        border: "2px solid #000",
-                        borderRadius: 8,
-                        background: "#fff",
-                        color: "#000",
-                        fontWeight: 600,
-                      }}
-                    />
-                    <Area type="monotone" dataKey="down" stroke="#000" strokeWidth={2} fill="url(#dl)" />
-                    <Area type="monotone" dataKey="up" stroke="#000" strokeWidth={2} fill="url(#ul)" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="flex h-full items-center justify-center text-center text-xs font-base text-text/40">
-                  Collecting traffic data…
-                </div>
-              )}
-            </div>
-            <div className="mt-3 flex items-center justify-between border-t-2 border-border/30 pt-3 text-xs font-base text-text/60">
-              <span>Total sent: <span className="font-heading text-sky-400">{formatBytes(totals.up)}</span></span>
-              <span>Total received: <span className="font-heading text-lime-500">{formatBytes(totals.down)}</span></span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <RouterIcon className="h-5 w-5 text-main" />
-              <CardTitle>Traffic per inbound</CardTitle>
-            </div>
-            <CardDescription>Total data used by each inbound</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {(traffic?.inbounds ?? []).length === 0 && (
-              <div className="py-8 text-center text-sm text-text/40">No traffic recorded yet.</div>
-            )}
-            {(traffic?.inbounds ?? []).map((ib) => (
+          )}
+          {(traffic?.inbounds ?? []).map((ib) => {
+            const total = ib.up + ib.down;
+            const maxTotal = Math.max(
+              ...(traffic?.inbounds ?? []).map((x) => x.up + x.down),
+              1,
+            );
+            const pctBar = Math.min(100, (total / maxTotal) * 100);
+            return (
               <div
                 key={ib.inbound_tag}
-                className="flex items-center justify-between gap-3 rounded-base border-2 border-border bg-bg/40 p-3"
+                className="rounded-base border-2 border-border bg-bg/40 p-4"
               >
-                <div className="flex min-w-0 items-center gap-2">
-                  <span
-                    className="h-3 w-3 shrink-0 rounded-full border-2 border-border"
-                    style={{ background: inboundColor(ib.inbound_tag) }}
-                  />
-                  <span className="truncate font-heading text-sm">{ib.inbound_tag}</span>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span
+                      className="h-3.5 w-3.5 shrink-0 rounded-full border-2 border-border"
+                      style={{ background: inboundColor(ib.inbound_tag) }}
+                    />
+                    <span className="truncate font-heading text-sm">{ib.inbound_tag}</span>
+                  </div>
+                  <span className="shrink-0 font-heading text-sm">{formatBytes(total)}</span>
                 </div>
-                <div className="flex shrink-0 items-center gap-3 text-xs font-base">
+                <div className="mt-3 h-2 w-full overflow-hidden rounded-full border-2 border-border bg-bw">
+                  <div
+                    className="h-full rounded-full"
+                    style={{ width: `${pctBar}%`, background: inboundColor(ib.inbound_tag) }}
+                  />
+                </div>
+                <div className="mt-2 flex items-center justify-between text-xs font-base">
                   <span className="text-lime-500">↓ {formatBytes(ib.down)}</span>
                   <span className="text-sky-400">↑ {formatBytes(ib.up)}</span>
-                  <span className="font-heading text-text/80">{formatBytes(ib.up + ib.down)}</span>
                 </div>
               </div>
-            ))}
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Card>
-          <CardContent className="flex items-center gap-4 p-5">
-            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-base border-2 border-border bg-main">
-              <Clock className="h-6 w-6 text-black" />
-            </div>
-            <div>
-              <div className="text-[10px] uppercase tracking-widest text-text/50">Xray uptime</div>
-              <div className="font-heading text-2xl">{formatUptime(s?.xray.uptime ?? 0)}</div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center gap-4 p-5">
-            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-base border-2 border-border bg-sky-300">
-              <Server className="h-6 w-6 text-black" />
-            </div>
-            <div>
-              <div className="text-[10px] uppercase tracking-widest text-text/50">System uptime</div>
-              <div className="font-heading text-2xl">{formatUptime(s?.uptime ?? 0)}</div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            );
+          })}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
@@ -359,8 +242,8 @@ export default function DashboardPage() {
           <CardDescription>Export or import users and inbounds.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
-            <Button onClick={onExport} className="w-full sm:w-auto">
+          <div className="grid grid-cols-2 gap-3">
+            <Button onClick={onExport} className="w-full">
               <Download className="h-4 w-4" />
               Export
             </Button>
@@ -368,7 +251,7 @@ export default function DashboardPage() {
               variant="neutral"
               onClick={onImportClick}
               disabled={importing}
-              className="w-full sm:w-auto"
+              className="w-full"
             >
               <Upload className="h-4 w-4" />
               {importing ? "Importing..." : "Import"}
