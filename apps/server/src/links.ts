@@ -62,6 +62,7 @@ function trojanLink(ctx: LinkContext): string {
 
 function vmessLink(ctx: LinkContext): string {
   const { user, inbound, host } = ctx;
+  const isXhttp = inbound.transport === "xhttp";
   const obj = {
     v: "2",
     ps: label(inbound),
@@ -70,13 +71,13 @@ function vmessLink(ctx: LinkContext): string {
     id: user.uuid,
     aid: "0",
     scy: "auto",
-    net: inbound.transport === "xhttp" ? "xhttp" : inbound.transport,
+    net: isXhttp ? "xhttp" : inbound.transport,
     type: "none",
     host,
     path: inbound.path,
     tls: "tls",
     sni: host,
-    alpn: user.alpn || "",
+    alpn: isXhttp ? "h2,http/1.1" : "http/1.1",
     fp: user.fingerprint || "chrome",
   };
   return "vmess://" + Buffer.from(JSON.stringify(obj)).toString("base64");

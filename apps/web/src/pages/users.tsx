@@ -456,27 +456,34 @@ export default function UsersPage() {
                       formatBytes(Math.max(0, u.data_limit - u.total))
                     )}
                   </div>
-                  <div className="text-[10px] uppercase tracking-widest text-text/50">{t("remaining")}</div>
+                  <div className="truncate px-1 text-[10px] uppercase tracking-widest text-text/50">
+                    {t("remaining")}
+                  </div>
                 </div>
                 <div className="rounded-base border-2 border-border bg-bg/40 py-2">
                   <div className="flex items-center justify-center gap-1 font-heading text-sm">
                     {u.expire_at ? relativeTime(u.expire_at) : <InfinityIcon className="h-4 w-4" />}
                   </div>
-                  <div className="text-[10px] uppercase tracking-widest text-text/50">{t("expires")}</div>
+                  <div className="truncate px-1 text-[10px] uppercase tracking-widest text-text/50">
+                    {t("expires")}
+                  </div>
                 </div>
               </div>
 
               <div className="grid grid-cols-3 gap-2">
                 <Button variant="neutral" onClick={() => openEdit(u)} className="w-full">
-                  <Pencil className="h-4 w-4" />{t("edit")}
+                  <Pencil className="h-4 w-4 shrink-0" />
+                  <span className="truncate">{t("edit")}</span>
                 </Button>
                 <Button variant="neutral" onClick={() => copySubLink(u)} className="w-full">
-                  <Link2 className="h-4 w-4" />{t("copy")}
+                  <Link2 className="h-4 w-4 shrink-0" />
+                  <span className="truncate">{t("copy")}</span>
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="neutral" className="w-full">
-                      <MoreVertical className="h-4 w-4" />{t("more")}
+                      <MoreVertical className="h-4 w-4 shrink-0" />
+                      <span className="truncate">{t("more")}</span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">

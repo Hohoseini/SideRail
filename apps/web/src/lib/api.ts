@@ -88,6 +88,7 @@ export const api = {
     }),
   importBackup: (data: unknown) =>
     request("/api/backup/import", { method: "POST", body: JSON.stringify(data) }),
+  restartXray: () => request("/api/system/restart-xray", { method: "POST" }),
   admins: () =>
     request<{ admins: import("./types").AdminInfo[]; permissions: string[] }>("/api/admins"),
   createAdmin: (payload: {

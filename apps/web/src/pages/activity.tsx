@@ -100,6 +100,8 @@ export default function ActivityPage() {
                 };
                 const Icon = meta.icon;
                 const label = meta.labelKey ? t(meta.labelKey as never) : e.action;
+                const detail =
+                  e.detail === "panel initialized" ? t("detailPanelInit" as never) : e.detail;
                 return (
                   <li key={e.id} className="flex items-start gap-3 px-4 py-3 sm:items-center sm:gap-4 sm:px-5 sm:py-3.5">
                     <div className="grid h-9 w-9 shrink-0 place-items-center rounded-base border-2 border-border bg-bg sm:h-10 sm:w-10">
@@ -108,9 +110,9 @@ export default function ActivityPage() {
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="font-heading text-sm sm:text-base">{label}</span>
-                        {e.detail && (
+                        {detail && (
                           <Badge variant={meta.color as never} className="max-w-full truncate text-[10px]">
-                            {e.detail}
+                            {detail}
                           </Badge>
                         )}
                       </div>

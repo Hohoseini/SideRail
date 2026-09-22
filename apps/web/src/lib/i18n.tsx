@@ -39,6 +39,8 @@ const en = {
   importBackupDesc: "Restore from a JSON file",
   importing: "Importing…",
   importWarning: "Importing replaces all existing users and inbounds. Xray restarts automatically.",
+  restartXray: "Restart Xray",
+  xrayRestarted: "Xray is restarting",
   backupExportStarted: "Backup export started",
   backupImported: "Backup imported successfully",
   invalidBackup: "Invalid backup file",
@@ -264,6 +266,7 @@ const en = {
   actRoutingDelete: "Removed block rule",
   actBotUpdate: "Updated bot",
   actBotTest: "Tested bot",
+  detailPanelInit: "panel initialized",
 
   // welcome dialog
   welcomeTitle: "Welcome to SideRail",
@@ -318,6 +321,8 @@ const ru: Dict = {
   importing: "Импорт…",
   importWarning:
     "Импорт заменяет всех текущих пользователей и входящие. Xray перезапустится автоматически.",
+  restartXray: "Перезапустить Xray",
+  xrayRestarted: "Xray перезапускается",
   backupExportStarted: "Экспорт копии запущен",
   backupImported: "Копия успешно импортирована",
   invalidBackup: "Неверный файл копии",
@@ -534,6 +539,7 @@ const ru: Dict = {
   actRoutingDelete: "Правило удалено",
   actBotUpdate: "Бот обновлён",
   actBotTest: "Бот проверен",
+  detailPanelInit: "панель инициализирована",
 
   welcomeTitle: "Добро пожаловать в SideRail",
   welcomeCrafted: "Эта панель создана с заботой автором",
@@ -583,6 +589,8 @@ const zh: Dict = {
   importBackupDesc: "从 JSON 文件恢复",
   importing: "导入中…",
   importWarning: "导入将替换所有现有用户和入站。Xray 会自动重启。",
+  restartXray: "重启 Xray",
+  xrayRestarted: "Xray 正在重启",
   backupExportStarted: "已开始导出备份",
   backupImported: "备份导入成功",
   invalidBackup: "无效的备份文件",
@@ -797,6 +805,7 @@ const zh: Dict = {
   actRoutingDelete: "删除了屏蔽规则",
   actBotUpdate: "更新了机器人",
   actBotTest: "测试了机器人",
+  detailPanelInit: "面板已初始化",
 
   welcomeTitle: "欢迎使用 SideRail",
   welcomeCrafted: "此面板由以下作者精心打造",

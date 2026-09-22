@@ -142,6 +142,12 @@ api.get("/system", requirePermission("dashboard"), (_req, res) => {
   res.json(getSystemStats());
 });
 
+api.post("/system/restart-xray", requirePermission("dashboard"), (req: AuthedRequest, res) => {
+  restartXray();
+  logActivity(req.admin!.username, "xray_restart", "");
+  res.json({ ok: true });
+});
+
 api.get("/inbounds", (_req, res) => {
   res.json(listInbounds());
 });

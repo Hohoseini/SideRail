@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import {
   Cpu,
   MemoryStick,
@@ -10,11 +10,13 @@ import {
   Activity,
   CircleCheck,
   CircleX,
+  RotateCw,
 } from "lucide-react";
 import { api, exportBackupUrl } from "@/lib/api";
-import { formatBytes, pct } from "@/lib/utils";
+import { formatBytes, pct, cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/toast";
 import { useI18n } from "@/lib/i18n";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -81,6 +83,12 @@ export default function DashboardPage() {
 
   const s = data;
 
+  const restartMut = useMutation({
+    mutationFn: () => api.restartXray(),
+    onSuccess: () => toast.push("success", t("xrayRestarted")),
+    onError: (e: Error) => toast.push("error", e.message),
+  });
+
   const onExport = () => {
     window.open(exportBackupUrl(), "_blank");
     toast.push("success", t("backupExportStarted"));
@@ -121,6 +129,15 @@ export default function DashboardPage() {
             )}
             Xray {s?.xray.version} · {s?.xray.running ? t("running") : t("stopped")}
           </Badge>
+          <Button
+            variant="neutral"
+            size="sm"
+            onClick={() => restartMut.mutate()}
+            disabled={restartMut.isPending}
+          >
+            <RotateCw className={cn("h-4 w-4", restartMut.isPending && "animate-spin")} />
+            {t("restartXray")}
+          </Button>
         </div>
       </div>
 
