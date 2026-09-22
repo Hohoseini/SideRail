@@ -10,10 +10,9 @@ import {
   Activity,
   CircleCheck,
   CircleX,
-  Clock,
 } from "lucide-react";
 import { api, exportBackupUrl } from "@/lib/api";
-import { formatBytes, pct, formatUptime } from "@/lib/utils";
+import { formatBytes, pct } from "@/lib/utils";
 import { useToast } from "@/components/ui/toast";
 import { useI18n } from "@/lib/i18n";
 import {
@@ -114,10 +113,6 @@ export default function DashboardPage() {
           <p className="text-sm font-base text-text/60">{t("liveMetrics")}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="neutral" className="gap-1">
-            <Clock className="h-3.5 w-3.5" />
-            {t("uptime")} {formatUptime(s?.uptime ?? 0)}
-          </Badge>
           <Badge variant={s?.xray.running ? "success" : "danger"} className="gap-1">
             {s?.xray.running ? (
               <CircleCheck className="h-3.5 w-3.5" />

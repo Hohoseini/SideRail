@@ -28,11 +28,13 @@ function commonQuery(ctx: LinkContext): Record<string, string> {
     host,
     fp: user.fingerprint || "chrome",
   };
-  if (user.alpn) q.alpn = user.alpn;
   q.type = inbound.transport === "xhttp" ? "xhttp" : inbound.transport;
   q.path = inbound.path;
   if (inbound.transport === "ws" || inbound.transport === "httpupgrade") {
+    q.alpn = "http/1.1";
     q.headerType = "none";
+  } else {
+    q.alpn = user.alpn || "h2,http/1.1";
   }
   return q;
 }

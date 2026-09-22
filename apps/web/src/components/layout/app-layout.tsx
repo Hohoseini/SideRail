@@ -152,6 +152,21 @@ export function AppLayout() {
               <Tag className="h-5 w-5" />{t("version")}</span>
             <span className="text-xs text-text/60">v{PANEL_VERSION}</span>
           </a>
+          <div className="mb-3 flex items-center gap-1 rounded-base border-2 border-border bg-bg/50 p-1">
+            <Languages className="ml-1 h-4 w-4 shrink-0 text-text/50" />
+            {LANGUAGES.map((l) => (
+              <button
+                key={l.code}
+                onClick={() => setLang(l.code)}
+                className={cn(
+                  "flex-1 rounded-[4px] px-1 py-1.5 text-xs font-heading transition-colors",
+                  lang === l.code ? "bg-main text-mtext" : "hover:bg-main/15",
+                )}
+              >
+                {l.label}
+              </button>
+            ))}
+          </div>
           <SidebarFooter username={username} role={admin?.role} onLogout={logout} />
         </aside>
 
@@ -309,6 +324,21 @@ export function AppLayout() {
                   <Tag className="h-5 w-5" />{t("version")}</span>
                 <span className="text-xs text-text/60">v{PANEL_VERSION}</span>
               </a>
+              <div className="mb-3 flex items-center gap-1 rounded-base border-2 border-border bg-bg/50 p-1">
+                <Languages className="ml-1 h-4 w-4 shrink-0 text-text/50" />
+                {LANGUAGES.map((l) => (
+                  <button
+                    key={l.code}
+                    onClick={() => setLang(l.code)}
+                    className={cn(
+                      "flex-1 rounded-[4px] px-1 py-1.5 text-xs font-heading transition-colors",
+                      lang === l.code ? "bg-main text-mtext" : "hover:bg-main/15",
+                    )}
+                  >
+                    {l.label}
+                  </button>
+                ))}
+              </div>
               <SidebarFooter username={username} role={admin?.role} onLogout={logout} />
             </div>
           </div>
