@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Heart, Star, ShieldAlert, Github } from "lucide-react";
+import { Heart, Star, ShieldAlert, Github, Send } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { RailLogo } from "@/components/rail-logo";
 import { useGitHubStars } from "@/components/github-button";
 import { useI18n } from "@/lib/i18n";
-import { GITHUB_URL } from "@/lib/brand";
+import { GITHUB_URL, TELEGRAM_URL } from "@/lib/brand";
 
 const STORAGE_KEY = "sr_welcome_seen_session";
 
@@ -76,6 +76,17 @@ export function WelcomeDialog() {
               <Star className="h-3 w-3" fill="currentColor" />
               {stars ?? 0}
             </span>
+          </a>
+
+          <a
+            href={TELEGRAM_URL}
+            target="_blank"
+            rel="noreferrer"
+            onClick={close}
+            className="flex items-center justify-center gap-2 rounded-base border-2 border-border bg-bw px-3 py-2.5 font-heading text-sm text-text transition-all hover:bg-main hover:text-mtext hover:neo-shadow"
+          >
+            <Send className="h-5 w-5" />
+            Telegram
           </a>
 
           <Button variant="neutral" className="w-full" onClick={close}>

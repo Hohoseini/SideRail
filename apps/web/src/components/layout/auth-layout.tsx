@@ -1,10 +1,10 @@
 import * as React from "react";
-import { Github, Star, Tag, Languages } from "lucide-react";
+import { Github, Star, Tag, Languages, Send } from "lucide-react";
 import { RailLogo } from "@/components/rail-logo";
 import { useGitHubStars } from "@/components/github-button";
 import { useToast } from "@/components/ui/toast";
 import { useI18n, LANGUAGES, type Lang } from "@/lib/i18n";
-import { GITHUB_URL, GITHUB_REPO, PANEL_VERSION } from "@/lib/brand";
+import { GITHUB_URL, GITHUB_REPO, TELEGRAM_URL, PANEL_VERSION } from "@/lib/brand";
 import { cn } from "@/lib/utils";
 
 /**
@@ -122,10 +122,19 @@ export function AuthShell({
                   </span>
                 </a>
                 <a
-                  href={`${GITHUB_URL}/releases`}
+                  href={TELEGRAM_URL}
                   target="_blank"
                   rel="noreferrer"
                   className="flex items-center justify-center gap-1.5 rounded-base border-2 border-border bg-bw px-3 py-2 font-heading text-xs text-text/80 transition-all hover:-translate-y-0.5 hover:bg-main hover:text-mtext hover:neo-shadow"
+                >
+                  <Send className="h-4 w-4 shrink-0" />
+                  <span className="truncate">Telegram</span>
+                </a>
+                <a
+                  href={`${GITHUB_URL}/releases`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="col-span-2 flex items-center justify-center gap-1.5 rounded-base border-2 border-border bg-bw px-3 py-2 font-heading text-xs text-text/80 transition-all hover:-translate-y-0.5 hover:bg-main hover:text-mtext hover:neo-shadow"
                 >
                   <Tag className="h-4 w-4 shrink-0" />
                   <span className="truncate">v{PANEL_VERSION}</span>

@@ -22,8 +22,8 @@ import { GitHubButton, useGitHubStars } from "@/components/github-button";
 import { VersionBadge } from "@/components/version-badge";
 import { WelcomeDialog } from "@/components/welcome-dialog";
 import { useToast } from "@/components/ui/toast";
-import { PANEL_VERSION } from "@/lib/brand";
-import { Star, Tag } from "lucide-react";
+import { PANEL_VERSION, TELEGRAM_URL } from "@/lib/brand";
+import { Star, Tag, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RailLogo } from "@/components/rail-logo";
 import { AnimatedBackground } from "@/components/animated-background";
@@ -154,6 +154,15 @@ export function AppLayout() {
             <StarCount />
           </a>
           <a
+            href={TELEGRAM_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="mb-2 flex items-center justify-between gap-2 rounded-base border-2 border-border bg-bg/50 px-3 py-2.5 font-heading text-sm text-text/80 transition-all hover:bg-main hover:text-mtext hover:neo-shadow"
+          >
+            <span className="flex items-center gap-2">
+              <Send className="h-5 w-5" />Telegram</span>
+          </a>
+          <a
             href={`${GITHUB_URL}/releases`}
             target="_blank"
             rel="noreferrer"
@@ -260,6 +269,17 @@ export function AppLayout() {
                         <Tag className="h-4 w-4" />{t("version")}</span>
                       <span className="text-xs font-heading text-text/60">v{PANEL_VERSION}</span>
                     </a>
+                    <a
+                      href={TELEGRAM_URL}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center justify-between gap-2 rounded-[4px] px-2 py-2 text-sm font-base transition-colors hover:bg-main/15"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Send className="h-4 w-4" />
+                        Telegram
+                      </span>
+                    </a>
                     <div className="border-t-2 border-border/30 px-2 pb-1 pt-2">
                       <div className="mb-1 flex items-center gap-2 text-[10px] uppercase tracking-widest text-text/40">
                         <Languages className="h-3.5 w-3.5" />
@@ -324,6 +344,15 @@ export function AppLayout() {
                 <span className="flex items-center gap-2">
                   <Github className="h-5 w-5" />GitHub</span>
                 <StarCount />
+              </a>
+              <a
+                href={TELEGRAM_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="mb-2 flex items-center justify-between gap-2 rounded-base border-2 border-border bg-bg/50 px-3 py-2.5 font-heading text-sm text-text/80 transition-all hover:bg-main hover:text-mtext"
+              >
+                <span className="flex items-center gap-2">
+                  <Send className="h-5 w-5" />Telegram</span>
               </a>
               <a
                 href={`${GITHUB_URL}/releases`}
