@@ -1,5 +1,5 @@
 import * as React from "react";
-import { api } from "@/lib/api";
+import { api, AUTH_EXPIRED_EVENT } from "@/lib/api";
 import type { AdminInfo, Permission } from "@/lib/types";
 
 interface AuthState {
@@ -54,6 +54,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
     void refresh();
   }, [refresh]);
+
+  // When any API call returns 401 (e.g. another session changed the password
+  // and invalidated our token), drop back to the login screen automatically.
+  React.useEffect(() => {
+    const onExpired = () => {
+      setAuthed(false);
+      setAdmin(null);
+    };
+    window.addEventListener(AUTH_EXPIRED_EVENT, onExpired);
+    return () => window.removeEventListener(AUTH_EXPIRED_EVENT, onExpired);
+  }, []);
 
   const login = React.useCallback(
     async (u: string, p: string) => {

@@ -2,6 +2,21 @@ export interface ApiError {
   error: string;
 }
 
+/** Fires when any authenticated request comes back 401 so the app can log out. */
+export const AUTH_EXPIRED_EVENT = "sr:auth-expired";
+
+let notifiedExpired = false;
+
+function signalAuthExpired(): void {
+  if (notifiedExpired) return;
+  notifiedExpired = true;
+  window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT));
+  // allow future signals once the app has had a chance to react
+  setTimeout(() => {
+    notifiedExpired = false;
+  }, 3000);
+}
+
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, {
     ...init,
@@ -12,6 +27,9 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
     credentials: "include",
   });
   if (!res.ok) {
+    if (res.status === 401 && !url.includes("/api/login") && !url.includes("/api/status")) {
+      signalAuthExpired();
+    }
     let message = res.statusText;
     try {
       const body = (await res.json()) as ApiError;
