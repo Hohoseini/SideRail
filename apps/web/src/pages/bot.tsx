@@ -63,7 +63,7 @@ export default function BotPage() {
         </p>
       </div>
 
-      <Card className="mx-auto w-full max-w-3xl">
+      <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
             <Bot className="h-5 w-5 text-main" />
