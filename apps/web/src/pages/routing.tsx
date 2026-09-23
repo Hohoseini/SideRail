@@ -176,37 +176,37 @@ export default function RoutingPage() {
             {rules.map((r) => (
               <div
                 key={r.id}
-                className="flex items-start justify-between gap-3 rounded-base border-2 border-border bg-bg/40 p-3"
+                className="rounded-base border-2 border-border bg-bg/40 p-3"
               >
-                <div className="flex min-w-0 flex-1 items-start gap-3">
+                <div className="flex items-center gap-3">
                   <div className="grid h-9 w-9 shrink-0 place-items-center rounded-base border-2 border-border bg-red-300">
                     <Globe className="h-4 w-4 text-black" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="truncate font-heading">{r.label || r.domain}</div>
-                    <div className="mt-1.5 grid grid-cols-2 gap-1 sm:grid-cols-3">
-                      {(r.inbound_ids.length === 0 ? inbounds.map((i) => i.id) : r.inbound_ids).map(
-                        (id) => (
-                          <Badge
-                            key={id}
-                            variant="neutral"
-                            className="justify-center truncate text-[10px]"
-                          >
-                            {inboundName(id)}
-                          </Badge>
-                        ),
-                      )}
-                    </div>
                   </div>
+                  <Button
+                    variant="danger"
+                    size="icon"
+                    className="h-9 w-9 shrink-0"
+                    onClick={() => deleteMut.mutate(r.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
-                <Button
-                  variant="danger"
-                  size="icon"
-                  className="h-9 w-9 shrink-0"
-                  onClick={() => deleteMut.mutate(r.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <div className="mt-2.5 flex flex-wrap gap-1.5">
+                  {(r.inbound_ids.length === 0 ? inbounds.map((i) => i.id) : r.inbound_ids).map(
+                    (id) => (
+                      <Badge
+                        key={id}
+                        variant="neutral"
+                        className="max-w-full truncate text-[10px]"
+                      >
+                        {inboundName(id)}
+                      </Badge>
+                    ),
+                  )}
+                </div>
               </div>
             ))}
           </CardContent>
