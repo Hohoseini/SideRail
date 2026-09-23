@@ -50,9 +50,12 @@ export default function InboundsPage() {
         </Badge>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="flex flex-wrap gap-3">
         {inbounds.map((ib) => (
-          <Card key={ib.id} className="overflow-hidden transition-transform hover:-translate-y-0.5">
+          <Card
+            key={ib.id}
+            className="min-w-[calc(50%-0.375rem)] flex-1 overflow-hidden transition-transform hover:-translate-y-0.5 sm:min-w-[calc(33.333%-0.5rem)] lg:min-w-[280px]"
+          >
             <CardContent className="p-4">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex min-w-0 items-center gap-2">

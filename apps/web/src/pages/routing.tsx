@@ -132,7 +132,7 @@ export default function RoutingPage() {
                     {selected.length === inbounds.length ? t("clearAll") : t("selectAll")}
                   </button>
                 </div>
-                <div className="grid grid-cols-2 gap-1.5">
+                <div className="flex flex-wrap gap-2">
                   {inbounds.map((ib) => {
                     const active = selected.includes(ib.id);
                     return (
@@ -141,7 +141,7 @@ export default function RoutingPage() {
                         type="button"
                         onClick={() => toggle(ib.id)}
                         className={cn(
-                          "rounded-base border-2 border-border px-2.5 py-1.5 text-left text-xs font-heading transition-all",
+                          "min-w-[calc(50%-0.25rem)] flex-1 rounded-base border-2 border-border px-3 py-2 text-center text-xs font-heading transition-all sm:min-w-[calc(33.333%-0.5rem)]",
                           active ? "bg-main text-mtext neo-shadow" : "bg-bw hover:bg-main/10",
                         )}
                       >
