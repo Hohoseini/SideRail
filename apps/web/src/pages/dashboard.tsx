@@ -157,19 +157,19 @@ export default function DashboardPage() {
                   <div className="text-[10px] uppercase tracking-widest text-text/50">
                     {t("serverIp")}
                   </div>
-                  <div className="truncate font-heading">{s.ip.address || "—"}</div>
+                  <div className="truncate font-heading">{s.ip.address || t("unknown")}</div>
                 </div>
                 <div className="min-w-0">
                   <div className="text-[10px] uppercase tracking-widest text-text/50">
                     {t("location")}
                   </div>
-                  <div className="truncate font-heading">{s.ip.location || "—"}</div>
+                  <div className="truncate font-heading">{s.ip.location || t("unknown")}</div>
                 </div>
                 <div className="min-w-0">
                   <div className="text-[10px] uppercase tracking-widest text-text/50">
                     {t("isp")}
                   </div>
-                  <div className="truncate font-heading">{s.ip.isp || "—"}</div>
+                  <div className="truncate font-heading">{s.ip.isp || t("unknown")}</div>
                 </div>
               </div>
             </div>
