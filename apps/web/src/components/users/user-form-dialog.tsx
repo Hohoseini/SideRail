@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Dice5, KeyRound, ChevronDown, Settings2, Globe, ShieldCheck } from "lucide-react";
+import { Dice5, KeyRound, ChevronDown, Settings2, Globe } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { NumberInput } from "@/components/ui/number-input";
-import { MultiCombobox, type ComboItem } from "@/components/ui/combobox";
 import {
   Select,
   SelectContent,
@@ -104,20 +103,8 @@ export function UserFormDialog({
   const [trafficReset, setTrafficReset] = React.useState<TrafficReset>("never");
   const [comment, setComment] = React.useState("");
   const [inboundIds, setInboundIds] = React.useState<number[]>([]);
-  const [cleanAddresses, setCleanAddresses] = React.useState<string[]>([]);
   const [showAdvanced, setShowAdvanced] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
-
-  const { data: cleanPresets = [] } = useQuery({
-    queryKey: ["clean-addresses"],
-    queryFn: api.cleanAddresses,
-    staleTime: 60 * 60 * 1000,
-  });
-  const cleanItems: ComboItem[] = React.useMemo(
-    () => cleanPresets.map((p) => ({ value: p.value, label: p.label, group: "Cloudflare" })),
-    [cleanPresets],
-  );
-  const cleanLabels = React.useRef<Record<string, string>>({});
 
   React.useEffect(() => {
     if (!open) return;
@@ -138,7 +125,6 @@ export function UserFormDialog({
       setTrafficReset(editing.traffic_reset);
       setComment(editing.comment);
       setInboundIds(editing.inbound_ids);
-      setCleanAddresses(editing.clean_address_list || []);
     } else {
       setEmail("");
       setUuid(crypto.randomUUID());
@@ -151,7 +137,6 @@ export function UserFormDialog({
       setTrafficReset("never");
       setComment("");
       setInboundIds(inbounds.filter((i) => i.enabled).map((i) => i.id));
-      setCleanAddresses([]);
     }
   }, [open, editing, inbounds]);
 
@@ -185,7 +170,6 @@ export function UserFormDialog({
         trafficReset,
         comment,
         inboundIds,
-        cleanAddresses,
       });
     } finally {
       setSaving(false);
@@ -276,26 +260,6 @@ export function UserFormDialog({
             {allSelected && (
               <p className="text-[11px] text-text/50">{t("allInboundsAttached")}</p>
             )}
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-main" />
-              <Label>{t("cleanAddresses")}</Label>
-              {cleanAddresses.length > 0 && (
-                <Badge variant="info" className="text-[10px]">
-                  {cleanAddresses.length}
-                </Badge>
-              )}
-            </div>
-            <MultiCombobox
-              items={cleanItems}
-              selected={cleanAddresses}
-              onChange={setCleanAddresses}
-              labels={cleanLabels.current}
-              placeholder={t("cleanAddressesPlaceholder")}
-            />
-            <p className="text-[11px] text-text/50">{t("cleanAddressesHint")}</p>
           </div>
 
           {editing && <ConnectedIps userId={editing.id} />}

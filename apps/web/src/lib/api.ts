@@ -41,8 +41,6 @@ export const api = {
   me: () => request<{ admin: import("./types").AdminInfo }>("/api/me"),
   system: () => request<import("./types").SystemStats>("/api/system"),
   inbounds: () => request<import("./types").Inbound[]>("/api/inbounds"),
-  cleanAddresses: () =>
-    request<import("./types").CleanAddressPreset[]>("/api/clean-addresses"),
   toggleInbound: (id: number, enabled: boolean) =>
     request(`/api/inbounds/${id}`, {
       method: "PATCH",

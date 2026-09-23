@@ -1,9 +1,7 @@
 import type { Inbound, UserWithInbounds } from "./types.js";
 import { getSetting } from "./db.js";
 
-function cleanAddr(host: string, user: UserWithInbounds): string {
-  const list = (user.clean_address_list || []).map((a) => a.trim()).filter(Boolean);
-  if (list.length > 0) return list[Math.floor(Math.random() * list.length)];
+function cleanAddr(host: string): string {
   const clean = (getSetting("clean_address") || "").trim();
   return clean || host;
 }
@@ -20,7 +18,7 @@ function net(inbound: Inbound): string {
 
 function clashProxy(ctx: Ctx): Record<string, unknown> | null {
   const { user, inbound, host } = ctx;
-  const addr = cleanAddr(host, user);
+  const addr = cleanAddr(host);
   const name = `${inbound.tag}`;
   const alpn = user.alpn ? user.alpn.split(",").map((a) => a.trim()) : undefined;
   const wsOpts = {
@@ -112,7 +110,7 @@ export function buildClashConfig(
 
 function singboxOutbound(ctx: Ctx): Record<string, unknown> | null {
   const { user, inbound, host } = ctx;
-  const addr = cleanAddr(host, user);
+  const addr = cleanAddr(host);
   const tag = inbound.tag;
   const tls = {
     enabled: true,

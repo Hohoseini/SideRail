@@ -50,7 +50,6 @@ export function migrate(): void {
       traffic_reset TEXT NOT NULL DEFAULT 'never',
       telegram_id TEXT NOT NULL DEFAULT '',
       comment TEXT NOT NULL DEFAULT '',
-      clean_addresses TEXT NOT NULL DEFAULT '[]',
       enabled INTEGER NOT NULL DEFAULT 1,
       up INTEGER NOT NULL DEFAULT 0,
       down INTEGER NOT NULL DEFAULT 0,
@@ -129,9 +128,6 @@ function migrateColumns(): void {
   const userCols = db.prepare("PRAGMA table_info(users)").all() as { name: string }[];
   if (!userCols.map((c) => c.name).includes("created_by")) {
     db.exec("ALTER TABLE users ADD COLUMN created_by INTEGER");
-  }
-  if (!userCols.map((c) => c.name).includes("clean_addresses")) {
-    db.exec("ALTER TABLE users ADD COLUMN clean_addresses TEXT NOT NULL DEFAULT '[]'");
   }
 
   const routingCols = db.prepare("PRAGMA table_info(routing_rules)").all() as { name: string }[];

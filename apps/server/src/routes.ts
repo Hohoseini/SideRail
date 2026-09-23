@@ -52,7 +52,6 @@ import {
   deleteRoutingRule,
 } from "./routing.js";
 import { DOMAIN_PRESETS, COUNTRY_IP_PRESETS } from "./routing-presets.js";
-import { CLEAN_ADDRESS_PRESETS } from "./clean-addresses.js";
 import { getBotConfig, saveBotConfig, testBot } from "./bot.js";
 
 export const api = Router();
@@ -82,7 +81,6 @@ const userSchema = z.object({
   telegramId: z.string().optional(),
   comment: z.string().optional(),
   inboundIds: z.array(z.number()).optional(),
-  cleanAddresses: z.array(z.string()).optional(),
 });
 
 const updateSchema = userSchema.partial().extend({ enabled: z.boolean().optional() });
@@ -160,10 +158,6 @@ api.post("/system/restart-xray", requirePermission("dashboard"), (req: AuthedReq
 
 api.get("/inbounds", (_req, res) => {
   res.json(listInbounds());
-});
-
-api.get("/clean-addresses", requirePermission("users"), (_req, res) => {
-  res.json(CLEAN_ADDRESS_PRESETS);
 });
 
 api.patch("/inbounds/:id", requirePermission("inbounds"), async (req: AuthedRequest, res) => {

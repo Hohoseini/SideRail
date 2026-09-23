@@ -30,7 +30,6 @@ export interface UserRecord {
   traffic_reset: TrafficReset;
   telegram_id: string;
   comment: string;
-  clean_addresses: string;
   enabled: number;
   up: number;
   down: number;
@@ -42,7 +41,6 @@ export interface UserRecord {
 
 export interface UserWithInbounds extends UserRecord {
   inbound_ids: number[];
-  clean_address_list: string[];
   total: number;
   online: boolean;
   creator?: string;
