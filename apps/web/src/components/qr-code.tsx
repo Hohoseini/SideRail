@@ -26,58 +26,33 @@ export function QrCode({ value, size = 180, className }: QrCodeProps) {
         const ctx = canvas.getContext("2d");
         if (ctx) {
           const c = canvas.width / 2;
-          const box = canvas.width * 0.24;
+          const box = canvas.width * 0.26;
           ctx.fillStyle = "#ffffff";
           ctx.fillRect(c - box / 2, c - box / 2, box, box);
           ctx.fillStyle = "#a3e635";
-          const r = box * 0.18;
-          const x = c - box / 2 + box * 0.1;
-          const y = c - box / 2 + box * 0.1;
-          const w = box * 0.8;
+          const r = box * 0.2;
+          const x = c - box / 2 + box * 0.08;
+          const y = c - box / 2 + box * 0.08;
+          const w = box * 0.84;
           ctx.beginPath();
           ctx.roundRect(x, y, w, w, r);
           ctx.fill();
 
-          // train logo (matches panel RailLogo)
+          // official SideRail logo (viewBox 67 15 144 144)
           ctx.save();
-          ctx.translate(c, c);
-          const s = (box * 0.62) / 24;
-          ctx.scale(s, s);
-          ctx.translate(-12, -12);
-          ctx.strokeStyle = "#0b0b0f";
+          const logoSize = box * 0.6;
+          ctx.translate(c - logoSize / 2, c - logoSize / 2);
+          const sc = logoSize / 144;
+          ctx.scale(sc, sc);
+          ctx.translate(-67, -15);
           ctx.fillStyle = "#0b0b0f";
-          ctx.lineWidth = 2;
-          ctx.lineCap = "round";
-          ctx.lineJoin = "round";
-          const rr = (x0: number, y0: number, w0: number, h0: number, rad: number) => {
-            ctx.beginPath();
-            ctx.moveTo(x0 + rad, y0);
-            ctx.arcTo(x0 + w0, y0, x0 + w0, y0 + h0, rad);
-            ctx.arcTo(x0 + w0, y0 + h0, x0, y0 + h0, rad);
-            ctx.arcTo(x0, y0 + h0, x0, y0, rad);
-            ctx.arcTo(x0, y0, x0 + w0, y0, rad);
-            ctx.closePath();
-            ctx.stroke();
-          };
-          rr(5, 3.5, 14, 14.5, 3);
-          ctx.beginPath();
-          ctx.moveTo(5, 11);
-          ctx.lineTo(19, 11);
-          ctx.stroke();
-          ctx.beginPath();
-          ctx.moveTo(9, 18);
-          ctx.lineTo(7, 21);
-          ctx.stroke();
-          ctx.beginPath();
-          ctx.moveTo(15, 18);
-          ctx.lineTo(17, 21);
-          ctx.stroke();
-          ctx.beginPath();
-          ctx.arc(9, 14.5, 1, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.beginPath();
-          ctx.arc(15, 14.5, 1, 0, Math.PI * 2);
-          ctx.fill();
+          const paths = [
+            "M204.443 116.854C193.075 141.7 168.049 158.997 138.924 158.997C90.2988 158.262 73.4029 117.029 73.3311 116.854H204.443Z",
+            "M138.924 15C178.732 15.0003 211.001 47.2522 211 87.0293C210.993 94.7072 209.756 102.334 207.332 109.62H70.835C69.9423 106.835 69.3467 104.312 69.3467 104.312H169.343C175.731 104.311 181.006 101.043 183.458 95.5635C186.122 89.6007 184.994 83.3758 181.076 77.9619C176.838 72.1086 169.728 63.8922 164.805 60.1699C155.733 53.3073 144.205 52.3 134.825 51.9873L132.133 51.8877C127.784 51.7062 126.956 51.6064 104.693 51.6064V51.6152C104.693 51.6152 85.856 51.6272 76.1846 51.6475C88.5599 29.7872 111.994 15 138.924 15Z",
+            "M177.241 91.1748C176.416 94.3667 173.877 96.9404 169.343 96.9404H67.6152C67.3529 95.0449 67.171 93.1222 67.0557 91.1748H177.241Z",
+            "M104.673 58.8369C123.768 58.8369 127.022 58.915 131.819 59.1123C146.208 59.726 156.269 57.6306 174.968 81.7881C175.485 82.4465 175.998 83.122 176.38 83.8682H67C67.1026 81.4421 67.325 79.0211 67.668 76.6172H125.163V69.3164H69.1123C69.77 66.3355 71.1219 62.6702 72.5225 58.8896C83.342 58.8608 94.4528 58.8369 104.673 58.8369Z",
+          ];
+          for (const d of paths) ctx.fill(new Path2D(d));
           ctx.restore();
         }
         if (active) setDataUrl(canvas.toDataURL("image/png"));

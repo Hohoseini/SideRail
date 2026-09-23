@@ -322,16 +322,20 @@ api.get("/settings", requirePermission("settings"), (_req, res) => {
   res.json({
     xrayVersion: getSetting("xray_version") || "",
     subTitle: getSetting("sub_title") || "SideRail",
+    cleanAddress: getSetting("clean_address") || "",
   });
 });
 
 api.put("/settings", requirePermission("settings"), (req: AuthedRequest, res) => {
-  const body = z.object({ subTitle: z.string().optional() }).safeParse(req.body);
+  const body = z
+    .object({ subTitle: z.string().optional(), cleanAddress: z.string().optional() })
+    .safeParse(req.body);
   if (!body.success) {
     res.status(400).json({ error: "invalid" });
     return;
   }
   if (body.data.subTitle !== undefined) setSetting("sub_title", body.data.subTitle);
+  if (body.data.cleanAddress !== undefined) setSetting("clean_address", body.data.cleanAddress.trim());
   logActivity(req.admin!.username, "settings_update", "");
   res.json({ ok: true });
 });

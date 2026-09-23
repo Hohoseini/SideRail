@@ -146,6 +146,12 @@ export function restartXray(): void {
   if (restartTimer) clearTimeout(restartTimer);
   restartTimer = setTimeout(() => {
     restartTimer = null;
+    // flush pending traffic counters before the process is replaced
+    try {
+      collectTraffic();
+    } catch {
+      /* noop */
+    }
     void startXray();
   }, 800);
 }

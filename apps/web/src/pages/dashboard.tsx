@@ -11,6 +11,7 @@ import {
   CircleCheck,
   CircleX,
   RotateCw,
+  Globe,
 } from "lucide-react";
 import { api, exportBackupUrl } from "@/lib/api";
 import { formatBytes, pct, cn } from "@/lib/utils";
@@ -120,26 +121,58 @@ export default function DashboardPage() {
           <h1 className="font-heading text-3xl">{t("dashboard")}</h1>
           <p className="text-sm font-base text-text/60">{t("liveMetrics")}</p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge variant={s?.xray.running ? "success" : "danger"} className="gap-1">
-            {s?.xray.running ? (
-              <CircleCheck className="h-3.5 w-3.5" />
-            ) : (
-              <CircleX className="h-3.5 w-3.5" />
-            )}
-            Xray {s?.xray.version} · {s?.xray.running ? t("running") : t("stopped")}
-          </Badge>
-          <Button
-            variant="neutral"
-            size="sm"
-            onClick={() => restartMut.mutate()}
-            disabled={restartMut.isPending}
-          >
-            <RotateCw className={cn("h-4 w-4", restartMut.isPending && "animate-spin")} />
-            {t("restartXray")}
-          </Button>
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+          <div className="flex items-center gap-2">
+            <Badge
+              variant={s?.xray.running ? "success" : "danger"}
+              className="flex-1 justify-center gap-1 sm:flex-none"
+            >
+              {s?.xray.running ? (
+                <CircleCheck className="h-3.5 w-3.5" />
+              ) : (
+                <CircleX className="h-3.5 w-3.5" />
+              )}
+              Xray · {s?.xray.running ? t("running") : t("stopped")}
+            </Badge>
+            <Button
+              variant="neutral"
+              size="sm"
+              className="shrink-0"
+              onClick={() => restartMut.mutate()}
+              disabled={restartMut.isPending}
+              title={t("restartXray")}
+            >
+              <RotateCw className={cn("h-4 w-4", restartMut.isPending && "animate-spin")} />
+            </Button>
+          </div>
         </div>
       </div>
+
+      {s?.ip.address && (
+        <Card>
+          <CardContent className="flex flex-wrap items-center gap-4 p-4">
+            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-base border-2 border-border bg-main">
+              <Globe className="h-5 w-5 text-black" />
+            </div>
+            <div className="flex flex-wrap gap-x-8 gap-y-2">
+              <div>
+                <div className="text-[10px] uppercase tracking-widest text-text/50">
+                  {t("serverIp")}
+                </div>
+                <div className="font-heading">{s.ip.address}</div>
+              </div>
+              {s.ip.location && (
+                <div>
+                  <div className="text-[10px] uppercase tracking-widest text-text/50">
+                    {t("location")}
+                  </div>
+                  <div className="font-heading">{s.ip.location}</div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard

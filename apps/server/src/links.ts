@@ -8,10 +8,12 @@
  * branding, or the embedded authorship identifiers is prohibited.
  * Watermark: sr-icubaby-2025-9f4c1a7e
  */
+import { getSetting } from "./db.js";
 import type { Inbound, UserWithInbounds } from "./types.js";
 
 interface LinkContext {
   host: string;
+  address: string;
   user: UserWithInbounds;
   inbound: Inbound;
 }
@@ -47,26 +49,26 @@ function qs(params: Record<string, string>): string {
 }
 
 function vlessLink(ctx: LinkContext): string {
-  const { user, host } = ctx;
+  const { user, address } = ctx;
   const query = qs({ ...commonQuery(ctx), encryption: "none" });
-  return `vless://${user.uuid}@${host}:443?${query}#${encodeURIComponent(label(ctx.inbound))}`;
+  return `vless://${user.uuid}@${address}:443?${query}#${encodeURIComponent(label(ctx.inbound))}`;
 }
 
 function trojanLink(ctx: LinkContext): string {
-  const { user, host } = ctx;
+  const { user, address } = ctx;
   const query = qs(commonQuery(ctx));
-  return `trojan://${encodeURIComponent(user.password)}@${host}:443?${query}#${encodeURIComponent(
+  return `trojan://${encodeURIComponent(user.password)}@${address}:443?${query}#${encodeURIComponent(
     label(ctx.inbound),
   )}`;
 }
 
 function vmessLink(ctx: LinkContext): string {
-  const { user, inbound, host } = ctx;
+  const { user, inbound, host, address } = ctx;
   const isXhttp = inbound.transport === "xhttp";
   const obj = {
     v: "2",
     ps: label(inbound),
-    add: host,
+    add: address,
     port: "443",
     id: user.uuid,
     aid: "0",
@@ -94,17 +96,23 @@ export function buildLink(ctx: LinkContext): string {
   }
 }
 
+function resolveAddress(host: string): string {
+  const clean = (getSetting("clean_address") || "").trim();
+  return clean || host;
+}
+
 export function buildUserLinks(
   host: string,
   user: UserWithInbounds,
   inbounds: Inbound[],
 ): { tag: string; protocol: string; transport: string; link: string }[] {
+  const address = resolveAddress(host);
   return inbounds
     .filter((ib) => ib.enabled && user.inbound_ids.includes(ib.id))
     .map((inbound) => ({
       tag: inbound.tag,
       protocol: inbound.protocol,
       transport: inbound.transport,
-      link: buildLink({ host, user, inbound }),
+      link: buildLink({ host, address, user, inbound }),
     }));
 }

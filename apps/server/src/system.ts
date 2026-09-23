@@ -3,6 +3,7 @@ import fs from "node:fs";
 import { execSync } from "node:child_process";
 import { config } from "./config.js";
 import { isRunning, xrayVersion, xrayUptime } from "./xray.js";
+import { getIpInfo } from "./ipinfo.js";
 import type { SystemStats } from "./types.js";
 
 function round(n: number): number {
@@ -149,12 +150,14 @@ function storageUsage(): { usage: number; free: number; total: number } {
 }
 
 export function getSystemStats(): SystemStats {
+  const ipInfo = getIpInfo();
   return {
     cpu: cpuUsage(),
     ram: memUsage(),
     swap: swapUsage(),
     storage: storageUsage(),
     uptime: os.uptime(),
+    ip: { address: ipInfo.ip, location: ipInfo.location },
     xray: { running: isRunning(), version: xrayVersion(), uptime: xrayUptime() },
   };
 }

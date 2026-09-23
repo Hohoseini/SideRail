@@ -70,9 +70,9 @@ function SummaryCard({
         >
           <Icon className="h-5 w-5 text-black sm:h-6 sm:w-6" />
         </div>
-        <div>
+        <div className="min-w-0">
           <div className="font-heading text-2xl leading-none sm:text-3xl">{value}</div>
-          <div className="mt-1 text-[10px] font-heading uppercase tracking-widest text-text/60 sm:text-xs">
+          <div className="mt-1 truncate text-[9px] font-heading uppercase tracking-widest text-text/60 sm:text-xs">
             {label}
           </div>
         </div>

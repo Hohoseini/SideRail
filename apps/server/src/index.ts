@@ -26,6 +26,7 @@ import { startXray, collectTraffic, collectClientIps, enforceIpLimits } from "./
 import { applyTrafficReset } from "./users.js";
 import { rateLimit } from "./ratelimit.js";
 import { sendDailyBackup } from "./bot.js";
+import { refreshIpInfo } from "./ipinfo.js";
 import { SIDERAIL_SIGNATURE, watermark } from "./brand.js";
 
 console.log(SIDERAIL_SIGNATURE);
@@ -81,6 +82,7 @@ attachTunnel(server);
 server.listen(config.port, config.host, async () => {
   console.log(`SideRail listening on http://${config.host}:${config.port}`);
   await startXray();
+  void refreshIpInfo();
 });
 
 setInterval(() => {
@@ -89,7 +91,7 @@ setInterval(() => {
   } catch {
     /* noop */
   }
-}, 30_000);
+}, 10_000);
 
 setInterval(() => {
   try {

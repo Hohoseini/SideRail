@@ -1,4 +1,10 @@
 import type { Inbound, UserWithInbounds } from "./types.js";
+import { getSetting } from "./db.js";
+
+function cleanAddr(host: string): string {
+  const clean = (getSetting("clean_address") || "").trim();
+  return clean || host;
+}
 
 interface Ctx {
   host: string;
@@ -12,6 +18,7 @@ function net(inbound: Inbound): string {
 
 function clashProxy(ctx: Ctx): Record<string, unknown> | null {
   const { user, inbound, host } = ctx;
+  const addr = cleanAddr(host);
   const name = `${inbound.tag}`;
   const alpn = user.alpn ? user.alpn.split(",").map((a) => a.trim()) : undefined;
   const wsOpts = {
@@ -24,7 +31,7 @@ function clashProxy(ctx: Ctx): Record<string, unknown> | null {
     return {
       name,
       type: "vless",
-      server: host,
+      server: addr,
       port: 443,
       uuid: user.uuid,
       udp: true,
@@ -40,7 +47,7 @@ function clashProxy(ctx: Ctx): Record<string, unknown> | null {
     return {
       name,
       type: "vmess",
-      server: host,
+      server: addr,
       port: 443,
       uuid: user.uuid,
       alterId: 0,
@@ -57,7 +64,7 @@ function clashProxy(ctx: Ctx): Record<string, unknown> | null {
   return {
     name,
     type: "trojan",
-    server: host,
+    server: addr,
     port: 443,
     password: user.password,
     udp: true,
@@ -103,6 +110,7 @@ export function buildClashConfig(
 
 function singboxOutbound(ctx: Ctx): Record<string, unknown> | null {
   const { user, inbound, host } = ctx;
+  const addr = cleanAddr(host);
   const tag = inbound.tag;
   const tls = {
     enabled: true,
@@ -119,7 +127,7 @@ function singboxOutbound(ctx: Ctx): Record<string, unknown> | null {
     return {
       type: "vless",
       tag,
-      server: host,
+      server: addr,
       server_port: 443,
       uuid: user.uuid,
       tls,
@@ -130,7 +138,7 @@ function singboxOutbound(ctx: Ctx): Record<string, unknown> | null {
     return {
       type: "vmess",
       tag,
-      server: host,
+      server: addr,
       server_port: 443,
       uuid: user.uuid,
       alter_id: 0,
@@ -142,7 +150,7 @@ function singboxOutbound(ctx: Ctx): Record<string, unknown> | null {
   return {
     type: "trojan",
     tag,
-    server: host,
+    server: addr,
     server_port: 443,
     password: user.password,
     tls,

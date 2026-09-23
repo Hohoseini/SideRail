@@ -8,6 +8,7 @@ import {
   Trash2,
   ShieldCheck,
   Pencil,
+  Globe,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useToast } from "@/components/ui/toast";
@@ -443,6 +444,63 @@ function AdminsCard() {
   );
 }
 
+function ConnectionCard() {
+  const toast = useToast();
+  const { t } = useI18n();
+  const qc = useQueryClient();
+  const { data } = useQuery({ queryKey: ["settings"], queryFn: api.settings });
+  const [cleanAddress, setCleanAddress] = React.useState("");
+
+  React.useEffect(() => {
+    if (data) setCleanAddress(data.cleanAddress || "");
+  }, [data]);
+
+  const saveMut = useMutation({
+    mutationFn: () => api.updateSettings({ cleanAddress }),
+    onSuccess: () => {
+      toast.push("success", t("saved"));
+      qc.invalidateQueries({ queryKey: ["settings"] });
+    },
+    onError: (e: Error) => toast.push("error", e.message),
+  });
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center gap-2">
+          <Globe className="h-5 w-5 text-main" />
+          <CardTitle>{t("connection")}</CardTitle>
+        </div>
+        <CardDescription>{t("connectionDesc")}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            saveMut.mutate();
+          }}
+          className="space-y-4"
+          noValidate
+        >
+          <div className="space-y-2">
+            <Label htmlFor="cleanAddress">{t("cleanAddress")}</Label>
+            <Input
+              id="cleanAddress"
+              value={cleanAddress}
+              onChange={(e) => setCleanAddress(e.target.value)}
+              placeholder={t("cleanAddressPlaceholder")}
+            />
+          </div>
+          <Button type="submit" disabled={saveMut.isPending} className="w-full sm:w-auto">
+            <Save className="h-4 w-4" />
+            {saveMut.isPending ? t("saving") : t("saveChanges")}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function SettingsPage() {
   const { isOwner } = useAuth();
   const { t } = useI18n();
@@ -456,7 +514,10 @@ export default function SettingsPage() {
 
       {isOwner ? (
         <div className="grid gap-6 lg:grid-cols-[minmax(0,380px)_1fr] lg:items-start">
-          <CredentialsCard />
+          <div className="space-y-6">
+            <CredentialsCard />
+            <ConnectionCard />
+          </div>
           <AdminsCard />
         </div>
       ) : (

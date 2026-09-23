@@ -74,9 +74,9 @@ export const api = {
     request<{ ip: string; last_seen: number }[]>(`/api/users/${id}/ips`),
   activity: () => request<import("./types").ActivityEntry[]>("/api/activity"),
   clearActivity: () => request("/api/activity", { method: "DELETE" }),
-  settings: () => request<{ subTitle: string }>("/api/settings"),
-  updateSettings: (subTitle: string) =>
-    request("/api/settings", { method: "PUT", body: JSON.stringify({ subTitle }) }),
+  settings: () => request<{ subTitle: string; cleanAddress: string }>("/api/settings"),
+  updateSettings: (payload: { subTitle?: string; cleanAddress?: string }) =>
+    request("/api/settings", { method: "PUT", body: JSON.stringify(payload) }),
   changeCredentials: (payload: {
     currentPassword: string;
     newUsername?: string;
