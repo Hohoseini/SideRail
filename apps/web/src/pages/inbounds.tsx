@@ -50,11 +50,11 @@ export default function InboundsPage() {
         </Badge>
       </div>
 
-      <div className="flex flex-wrap gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {inbounds.map((ib) => (
           <Card
             key={ib.id}
-            className="min-w-[calc(50%-0.375rem)] flex-1 overflow-hidden transition-transform hover:-translate-y-0.5 sm:min-w-[calc(33.333%-0.5rem)] lg:min-w-[280px]"
+            className="overflow-hidden transition-transform hover:-translate-y-0.5"
           >
             <CardContent className="p-4">
               <div className="flex items-center justify-between gap-2">
@@ -72,7 +72,7 @@ export default function InboundsPage() {
                   onCheckedChange={(v) => toggle.mutate({ id: ib.id, enabled: v })}
                 />
               </div>
-              <div className="mt-2 grid grid-cols-3 gap-1.5">
+              <div className="mt-3 grid grid-cols-3 gap-1.5">
                 <Badge variant="neutral" className="justify-center truncate text-[10px] uppercase">
                   {ib.protocol}
                 </Badge>
@@ -83,14 +83,14 @@ export default function InboundsPage() {
                   <Lock className="h-3 w-3 shrink-0" /> TLS 443
                 </Badge>
               </div>
-              <div className="mt-3 space-y-1 border-t-2 border-border/30 pt-2 text-[11px] font-base text-text/60">
+              <div className="mt-3 space-y-1.5 border-t-2 border-border/30 pt-2.5 text-[11px] font-base text-text/60">
                 <div className="flex items-center gap-2">
-                  <Network className="h-3 w-3 shrink-0" />
+                  <Network className="h-3.5 w-3.5 shrink-0" />
                   <span className="shrink-0">{t("port")}</span>
                   <span className="ml-auto font-mono text-text/80">{ib.port}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Router className="h-3 w-3 shrink-0" />
+                  <Router className="h-3.5 w-3.5 shrink-0" />
                   <span className="shrink-0">{t("path")}</span>
                   <span className="ml-auto min-w-0 truncate font-mono text-text/80">{ib.path}</span>
                 </div>
