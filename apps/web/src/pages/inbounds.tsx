@@ -44,8 +44,8 @@ export default function InboundsPage() {
           <h1 className="font-heading text-3xl">{t("inbounds")}</h1>
           <p className="text-sm font-base text-text/60">{t("inboundsDesc")}</p>
         </div>
-        <Badge variant="info" className="gap-1">
-          <Waypoints className="h-3.5 w-3.5" />
+        <Badge variant="info" className="h-9 gap-1.5 px-3">
+          <Waypoints className="h-4 w-4 shrink-0" />
           {enabledCount} / {inbounds.length} {t("enabledCount")}
         </Badge>
       </div>
@@ -72,15 +72,15 @@ export default function InboundsPage() {
                   onCheckedChange={(v) => toggle.mutate({ id: ib.id, enabled: v })}
                 />
               </div>
-              <div className="mt-2 flex flex-wrap gap-1">
-                <Badge variant="neutral" className="text-[10px] uppercase">
+              <div className="mt-2 grid grid-cols-3 gap-1.5">
+                <Badge variant="neutral" className="justify-center truncate text-[10px] uppercase">
                   {ib.protocol}
                 </Badge>
-                <Badge variant="default" className="text-[10px] uppercase">
+                <Badge variant="default" className="justify-center truncate text-[10px] uppercase">
                   {ib.transport}
                 </Badge>
-                <Badge variant="success" className="gap-1 text-[10px]">
-                  <Lock className="h-3 w-3" /> TLS 443
+                <Badge variant="success" className="justify-center gap-1 text-[10px]">
+                  <Lock className="h-3 w-3 shrink-0" /> TLS 443
                 </Badge>
               </div>
               <div className="mt-3 space-y-1 border-t-2 border-border/30 pt-2 text-[11px] font-base text-text/60">

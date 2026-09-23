@@ -127,11 +127,11 @@ export default function DashboardPage() {
             className="h-10 justify-center gap-1.5 px-4 text-sm"
           >
             {s?.xray.running ? (
-              <CircleCheck className="h-4 w-4" />
+              <CircleCheck className="h-4 w-4 shrink-0" />
             ) : (
-              <CircleX className="h-4 w-4" />
+              <CircleX className="h-4 w-4 shrink-0" />
             )}
-            Xray · {s?.xray.running ? t("running") : t("stopped")}
+            <span className="truncate">Xray · {s?.xray.running ? t("running") : t("stopped")}</span>
           </Badge>
           <Button
             variant="neutral"
@@ -139,41 +139,43 @@ export default function DashboardPage() {
             onClick={() => restartMut.mutate()}
             disabled={restartMut.isPending}
           >
-            <RotateCw className={cn("h-4 w-4", restartMut.isPending && "animate-spin")} />
-            {t("restartXray")}
+            <RotateCw className={cn("h-4 w-4 shrink-0", restartMut.isPending && "animate-spin")} />
+            <span className="truncate">{t("restartXray")}</span>
           </Button>
         </div>
       </div>
 
       {s?.ip.address && (
         <Card>
-          <CardContent className="flex flex-wrap items-center gap-4 p-4">
-            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-base border-2 border-border bg-main">
-              <Globe className="h-5 w-5 text-black" />
-            </div>
-            <div className="flex flex-wrap gap-x-8 gap-y-2">
-              <div>
-                <div className="text-[10px] uppercase tracking-widest text-text/50">
-                  {t("serverIp")}
-                </div>
-                <div className="font-heading">{s.ip.address}</div>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="grid h-11 w-11 shrink-0 place-items-center rounded-base border-2 border-border bg-main">
+                <Globe className="h-5 w-5 text-black" />
               </div>
-              {s.ip.location && (
-                <div>
+              <div className="grid flex-1 grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-3">
+                <div className="min-w-0">
                   <div className="text-[10px] uppercase tracking-widest text-text/50">
-                    {t("location")}
+                    {t("serverIp")}
                   </div>
-                  <div className="font-heading">{s.ip.location}</div>
+                  <div className="truncate font-heading">{s.ip.address}</div>
                 </div>
-              )}
-              {s.ip.isp && (
-                <div>
-                  <div className="text-[10px] uppercase tracking-widest text-text/50">
-                    {t("isp")}
+                {s.ip.location && (
+                  <div className="min-w-0">
+                    <div className="text-[10px] uppercase tracking-widest text-text/50">
+                      {t("location")}
+                    </div>
+                    <div className="truncate font-heading">{s.ip.location}</div>
                   </div>
-                  <div className="font-heading">{s.ip.isp}</div>
-                </div>
-              )}
+                )}
+                {s.ip.isp && (
+                  <div className="min-w-0">
+                    <div className="text-[10px] uppercase tracking-widest text-text/50">
+                      {t("isp")}
+                    </div>
+                    <div className="truncate font-heading">{s.ip.isp}</div>
+                  </div>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>

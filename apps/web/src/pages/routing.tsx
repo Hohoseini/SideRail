@@ -178,13 +178,13 @@ export default function RoutingPage() {
                 key={r.id}
                 className="flex items-center justify-between gap-3 rounded-base border-2 border-border bg-bg/40 p-3"
               >
-                <div className="flex min-w-0 items-center gap-3">
+                <div className="flex min-w-0 flex-1 items-center gap-3">
                   <div className="grid h-9 w-9 shrink-0 place-items-center rounded-base border-2 border-border bg-red-300">
                     <Globe className="h-4 w-4 text-black" />
                   </div>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div className="truncate font-heading">{r.label || r.domain}</div>
-                    <div className="mt-0.5 flex flex-wrap gap-1">
+                    <div className="mt-1 flex flex-wrap gap-1">
                       {(r.inbound_ids.length === 0 ? inbounds.map((i) => i.id) : r.inbound_ids).map(
                         (id) => (
                           <Badge key={id} variant="neutral" className="text-[10px]">
@@ -198,10 +198,10 @@ export default function RoutingPage() {
                 <Button
                   variant="danger"
                   size="icon"
-                  className="h-8 w-8 shrink-0"
+                  className="h-9 w-9 shrink-0"
                   onClick={() => deleteMut.mutate(r.id)}
                 >
-                  <Trash2 className="h-3.5 w-3.5" />
+                  <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
             ))}

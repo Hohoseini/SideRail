@@ -68,14 +68,14 @@ function ConnectedIps({ userId }: { userId: number }) {
           {t("noConnections")}
         </p>
       ) : (
-        <div className="flex flex-wrap gap-2">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {ips.map((entry) => (
             <div
               key={entry.ip}
-              className="flex items-center gap-2 rounded-base border-2 border-border bg-bg/40 px-2.5 py-1.5"
+              className="flex items-center justify-between gap-2 rounded-base border-2 border-border bg-bg/40 px-2.5 py-1.5"
             >
-              <span className="font-mono text-xs">{entry.ip}</span>
-              <span className="text-[10px] text-text/50">{relativeTime(entry.last_seen)}</span>
+              <span className="truncate font-mono text-xs">{entry.ip}</span>
+              <span className="shrink-0 text-[10px] text-text/50">{relativeTime(entry.last_seen)}</span>
             </div>
           ))}
         </div>
