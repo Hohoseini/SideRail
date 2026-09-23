@@ -284,6 +284,7 @@ const en = {
   welcomeStarEnd: "would mean a lot and keeps it alive.",
   starOnGithub: "Star on GitHub",
   maybeLater: "Maybe later",
+  languageChanged: "Language changed",
 };
 
 export type TKey = keyof typeof en;
@@ -560,6 +561,7 @@ const ru: Dict = {
   welcomeStarEnd: "будет очень кстати и поддержит его развитие.",
   starOnGithub: "Звезда на GitHub",
   maybeLater: "Позже",
+  languageChanged: "Язык изменён",
 };
 
 const zh: Dict = {
@@ -830,6 +832,7 @@ const zh: Dict = {
   welcomeStarEnd: "将意义重大，并让它持续发展。",
   starOnGithub: "在 GitHub 上加星",
   maybeLater: "以后再说",
+  languageChanged: "语言已切换",
 };
 
 const dicts: Record<Lang, Dict> = { en, ru, zh };

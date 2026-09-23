@@ -1,8 +1,7 @@
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
-import { LogIn } from "lucide-react";
-import { RailLogo } from "@/components/rail-logo";
-import { AnimatedBackground } from "@/components/animated-background";
+import { LogIn, User, Lock, Eye, EyeOff } from "lucide-react";
+import { AuthLayout, AuthBrandMark } from "@/components/layout/auth-layout";
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/components/ui/toast";
 import { useI18n } from "@/lib/i18n";
@@ -18,6 +17,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const [username, setUsername] = React.useState("");
   const [password, setPassword] = React.useState("");
+  const [showPass, setShowPass] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
 
   const submit = async (e: React.FormEvent) => {
@@ -38,37 +38,52 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center p-4">
-      <AnimatedBackground />
-
-      <Card className="relative w-full max-w-md animate-pop-in">
+    <AuthLayout>
+      <Card className="w-full animate-slide-up">
         <CardHeader className="items-center text-center">
-          <div className="mx-auto mb-2 grid h-16 w-16 place-items-center rounded-base border-2 border-border bg-main text-mtext neo-shadow animate-float">
-            <RailLogo className="h-9 w-9" />
+          <div className="mb-2">
+            <AuthBrandMark />
           </div>
-          <h1 className="font-heading text-2xl">{t("welcomeBack")}</h1>
+          <h1 className="font-heading text-2xl tracking-tight">{t("welcomeBack")}</h1>
           <p className="text-sm font-base text-text/60">{t("signInPanel")}</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={submit} className="space-y-4" noValidate>
             <div className="space-y-2">
               <Label htmlFor="username">{t("username")}</Label>
-              <Input
-                id="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                autoComplete="username"
-              />
+              <div className="relative">
+                <User className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text/40" />
+                <Input
+                  id="username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  autoComplete="username"
+                  className="pl-9"
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">{t("password")}</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
-              />
+              <div className="relative">
+                <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text/40" />
+                <Input
+                  id="password"
+                  type={showPass ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password"
+                  className="px-9"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPass((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text/40 transition-colors hover:text-text"
+                  tabIndex={-1}
+                  aria-label={showPass ? "Hide password" : "Show password"}
+                >
+                  {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               <LogIn className="h-4 w-4" />
@@ -77,6 +92,6 @@ export default function LoginPage() {
           </form>
         </CardContent>
       </Card>
-    </div>
+    </AuthLayout>
   );
 }
