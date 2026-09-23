@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { GitHubButton, useGitHubStars } from "@/components/github-button";
 import { VersionBadge } from "@/components/version-badge";
 import { WelcomeDialog } from "@/components/welcome-dialog";
+import { useToast } from "@/components/ui/toast";
 import { PANEL_VERSION } from "@/lib/brand";
 import { Star, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -103,10 +104,20 @@ function NavItems({
 export function AppLayout() {
   const { username, logout, can, admin, isOwner } = useAuth();
   const { t, lang, setLang } = useI18n();
+  const toast = useToast();
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [menuOpen, setMenuOpen] = React.useState(false);
   const location = useLocation();
   const menuRef = React.useRef<HTMLDivElement>(null);
+
+  const changeLang = React.useCallback(
+    (l: typeof lang) => {
+      if (l === lang) return;
+      setLang(l);
+      toast.push("success", t("languageChanged"));
+    },
+    [lang, setLang, toast, t],
+  );
 
   React.useEffect(() => {
     setMobileOpen(false);
@@ -157,7 +168,7 @@ export function AppLayout() {
             {LANGUAGES.map((l) => (
               <button
                 key={l.code}
-                onClick={() => setLang(l.code)}
+                onClick={() => changeLang(l.code)}
                 className={cn(
                   "flex-1 rounded-[4px] px-1 py-1.5 text-xs font-heading transition-colors",
                   lang === l.code ? "bg-main text-mtext" : "hover:bg-main/15",
@@ -258,7 +269,7 @@ export function AppLayout() {
                         {LANGUAGES.map((l) => (
                           <button
                             key={l.code}
-                            onClick={() => setLang(l.code)}
+                            onClick={() => changeLang(l.code)}
                             className={cn(
                               "rounded-[4px] border-2 border-border px-1 py-1 text-xs font-heading transition-colors",
                               lang === l.code ? "bg-main text-mtext" : "hover:bg-main/15",
@@ -329,7 +340,7 @@ export function AppLayout() {
                 {LANGUAGES.map((l) => (
                   <button
                     key={l.code}
-                    onClick={() => setLang(l.code)}
+                    onClick={() => changeLang(l.code)}
                     className={cn(
                       "flex-1 rounded-[4px] px-1 py-1.5 text-xs font-heading transition-colors",
                       lang === l.code ? "bg-main text-mtext" : "hover:bg-main/15",
