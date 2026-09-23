@@ -5,7 +5,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 COPY apps/server/package.json apps/server/
 COPY apps/web/package.json apps/web/
-RUN --mount=type=cache,target=/root/.npm npm ci
+RUN npm ci
 COPY . .
 RUN npm run build
 
@@ -16,9 +16,8 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates unzip curl \
     && rm -rf /var/lib/apt/lists/*
 
-COPY package.json package-lock.json ./
 COPY apps/server/package.json ./apps/server/package.json
-RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev --workspace apps/server
+RUN cd apps/server && npm install --omit=dev
 
 COPY --from=build /app/apps/server/dist ./apps/server/dist
 COPY --from=build /app/apps/web/dist ./public
