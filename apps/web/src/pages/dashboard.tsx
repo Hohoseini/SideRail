@@ -121,30 +121,27 @@ export default function DashboardPage() {
           <h1 className="font-heading text-3xl">{t("dashboard")}</h1>
           <p className="text-sm font-base text-text/60">{t("liveMetrics")}</p>
         </div>
-        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-          <div className="flex items-center gap-2">
-            <Badge
-              variant={s?.xray.running ? "success" : "danger"}
-              className="flex-1 justify-center gap-1 sm:flex-none"
-            >
-              {s?.xray.running ? (
-                <CircleCheck className="h-3.5 w-3.5" />
-              ) : (
-                <CircleX className="h-3.5 w-3.5" />
-              )}
-              Xray · {s?.xray.running ? t("running") : t("stopped")}
-            </Badge>
-            <Button
-              variant="neutral"
-              size="sm"
-              className="shrink-0"
-              onClick={() => restartMut.mutate()}
-              disabled={restartMut.isPending}
-              title={t("restartXray")}
-            >
-              <RotateCw className={cn("h-4 w-4", restartMut.isPending && "animate-spin")} />
-            </Button>
-          </div>
+        <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:items-center">
+          <Badge
+            variant={s?.xray.running ? "success" : "danger"}
+            className="h-10 justify-center gap-1.5 px-4 text-sm"
+          >
+            {s?.xray.running ? (
+              <CircleCheck className="h-4 w-4" />
+            ) : (
+              <CircleX className="h-4 w-4" />
+            )}
+            Xray · {s?.xray.running ? t("running") : t("stopped")}
+          </Badge>
+          <Button
+            variant="neutral"
+            className="h-10 justify-center gap-1.5 px-4 text-sm"
+            onClick={() => restartMut.mutate()}
+            disabled={restartMut.isPending}
+          >
+            <RotateCw className={cn("h-4 w-4", restartMut.isPending && "animate-spin")} />
+            {t("restartXray")}
+          </Button>
         </div>
       </div>
 
@@ -167,6 +164,14 @@ export default function DashboardPage() {
                     {t("location")}
                   </div>
                   <div className="font-heading">{s.ip.location}</div>
+                </div>
+              )}
+              {s.ip.isp && (
+                <div>
+                  <div className="text-[10px] uppercase tracking-widest text-text/50">
+                    {t("isp")}
+                  </div>
+                  <div className="font-heading">{s.ip.isp}</div>
                 </div>
               )}
             </div>

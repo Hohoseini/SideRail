@@ -157,7 +157,7 @@ export function getSystemStats(): SystemStats {
     swap: swapUsage(),
     storage: storageUsage(),
     uptime: os.uptime(),
-    ip: { address: ipInfo.ip, location: ipInfo.location },
+    ip: { address: ipInfo.ip, location: ipInfo.location, isp: ipInfo.isp },
     xray: { running: isRunning(), version: xrayVersion(), uptime: xrayUptime() },
   };
 }
