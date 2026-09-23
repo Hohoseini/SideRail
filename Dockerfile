@@ -1,24 +1,28 @@
 # syntax=docker/dockerfile:1
 
-FROM node:24-bookworm-slim AS build
+# ---- build stage ----
+FROM node:24-alpine AS build
 WORKDIR /app
+ENV npm_config_audit=false npm_config_fund=false
 COPY package.json package-lock.json ./
 COPY apps/server/package.json apps/server/
 COPY apps/web/package.json apps/web/
-RUN npm ci
+RUN npm ci --prefer-offline --no-audit --no-fund
 COPY . .
 RUN npm run build
+# strip dev dependencies so the runtime can reuse this tree directly
+RUN npm prune --omit=dev
 
-FROM node:24-bookworm-slim AS runtime
+# ---- runtime stage ----
+FROM node:24-alpine AS runtime
 ENV NODE_ENV=production
 WORKDIR /app
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates unzip curl \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache ca-certificates unzip
 
-COPY apps/server/package.json ./apps/server/package.json
-RUN cd apps/server && npm install --omit=dev
-
+# reuse the pruned production node_modules and built output from the build stage
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/package.json ./package.json
+COPY --from=build /app/apps/server/package.json ./apps/server/package.json
 COPY --from=build /app/apps/server/dist ./apps/server/dist
 COPY --from=build /app/apps/web/dist ./public
 
