@@ -145,7 +145,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {s?.ip.address && (
+      {s && (
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -157,24 +157,20 @@ export default function DashboardPage() {
                   <div className="text-[10px] uppercase tracking-widest text-text/50">
                     {t("serverIp")}
                   </div>
-                  <div className="truncate font-heading">{s.ip.address}</div>
+                  <div className="truncate font-heading">{s.ip.address || "—"}</div>
                 </div>
-                {s.ip.location && (
-                  <div className="min-w-0">
-                    <div className="text-[10px] uppercase tracking-widest text-text/50">
-                      {t("location")}
-                    </div>
-                    <div className="truncate font-heading">{s.ip.location}</div>
+                <div className="min-w-0">
+                  <div className="text-[10px] uppercase tracking-widest text-text/50">
+                    {t("location")}
                   </div>
-                )}
-                {s.ip.isp && (
-                  <div className="min-w-0">
-                    <div className="text-[10px] uppercase tracking-widest text-text/50">
-                      {t("isp")}
-                    </div>
-                    <div className="truncate font-heading">{s.ip.isp}</div>
+                  <div className="truncate font-heading">{s.ip.location || "—"}</div>
+                </div>
+                <div className="min-w-0">
+                  <div className="text-[10px] uppercase tracking-widest text-text/50">
+                    {t("isp")}
                   </div>
-                )}
+                  <div className="truncate font-heading">{s.ip.isp || "—"}</div>
+                </div>
               </div>
             </div>
           </CardContent>

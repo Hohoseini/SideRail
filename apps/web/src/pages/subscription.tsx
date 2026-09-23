@@ -26,8 +26,11 @@ import {
 import { QrCode } from "@/components/qr-code";
 import { RailLogo } from "@/components/rail-logo";
 import { AnimatedBackground } from "@/components/animated-background";
-import { GitHubButton } from "@/components/github-button";
-import { useI18n } from "@/lib/i18n";
+import { useGitHubStars } from "@/components/github-button";
+import { useToast } from "@/components/ui/toast";
+import { useI18n, LANGUAGES, type Lang } from "@/lib/i18n";
+import { GITHUB_URL, GITHUB_REPO, TELEGRAM_URL, PANEL_VERSION } from "@/lib/brand";
+import { Github, Star, Tag, Send, Languages } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -348,8 +351,8 @@ export default function SubscriptionPage() {
           </div>
         </div>
 
-        <footer className="mt-10 flex justify-center">
-          <GitHubButton className="max-w-full" />
+        <footer className="mt-10">
+          <SubFooter />
         </footer>
       </div>
 
@@ -409,6 +412,74 @@ function MiniStat({
         {label}
       </span>
       <div className="w-full truncate font-heading text-sm">{value}</div>
+    </div>
+  );
+}
+
+function SubFooter() {
+  const { lang, setLang, t } = useI18n();
+  const toast = useToast();
+  const stars = useGitHubStars();
+
+  const changeLang = (l: Lang) => {
+    if (l === lang) return;
+    setLang(l);
+    toast.push("success", t("languageChanged"));
+  };
+
+  return (
+    <div className="mx-auto flex w-full max-w-md flex-col gap-2">
+      <div className="grid grid-cols-2 gap-2">
+        <a
+          href={GITHUB_URL}
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center justify-between gap-2 rounded-base border-2 border-border bg-bw/70 px-3 py-2 font-heading text-xs text-text/80 backdrop-blur transition-all hover:-translate-y-0.5 hover:bg-main hover:text-mtext hover:neo-shadow"
+        >
+          <span className="flex min-w-0 items-center gap-1.5">
+            <Github className="h-4 w-4 shrink-0" />
+            <span className="truncate">{GITHUB_REPO}</span>
+          </span>
+          <span className="flex shrink-0 items-center gap-1 rounded-[4px] border-2 border-border bg-main px-1.5 text-mtext">
+            <Star className="h-3 w-3" fill="currentColor" />
+            {stars ?? 0}
+          </span>
+        </a>
+        <a
+          href={TELEGRAM_URL}
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center justify-center gap-1.5 rounded-base border-2 border-border bg-bw/70 px-3 py-2 font-heading text-xs text-text/80 backdrop-blur transition-all hover:-translate-y-0.5 hover:bg-main hover:text-mtext hover:neo-shadow"
+        >
+          <Send className="h-4 w-4 shrink-0" />
+          <span className="truncate">Telegram</span>
+        </a>
+        <a
+          href={`${GITHUB_URL}/releases`}
+          target="_blank"
+          rel="noreferrer"
+          className="col-span-2 flex items-center justify-center gap-1.5 rounded-base border-2 border-border bg-bw/70 px-3 py-2 font-heading text-xs text-text/80 backdrop-blur transition-all hover:-translate-y-0.5 hover:bg-main hover:text-mtext hover:neo-shadow"
+        >
+          <Tag className="h-4 w-4 shrink-0" />
+          <span className="truncate">v{PANEL_VERSION}</span>
+        </a>
+      </div>
+      <div className="flex items-center gap-1 rounded-base border-2 border-border bg-bw/70 p-1 backdrop-blur">
+        <Languages className="ml-1 h-4 w-4 shrink-0 text-text/50" />
+        {LANGUAGES.map((l) => (
+          <button
+            key={l.code}
+            type="button"
+            onClick={() => changeLang(l.code)}
+            className={cn(
+              "flex-1 rounded-[4px] px-1 py-1.5 text-xs font-heading transition-colors",
+              lang === l.code ? "bg-main text-mtext" : "hover:bg-main/15",
+            )}
+          >
+            {l.label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
