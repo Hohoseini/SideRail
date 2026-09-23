@@ -28,7 +28,7 @@ export interface SystemStats {
   swap: { usage: number; used: number; total: number };
   storage: { usage: number; free: number; total: number };
   uptime: number;
-  ip: { address: string; location: string };
+  ip: { address: string; location: string; isp: string };
   xray: { running: boolean; version: string; uptime: number };
 }
 
@@ -67,6 +67,7 @@ export interface User {
   online_at: number | null;
   created_at: number;
   inbound_ids: number[];
+  clean_address_list: string[];
   total: number;
   online: boolean;
   created_by: number | null;
@@ -102,6 +103,7 @@ export interface UserFormValues {
   telegramId?: string;
   comment?: string;
   inboundIds?: number[];
+  cleanAddresses?: string[];
 }
 
 export interface SubLink {
@@ -125,6 +127,12 @@ export interface RoutingPreset {
   label: string;
   kind: "domain" | "ip";
   values: string[];
+}
+
+export interface CleanAddressPreset {
+  id: string;
+  label: string;
+  value: string;
 }
 
 export interface BotConfig {

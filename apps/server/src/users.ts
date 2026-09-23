@@ -29,6 +29,7 @@ export interface CreateUserInput {
   telegramId?: string;
   comment?: string;
   inboundIds?: number[];
+  cleanAddresses?: string[];
   createdBy?: number | null;
 }
 
@@ -77,8 +78,8 @@ export function createUser(input: CreateUserInput): UserWithInbounds {
     .prepare(
       `INSERT INTO users
         (email, uuid, password, sub_token, fingerprint, alpn, data_limit, ip_limit,
-         expire_at, sub_expire_days, traffic_reset, telegram_id, comment, enabled, last_reset, created_by, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?)`,
+         expire_at, sub_expire_days, traffic_reset, telegram_id, comment, clean_addresses, enabled, last_reset, created_by, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?)`,
     )
     .run(
       input.email,
@@ -94,6 +95,7 @@ export function createUser(input: CreateUserInput): UserWithInbounds {
       input.trafficReset || "never",
       input.telegramId || "",
       input.comment || "",
+      JSON.stringify(input.cleanAddresses || []),
       now,
       input.createdBy ?? null,
       now,
@@ -124,6 +126,8 @@ export function updateUser(id: number, input: UpdateUserInput): UserWithInbounds
   if (input.trafficReset !== undefined) set("traffic_reset", input.trafficReset);
   if (input.telegramId !== undefined) set("telegram_id", input.telegramId);
   if (input.comment !== undefined) set("comment", input.comment);
+  if (input.cleanAddresses !== undefined)
+    set("clean_addresses", JSON.stringify(input.cleanAddresses));
   if (input.enabled !== undefined) set("enabled", input.enabled ? 1 : 0);
   if (fields.length > 0) {
     values.push(id);
@@ -178,10 +182,20 @@ function decorate(row: UserRecord): UserWithInbounds {
   return {
     ...row,
     inbound_ids: inboundIdsFor(row.id),
+    clean_address_list: parseCleanAddresses(row.clean_addresses),
     total: row.up + row.down,
     online: row.online_at != null && Date.now() - row.online_at < ONLINE_WINDOW_MS,
     creator: creatorName(row.created_by),
   };
+}
+
+function parseCleanAddresses(raw: string): string[] {
+  try {
+    const arr = JSON.parse(raw || "[]");
+    return Array.isArray(arr) ? arr.filter((v): v is string => typeof v === "string") : [];
+  } catch {
+    return [];
+  }
 }
 
 export function getUser(id: number): UserWithInbounds | null {

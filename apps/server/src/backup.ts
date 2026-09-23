@@ -72,8 +72,8 @@ export function importData(payload: BackupPayload): { users: number; inbounds: n
       `INSERT INTO users
         (id, email, uuid, password, sub_token, fingerprint, alpn, data_limit, ip_limit,
          expire_at, sub_expire_days, sub_first_seen, traffic_reset, telegram_id, comment,
-         enabled, up, down, last_reset, online_at, created_by, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         clean_addresses, enabled, up, down, last_reset, online_at, created_by, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     );
     for (const u of payload.users) {
       insUser.run(
@@ -92,6 +92,7 @@ export function importData(payload: BackupPayload): { users: number; inbounds: n
         u.traffic_reset,
         u.telegram_id,
         u.comment,
+        u.clean_addresses ?? "[]",
         u.enabled,
         u.up,
         u.down,

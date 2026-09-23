@@ -41,6 +41,8 @@ export const api = {
   me: () => request<{ admin: import("./types").AdminInfo }>("/api/me"),
   system: () => request<import("./types").SystemStats>("/api/system"),
   inbounds: () => request<import("./types").Inbound[]>("/api/inbounds"),
+  cleanAddresses: () =>
+    request<import("./types").CleanAddressPreset[]>("/api/clean-addresses"),
   toggleInbound: (id: number, enabled: boolean) =>
     request(`/api/inbounds/${id}`, {
       method: "PATCH",
@@ -74,8 +76,8 @@ export const api = {
     request<{ ip: string; last_seen: number }[]>(`/api/users/${id}/ips`),
   activity: () => request<import("./types").ActivityEntry[]>("/api/activity"),
   clearActivity: () => request("/api/activity", { method: "DELETE" }),
-  settings: () => request<{ subTitle: string; cleanAddress: string }>("/api/settings"),
-  updateSettings: (payload: { subTitle?: string; cleanAddress?: string }) =>
+  settings: () => request<{ subTitle: string }>("/api/settings"),
+  updateSettings: (payload: { subTitle?: string }) =>
     request("/api/settings", { method: "PUT", body: JSON.stringify(payload) }),
   changeCredentials: (payload: {
     currentPassword: string;

@@ -101,18 +101,28 @@ function resolveAddress(host: string): string {
   return clean || host;
 }
 
+/**
+ * Pick a per-config address. When the user has selected one or more clean
+ * addresses, each config gets a randomly chosen one so clients don't all pile
+ * onto a single address. Falls back to the panel host when none are set.
+ */
+function pickAddress(host: string, user: UserWithInbounds): string {
+  const list = (user.clean_address_list || []).map((a) => a.trim()).filter(Boolean);
+  if (list.length > 0) return list[Math.floor(Math.random() * list.length)];
+  return resolveAddress(host);
+}
+
 export function buildUserLinks(
   host: string,
   user: UserWithInbounds,
   inbounds: Inbound[],
 ): { tag: string; protocol: string; transport: string; link: string }[] {
-  const address = resolveAddress(host);
   return inbounds
     .filter((ib) => ib.enabled && user.inbound_ids.includes(ib.id))
     .map((inbound) => ({
       tag: inbound.tag,
       protocol: inbound.protocol,
       transport: inbound.transport,
-      link: buildLink({ host, address, user, inbound }),
+      link: buildLink({ host, address: pickAddress(host, user), user, inbound }),
     }));
 }

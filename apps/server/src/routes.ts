@@ -52,6 +52,7 @@ import {
   deleteRoutingRule,
 } from "./routing.js";
 import { DOMAIN_PRESETS, COUNTRY_IP_PRESETS } from "./routing-presets.js";
+import { CLEAN_ADDRESS_PRESETS } from "./clean-addresses.js";
 import { getBotConfig, saveBotConfig, testBot } from "./bot.js";
 
 export const api = Router();
@@ -81,6 +82,7 @@ const userSchema = z.object({
   telegramId: z.string().optional(),
   comment: z.string().optional(),
   inboundIds: z.array(z.number()).optional(),
+  cleanAddresses: z.array(z.string()).optional(),
 });
 
 const updateSchema = userSchema.partial().extend({ enabled: z.boolean().optional() });
@@ -158,6 +160,10 @@ api.post("/system/restart-xray", requirePermission("dashboard"), (req: AuthedReq
 
 api.get("/inbounds", (_req, res) => {
   res.json(listInbounds());
+});
+
+api.get("/clean-addresses", requirePermission("users"), (_req, res) => {
+  res.json(CLEAN_ADDRESS_PRESETS);
 });
 
 api.patch("/inbounds/:id", requirePermission("inbounds"), async (req: AuthedRequest, res) => {
@@ -322,20 +328,18 @@ api.get("/settings", requirePermission("settings"), (_req, res) => {
   res.json({
     xrayVersion: getSetting("xray_version") || "",
     subTitle: getSetting("sub_title") || "SideRail",
-    cleanAddress: getSetting("clean_address") || "",
   });
 });
 
 api.put("/settings", requirePermission("settings"), (req: AuthedRequest, res) => {
   const body = z
-    .object({ subTitle: z.string().optional(), cleanAddress: z.string().optional() })
+    .object({ subTitle: z.string().optional() })
     .safeParse(req.body);
   if (!body.success) {
     res.status(400).json({ error: "invalid" });
     return;
   }
   if (body.data.subTitle !== undefined) setSetting("sub_title", body.data.subTitle);
-  if (body.data.cleanAddress !== undefined) setSetting("clean_address", body.data.cleanAddress.trim());
   logActivity(req.admin!.username, "settings_update", "");
   res.json({ ok: true });
 });
