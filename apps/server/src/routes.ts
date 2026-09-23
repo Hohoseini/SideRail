@@ -360,6 +360,10 @@ api.post("/settings/credentials", requirePermission("settings"), (req: AuthedReq
     res.status(400).json({ error: result.error });
     return;
   }
+  // The change bumped this admin's token_version, invalidating every session
+  // (including other people logged in as the same user). Re-issue a fresh
+  // cookie for the admin who made the change so they stay signed in.
+  setAuthCookie(res, signToken({ id: req.admin!.id }));
   logActivity(req.admin!.username, "credentials_change", "");
   res.json({ ok: true });
 });

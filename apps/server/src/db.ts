@@ -19,6 +19,7 @@ export function migrate(): void {
       role TEXT NOT NULL DEFAULT 'admin',
       permissions TEXT NOT NULL DEFAULT '[]',
       data_limit INTEGER NOT NULL DEFAULT 0,
+      token_version INTEGER NOT NULL DEFAULT 0,
       created_at INTEGER NOT NULL
     );
 
@@ -124,6 +125,8 @@ function migrateColumns(): void {
     db.exec("ALTER TABLE admins ADD COLUMN permissions TEXT NOT NULL DEFAULT '[]'");
   if (!names.includes("data_limit"))
     db.exec("ALTER TABLE admins ADD COLUMN data_limit INTEGER NOT NULL DEFAULT 0");
+  if (!names.includes("token_version"))
+    db.exec("ALTER TABLE admins ADD COLUMN token_version INTEGER NOT NULL DEFAULT 0");
 
   const userCols = db.prepare("PRAGMA table_info(users)").all() as { name: string }[];
   if (!userCols.map((c) => c.name).includes("created_by")) {

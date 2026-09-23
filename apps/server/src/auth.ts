@@ -39,6 +39,7 @@ interface AdminRow {
   role: string;
   permissions: string;
   data_limit: number;
+  token_version: number;
   created_at: number;
 }
 
@@ -183,16 +184,20 @@ export function changeCredentials(
     if (clash) return { ok: false, error: "username already exists" };
   }
   const hash = newPassword ? bcrypt.hashSync(newPassword, 10) : admin.password_hash;
-  db.prepare("UPDATE admins SET username = ?, password_hash = ? WHERE id = ?").run(
-    username,
-    hash,
-    admin.id,
-  );
+  // Bump token_version so every existing session for this admin is invalidated.
+  db.prepare(
+    "UPDATE admins SET username = ?, password_hash = ?, token_version = token_version + 1 WHERE id = ?",
+  ).run(username, hash, admin.id);
   return { ok: true };
 }
 
 export function signToken(admin: { id: number }): string {
-  return jwt.sign({ id: admin.id }, config.jwtSecret, { expiresIn: "7d" });
+  const row = db.prepare("SELECT token_version FROM admins WHERE id = ?").get(admin.id) as
+    | { token_version: number }
+    | undefined;
+  return jwt.sign({ id: admin.id, tv: row?.token_version ?? 0 }, config.jwtSecret, {
+    expiresIn: "7d",
+  });
 }
 
 export function authGuard(req: AuthedRequest, res: Response, next: NextFunction): void {
@@ -202,9 +207,12 @@ export function authGuard(req: AuthedRequest, res: Response, next: NextFunction)
     return;
   }
   try {
-    const payload = jwt.verify(token, config.jwtSecret) as { id: number };
+    const payload = jwt.verify(token, config.jwtSecret) as { id: number; tv?: number };
+    const row = db.prepare("SELECT token_version FROM admins WHERE id = ?").get(payload.id) as
+      | { token_version: number }
+      | undefined;
     const admin = getAdminById(payload.id);
-    if (!admin) {
+    if (!admin || !row || (payload.tv ?? 0) !== row.token_version) {
       res.status(401).json({ error: "unauthorized" });
       return;
     }
