@@ -207,10 +207,6 @@ npm start       # serve API + built frontend on :8080
 <br/>
 <br/>
 
-<img src=".github/sections/support.svg" width="380" alt="Support the project" />
-
-**Countless late nights and a lot of coffee went into this.** If HVPN powers your setup, a small crypto tip goes straight back into keeping it fast, secure and free for everyone.
-
 <br/>
 
 <img src=".github/sections/license.svg" width="380" alt="License & Copyright" />
